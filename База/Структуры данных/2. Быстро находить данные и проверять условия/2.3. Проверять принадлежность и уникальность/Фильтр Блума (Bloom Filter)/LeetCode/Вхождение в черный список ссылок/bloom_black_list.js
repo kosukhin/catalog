@@ -139,18 +139,18 @@ function djb2(str) {
   return hash >>> 0;
 }
 
-const filterInstance = new BloomFilter(1000);
+const badUrlsSet = new BloomFilter(1000);
 
 bad_urls.forEach(url => {
-    filterInstance.add(urlHashes.bind(null, url));
+    badUrlsSet.add(urlHashes.bind(null, url));
 });
 
-let bad_urls_count = 0;
+let good_urls_count = 0;
 
 random_urls.forEach(url => {
-    if (filterInstance.contains(urlHashes.bind(null, url))) {
-        bad_urls_count += 1;
+    if (!badUrlsSet.contains(urlHashes.bind(null, url))) {
+        good_urls_count += 1;
     }
 });
 
-console.log('Total urls = ', random_urls.length, ' bad urls = ', bad_urls_count);
+console.log('Total urls = ', random_urls.length, ' good urls = ', good_urls_count);
