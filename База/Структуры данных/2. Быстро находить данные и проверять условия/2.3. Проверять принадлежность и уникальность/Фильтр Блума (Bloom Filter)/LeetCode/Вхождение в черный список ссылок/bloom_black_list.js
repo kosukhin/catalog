@@ -21,13 +21,19 @@ class BloomFilter {
         this.#bitset = new Array(size);
     }
 
+    // Проверить содержит ли фильтр значение по хэшам
     contains(hashesFn) {
         const hashes = hashesFn();
         return hashes.reduce((result, hash) => {
             const bitIndex = hash % this.#size;
-            result = result && this.#bitset[bitIndex];
+            result = result && Boolean(this.#bitset[bitIndex]);
             return result;
         }, false)
+    }
+
+    // Добавить в фильтр значение по хэшам
+    add(hashesFn) {
+
     }
 }
 
