@@ -1,3 +1,6 @@
+/**
+ * Генератор для плохих и хороших урлов
+ */
 function url_generator() {
     const correct_urls = [1];
     const bad_urls = [2];
