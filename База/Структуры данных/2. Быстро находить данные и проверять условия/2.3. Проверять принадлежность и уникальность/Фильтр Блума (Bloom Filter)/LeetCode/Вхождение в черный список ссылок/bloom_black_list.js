@@ -23,6 +23,7 @@ class BloomFilter {
     #size; // Размер фильтра
 
     constructor(size) {
+        this.#size = size;
         this.#bitset = new Array(size);
     }
 
