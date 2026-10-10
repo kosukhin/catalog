@@ -18,8 +18,7 @@ class BloomFilter {
     contains(hashesFn) {
         const hashes = hashesFn();
         return hashes.every((hash) => {
-            const bitIndex = this.bitIndex(hash);
-            return this.#bitset[bitIndex] === 1;
+            return this.#bitset[this.bitIndex(hash)] === 1;
         });
     }
 
@@ -27,8 +26,7 @@ class BloomFilter {
     add(hashesFn) {
         const hashes = hashesFn();
         hashes.forEach(hash => {
-            const bitIndex = this.bitIndex(hash);
-            this.#bitset[bitIndex] = 1;
+            this.#bitset[this.bitIndex(hash)] = 1;
         });
     }
 
