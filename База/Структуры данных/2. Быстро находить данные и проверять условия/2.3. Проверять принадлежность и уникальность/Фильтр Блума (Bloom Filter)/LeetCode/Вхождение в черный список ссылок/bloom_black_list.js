@@ -148,7 +148,7 @@ bad_urls.forEach(url => {
 let bad_urls_count = 0;
 
 random_urls.forEach(url => {
-    if (filterInstance.contains(url)) {
+    if (filterInstance.contains(urlHashes.bind(null, url))) {
         bad_urls_count += 1;
     }
 });
