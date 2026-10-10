@@ -25,6 +25,7 @@ class BloomFilter {
         const hashes = hashesFn();
         return hashes.reduce((result, hash) => {
             const bitIndex = hash % this.#size;
+            result = result && this.#bitset[bitIndex];
             return result;
         }, false)
     }
