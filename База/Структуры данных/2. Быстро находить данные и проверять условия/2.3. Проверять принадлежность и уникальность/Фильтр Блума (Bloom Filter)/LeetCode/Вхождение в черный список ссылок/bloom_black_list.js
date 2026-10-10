@@ -30,10 +30,9 @@ class BloomFilter {
     // Проверить содержит ли фильтр значение по хэшам
     contains(hashesFn) {
         const hashes = hashesFn();
-        return hashes.reduce((result, hash) => {
+        return hashes.every((hash) => {
             const bitIndex = this.bitIndex(hash);
-            result = result && Boolean(this.#bitset[bitIndex]);
-            return result;
+            return this.#bitset[bitIndex] === 1;
         }, true);
     }
 
