@@ -47,7 +47,7 @@ class BloomFilter {
     }
 
     bitIndex(hash) {
-        return hash % this.#size;
+        return Math.abs(hash % this.#size);
     }
 }
 
