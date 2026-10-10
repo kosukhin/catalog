@@ -13,6 +13,8 @@ const random_urls = shuffle([].concat(correct_urls, bad_urls));
 
 console.log(JSON.stringify(random_urls, null, 2));
 
+const filterInstance = new BloomFilter(10);
+
 class BloomFilter {
     #bitset; // Карта битов
     #size; // Размер фильтра
@@ -36,6 +38,7 @@ class BloomFilter {
         const hashes = hashesFn();
         hashes.forEach(hash => {
             const bitIndex = this.bitIndex(hash);
+            this.#bitset[bitIndex] = 1;
         });
     }
 
