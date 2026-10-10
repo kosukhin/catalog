@@ -139,7 +139,7 @@ function djb2(str) {
   return hash >>> 0;
 }
 
-const bad_urls_set = new BloomFilter(100_000);
+const bad_urls_set = new BloomFilter(random_urls.length);
 
 bad_urls.forEach(url => {
     bad_urls_set.add(urlHashes.bind(null, url));
