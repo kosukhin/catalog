@@ -22,7 +22,11 @@ class BloomFilter {
     }
 
     contains(hashesFn) {
-
+        const hashes = hashesFn();
+        return hashes.reduce((result, hash) => {
+            const bitIndex = hash % this.#size;
+            return result;
+        }, false)
     }
 }
 
