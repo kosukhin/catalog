@@ -153,4 +153,4 @@ random_urls.forEach(url => {
     }
 });
 
-console.log('Total urls = ', random_urls.length, ' good urls = ', good_urls_count);
+console.log('Total urls = ', random_urls.length, ' good urls = ', good_urls_count, 'bad urls', bad_urls.length);
