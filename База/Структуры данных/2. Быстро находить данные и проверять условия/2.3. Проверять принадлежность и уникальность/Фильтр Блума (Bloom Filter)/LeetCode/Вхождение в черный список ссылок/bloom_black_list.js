@@ -1,16 +1,3 @@
-
-const bad_urls = [];
-for(let i = 0; i < 1_000; i++) {
-    bad_urls.push('http://bad-url-' + i + '.com');
-}
-
-const correct_urls = [];
-for(let i = 0; i < 10_000; i++) {
-    correct_urls.push('http://correct-url-' + i + '.com');
-} 
-
-const random_urls = shuffle([].concat(correct_urls, bad_urls));
-
 /**
  * Фильтр блума, его задача сохранить
  * множество элементов в компактном виде
@@ -137,6 +124,19 @@ function djb2(str) {
 
   return hash >>> 0;
 }
+
+const bad_urls = [];
+for(let i = 0; i < 1_000; i++) {
+    bad_urls.push('http://bad-url-' + i + '.com');
+}
+
+const correct_urls = [];
+for(let i = 0; i < 10_000; i++) {
+    correct_urls.push('http://correct-url-' + i + '.com');
+} 
+
+const random_urls = shuffle([].concat(correct_urls, bad_urls));
+
 
 const bad_urls_set = new BloomFilter(random_urls.length);
 
