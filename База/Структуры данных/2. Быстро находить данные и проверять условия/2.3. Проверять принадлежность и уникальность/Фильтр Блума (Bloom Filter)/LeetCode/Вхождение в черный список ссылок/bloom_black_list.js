@@ -138,7 +138,7 @@ for(let i = 0; i < 10_000; i++) {
 const random_urls = shuffle([].concat(correct_urls, bad_urls));
 
 
-const bad_urls_set = new BloomFilter(random_urls.length*21);
+const bad_urls_set = new BloomFilter(random_urls.length);
 
 bad_urls.forEach(url => {
     bad_urls_set.add(urlHashes.bind(null, url));
