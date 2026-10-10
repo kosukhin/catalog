@@ -13,6 +13,14 @@ const random_urls = shuffle([].concat(correct_urls, bad_urls));
 
 console.log(JSON.stringify(random_urls, null, 2));
 
+class BloomFilter {
+    #bitset;
+
+    constructor(size) {
+        this.#bitset = new Array(size);
+    }
+}
+
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
