@@ -156,7 +156,8 @@ const false_positives = correct_urls.length - good_urls_count;
 
 console.log(
     'Total urls = ', random_urls.length, '\n',
-    'good urls = ', good_urls_count,  '\n',
     'bad urls', bad_urls.length, '\n',
-    'false positives', false_positives
+    'good urls', correct_urls.length, '\n',
+    'bloom filter good urls = ', good_urls_count,  '\n',
+    'bloom filter false positives', false_positives
 );
