@@ -2,7 +2,7 @@
  * Фильтр блума, его задача сохранить
  * множество элементов в компактном виде
  * чтобы была возмжность проверить что
- * какой-то другой элемент точно не входит в 
+ * какой-то другой элемент точно не входит в
  * множество уже добавленных в фильтр элементов
  */
 class BloomFilter {
@@ -20,7 +20,7 @@ class BloomFilter {
         return hashes.every((hash) => {
             const bitIndex = this.bitIndex(hash);
             return this.#bitset[bitIndex] === 1;
-        }, true);
+        });
     }
 
     // Добавить в фильтр значение по хэшам
@@ -133,7 +133,7 @@ for(let i = 0; i < 1_000; i++) {
 const correct_urls = [];
 for(let i = 0; i < 10_000; i++) {
     correct_urls.push('http://correct-url-' + i + '.com');
-} 
+}
 
 const random_urls = shuffle([].concat(correct_urls, bad_urls));
 
