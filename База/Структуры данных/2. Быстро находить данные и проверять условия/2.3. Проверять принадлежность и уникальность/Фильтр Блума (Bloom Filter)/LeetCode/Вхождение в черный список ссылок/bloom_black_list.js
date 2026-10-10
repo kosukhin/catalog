@@ -152,10 +152,11 @@ random_urls.forEach(url => {
     }
 });
 
-
+const false_positives = correct_urls.length - good_urls_count;
 
 console.log(
-    'Total urls = ', random_urls.length, 
-    'good urls = ', good_urls_count, 
-    'bad urls', bad_urls.length
+    'Total urls = ', random_urls.length, '\n',
+    'good urls = ', good_urls_count,  '\n',
+    'bad urls', bad_urls.length, '\n',
+    'false positives', false_positives
 );
