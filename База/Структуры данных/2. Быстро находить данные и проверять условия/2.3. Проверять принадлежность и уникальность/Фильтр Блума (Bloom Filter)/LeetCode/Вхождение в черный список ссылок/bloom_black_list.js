@@ -24,7 +24,7 @@ class BloomFilter {
 
     constructor(size) {
         this.#size = size;
-        this.#bitset = new Array(size);
+        this.#bitset = new Array(size).fill(0);
     }
 
     // Проверить содержит ли фильтр значение по хэшам
