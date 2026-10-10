@@ -34,7 +34,7 @@ class BloomFilter {
             const bitIndex = this.bitIndex(hash);
             result = result && Boolean(this.#bitset[bitIndex]);
             return result;
-        }, false);
+        }, true);
     }
 
     // Добавить в фильтр значение по хэшам
@@ -139,7 +139,7 @@ function djb2(str) {
   return hash >>> 0;
 }
 
-const filterInstance = new BloomFilter(10);
+const filterInstance = new BloomFilter(1000);
 
 bad_urls.forEach(url => {
     filterInstance.add(urlHashes.bind(null, url));
