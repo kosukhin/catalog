@@ -25,15 +25,22 @@ class BloomFilter {
     contains(hashesFn) {
         const hashes = hashesFn();
         return hashes.reduce((result, hash) => {
-            const bitIndex = hash % this.#size;
+            const bitIndex = this.bitIndex(hash);
             result = result && Boolean(this.#bitset[bitIndex]);
             return result;
-        }, false)
+        }, false);
     }
 
     // Добавить в фильтр значение по хэшам
     add(hashesFn) {
+        const hashes = hashesFn();
+        hashes.forEach(hash => {
+            const bitIndex = this.bitIndex(hash);
+        });
+    }
 
+    bitIndex(hash) {
+        return hash % this.#size;
     }
 }
 
