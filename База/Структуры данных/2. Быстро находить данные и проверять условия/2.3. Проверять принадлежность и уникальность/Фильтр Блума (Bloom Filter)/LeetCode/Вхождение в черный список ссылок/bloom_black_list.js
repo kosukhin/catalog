@@ -14,10 +14,15 @@ const random_urls = shuffle([].concat(correct_urls, bad_urls));
 console.log(JSON.stringify(random_urls, null, 2));
 
 class BloomFilter {
-    #bitset;
+    #bitset; // Карта битов
+    #size; // Размер фильтра
 
     constructor(size) {
         this.#bitset = new Array(size);
+    }
+
+    contains(hashesFn) {
+
     }
 }
 
