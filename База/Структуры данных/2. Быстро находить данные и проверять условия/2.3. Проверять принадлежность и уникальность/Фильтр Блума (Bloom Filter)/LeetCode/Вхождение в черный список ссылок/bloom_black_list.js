@@ -11,14 +11,6 @@ for(let i = 0; i < 10_000; i++) {
 
 const random_urls = shuffle([].concat(correct_urls, bad_urls));
 
-console.log(JSON.stringify(random_urls, null, 2));
-
-const filterInstance = new BloomFilter(10);
-
-bad_urls.forEach(url => {
-    filterInstance.add(urlHashes.bind(null, url));
-});
-
 /**
  * Фильтр блума, его задача сохранить
  * множество элементов в компактном виде
@@ -145,3 +137,19 @@ function djb2(str) {
 
   return hash >>> 0;
 }
+
+const filterInstance = new BloomFilter(10);
+
+bad_urls.forEach(url => {
+    filterInstance.add(urlHashes.bind(null, url));
+});
+
+let bad_urls_count = 0;
+
+random_urls.forEach(url => {
+    if (filterInstance.contains(url)) {
+        bad_urls_count += 1;
+    }
+});
+
+console.log('Total urls = ', random_urls.length, ' bad urls = ', bad_urls_count);
