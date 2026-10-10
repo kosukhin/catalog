@@ -1,6 +1,8 @@
 function url_generator() {
+    const correct_urls = [1];
+    const bad_urls = [2];
     
-    return [1, 2, 3]
+    return shuffle([].concat(correct_urls, bad_urls));
 }
 
 console.log(JSON.stringify(url_generator(), null, 2));

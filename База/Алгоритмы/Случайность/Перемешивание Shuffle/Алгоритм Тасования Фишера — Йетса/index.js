@@ -4,7 +4,6 @@ function shuffle(array) {
     [array[i], array[j]] = [array[j], array[i]]; // Меняем элементы местами (деструктуризация)
   }
   return array;
-
 }
 
 const baseArray = ['Z', 'Z', 'Z', 'X', 'X', 'X', 'X', 'Y', 'Y', 'Y'];
