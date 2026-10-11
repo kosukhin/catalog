@@ -4,5 +4,14 @@ class TreeSet {
 
 console.log('Tree Set')
 
-const name = prompt('Как вас зовут?')
-console.log('Вас зовут', name)
+const readline = require('node:readline');
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
+
+rl.question('Как вас зовут? ', (answer) => {
+  console.log(`Привет, ${answer}!`);
+  rl.close();
+});
