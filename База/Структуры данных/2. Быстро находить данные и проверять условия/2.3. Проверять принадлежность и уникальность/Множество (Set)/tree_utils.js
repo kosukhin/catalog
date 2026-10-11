@@ -65,17 +65,12 @@ export function treeToArray(leader) {
     const result = [];
     while (queue.length) {
         const node = queue.shift();
+        if (node === null) {
+            continue;
+        }
         result.push(node.value);
-        if (node.left) {
-            queue.push(node.left)
-        } else {
-            result.push(null)
-        }
-        if (node.right) {
-            queue.push(node.right);
-        } else {
-            result.push(null)
-        }
+        queue.push(node.left ?? null);
+        queue.push(node.right ?? null);
     }
     return result;
 }
