@@ -12,7 +12,9 @@ function setBit(i, value) {
   const byte = i >> 3;
   const mask = 1 << (i & 7);
 
+  // Если нужно записать мы применяем побитовое или на байт
   if (value) bits[byte] |= mask;
+  
   else bits[byte] &= ~mask;
 }
 
