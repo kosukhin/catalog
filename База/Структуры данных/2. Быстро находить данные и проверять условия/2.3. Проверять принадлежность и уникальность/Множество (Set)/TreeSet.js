@@ -2,11 +2,15 @@
  * Берем за основу AVL дерево
  */
 class TreeSet {
+    // Само дерево
     #tree = [];
+    // Высоты узлов для балансировки
+    #hights = [];
 
     add(el) {
         // Добавляем всегда в конец
         this.#tree.push(el);
+        this.#hights.push(0);
         this.#binaryTreeInvariant(this.#tree.length - 1);
         this.#rebalance(this.#tree.length - 1);
     }
