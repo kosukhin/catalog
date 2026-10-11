@@ -35,8 +35,8 @@ class TreeSet {
         const elValue = this.#tree[elIndex];
         const parentIndex = this.parentIndex(elIndex);
         const parent = this.#tree[parentIndex];
-        const parentLeft = this.#tree[this.leftChildIndex(parent)];
-        const parentRight = this.#tree[this.rightChildIndex(parent)];
+        const parentLeft = this.#tree[this.leftChildIndex(parentIndex)];
+        const parentRight = this.#tree[this.rightChildIndex(parentIndex)];
         const iamLeft = elValue === parentLeft;
         const iamRight = elValue === parentRight;
         const iamRoot = parent === null || parent === undefined;
