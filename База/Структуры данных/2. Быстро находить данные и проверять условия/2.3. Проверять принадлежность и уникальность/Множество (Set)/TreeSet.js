@@ -1,4 +1,4 @@
-import { printArrayAsTree, treeToArray } from './tree_utils.js';
+import { printArrayAsTree, treeToArray } from 'binary-tree-printer';
 
 class Node {
     _height = 0;
