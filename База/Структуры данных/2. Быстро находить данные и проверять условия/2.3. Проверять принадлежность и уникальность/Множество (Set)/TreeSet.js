@@ -26,6 +26,13 @@ class TreeSet {
         const parent = this.#tree[this.parentIndex(elIndex)];
         const parentLeft = this.#tree[this.leftChildIndex(parent)];
         const parentRight = this.#tree[this.rightChildIndex(parent)];
+        const iamLeft = elValue === parentLeft;
+        const iamRight = elValue === parentRight;
+        const iamRoot = parent === null || parent === undefined;
+        if (iamRoot) {
+            return;
+        }
+        
     }
 
     // Пройти по дереву снизу вверх чтобы проверить его сбалансированность
