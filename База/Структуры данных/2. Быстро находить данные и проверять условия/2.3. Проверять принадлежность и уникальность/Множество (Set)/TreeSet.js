@@ -8,6 +8,10 @@ class TreeSet {
         this.#tree.push(el);
     }
 
+    #rebalance() {
+
+    }
+
     delete(el) {
 
     }
@@ -17,11 +21,11 @@ class TreeSet {
     }
 
     leftChild(elIndex) {
-
+        return this.#tree[2*elIndex + 1] ?? null;
     }
 
     rightChild(elIndex) {
-
+        return this.#tree[2*elIndex + 2] ?? null;
     }
 
     parent(elIndex) {
