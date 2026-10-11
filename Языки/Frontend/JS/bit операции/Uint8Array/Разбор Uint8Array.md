@@ -21,6 +21,6 @@ function getBit(i) {
   return (bits[i >> 3] >> (i & 7)) & 1;
 }
 
-setBit(9999, 1);
+setBit(9999, 12);
 console.log(getBit(9999)); // 1++
 ```
