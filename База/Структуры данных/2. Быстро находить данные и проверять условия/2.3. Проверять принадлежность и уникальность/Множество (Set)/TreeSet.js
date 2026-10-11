@@ -32,6 +32,7 @@ class TreeSet {
 
     add(el, parent) {
         if (this.#debug) {
+            console.log('-------------------');
             console.log('Add: ', el);
         }
         if (this.#leader === null) {
@@ -101,6 +102,7 @@ class TreeSet {
 console.log('Tree Set')
 
 const tree = new TreeSet(true);
+
 tree.add(1);
 console.log(tree.tree());
 printArrayAsTree(tree.tree());
