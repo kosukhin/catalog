@@ -104,53 +104,40 @@ console.log('Tree Set')
 const tree = new TreeSet(true);
 
 tree.add(1);
-console.log(tree.tree());
 printArrayAsTree(tree.tree());
 
 tree.add(4);
-console.log(tree.tree());
 printArrayAsTree(tree.tree());
 
 tree.add(21);
-console.log(tree.tree());
 printArrayAsTree(tree.tree());
 
 tree.add(7);
-console.log(tree.tree());
 printArrayAsTree(tree.tree());
 
 tree.add(19);
-console.log(tree.tree());
 printArrayAsTree(tree.tree());
 
 tree.add(22);
-console.log(tree.tree());
 printArrayAsTree(tree.tree());
 
 tree.add(25);
-console.log(tree.tree());
 printArrayAsTree(tree.tree());
 
 tree.add(10);
-console.log(tree.tree());
 printArrayAsTree(tree.tree());
 
 tree.add(26);
-console.log(tree.tree());
 printArrayAsTree(tree.tree());
 
 tree.add(27);
-console.log(tree.tree());
 printArrayAsTree(tree.tree());
 
 tree.add(28);
-console.log(tree.tree());
 printArrayAsTree(tree.tree());
 
 tree.add(11);
-console.log(tree.tree());
 printArrayAsTree(tree.tree());
 
 tree.add(12);
-console.log(tree.tree());
 printArrayAsTree(tree.tree());
