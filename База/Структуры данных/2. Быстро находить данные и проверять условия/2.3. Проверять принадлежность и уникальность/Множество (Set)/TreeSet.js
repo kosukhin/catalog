@@ -23,6 +23,8 @@ class TreeSet {
     // Перестроить дерево для поддержания инварианта бинарного дерева
     #binaryTreeInvariant(elIndex) {
         const parent = this.parent(elIndex);
+        const parentLeft = this.leftChild(parent);
+        const parentRight = this.rightChild(parent);
     }
 
     // Пройти по дереву снизу вверх чтобы проверить его сбалансированность
