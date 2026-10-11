@@ -1,101 +1,88 @@
 export function printArrayAsTree(arr) {
-    if (!arr || arr.length === 0 || arr[0] == null) return;
+    if (!arr?.length || arr[0] == null) return;
 
     const nodes = [];
 
-    // Собираем существующие узлы и их связи
-    function collect(idx, depth) {
-        if (idx >= arr.length || arr[idx] == null) return;
+    function build(idx, depth = 0) {
+        if (idx >= arr.length || arr[idx] == null) return null;
 
         const node = {
-            idx,
-            depth,
             value: String(arr[idx]),
-            left: null,
-            right: null,
+            depth,
+            left: build(2 * idx + 1, depth + 1),
+            right: build(2 * idx + 2, depth + 1),
             x: 0
         };
 
         nodes.push(node);
-
-        node.left = collect(idx * 2 + 1, depth + 1);
-        node.right = collect(idx * 2 + 2, depth + 1);
-
         return node;
     }
 
-    const root = collect(0, 0);
-    const levels = [];
-
-    // Группируем узлы по уровням
-    for (const node of nodes) {
-        if (!levels[node.depth]) levels[node.depth] = [];
-        levels[node.depth].push(node);
-    }
-
-    // Располагаем узлы каждого уровня с минимальным шагом
+    const root = build(0);
     const gap = 3;
+    let nextX = 0;
 
-    for (const level of levels) {
-        let x = 0;
-
-        for (const node of level) {
-            node.x = x;
-            x += node.value.length + gap;
-        }
-    }
-
-    // Корректируем позиции снизу вверх:
-    // родитель располагается между своими детьми
-    function position(node) {
+    // Размещаем узлы снизу вверх.
+    // Каждый узел занимает место, достаточное для его значения.
+    function layout(node) {
         if (!node) return;
 
-        position(node.left);
-        position(node.right);
+        layout(node.left);
+        layout(node.right);
 
         if (node.left && node.right) {
             node.x = Math.floor(
                 (node.left.x + node.right.x) / 2
             );
         } else if (node.left) {
-            node.x = node.left.x + 2;
+            node.x = node.left.x + node.left.value.length + gap;
         } else if (node.right) {
-            node.x = node.right.x - 2;
+            node.x = node.right.x - node.value.length - gap;
+        } else {
+            node.x = nextX;
+            nextX += node.value.length + gap;
         }
     }
 
-    position(root);
+    layout(root);
 
-    // Для более компактного вывода используем координаты узлов
+    // Сдвигаем дерево вправо, если координаты отрицательные.
     const minX = Math.min(...nodes.map(n => n.x));
     for (const node of nodes) node.x -= minX;
 
-    const maxDepth = Math.max(...nodes.map(n => n.depth));
-    const lines = Array.from(
-        { length: maxDepth * 2 + 1 },
-        () => []
-    );
+    const height = Math.max(...nodes.map(n => n.depth)) * 2 + 1;
+    const grid = Array.from({ length: height }, () => []);
 
     function put(row, col, text) {
-        while (lines[row].length < col) lines[row].push(" ");
-        for (const ch of text) lines[row].push(ch);
+        for (let i = 0; i < text.length; i++) {
+            const x = col + i;
+            while (grid[row].length <= x) grid[row].push(" ");
+            grid[row][x] = text[i];
+        }
     }
 
-    // Рисуем связи, затем значения узлов
-    for (const node of nodes) {
+    function draw(node) {
+        if (!node) return;
+
         const row = node.depth * 2;
         put(row, node.x, node.value);
 
         if (node.left) {
-            put(row + 1, Math.max(0, node.left.x + 1), "/");
+            put(row + 1, Math.floor((node.x + node.left.x) / 2), "/");
+            draw(node.left);
         }
 
         if (node.right) {
-            put(row + 1, node.x + node.value.length + 1, "\\");
+            put(row + 1, Math.floor(
+                (node.x + node.value.length + node.right.x) / 2
+            ), "\\");
+            draw(node.right);
         }
     }
 
-    for (const line of lines) {
+    draw(root);
+
+    for (const line of grid) {
         const text = line.join("").trimEnd();
         if (text.trim()) console.log(text);
     }
