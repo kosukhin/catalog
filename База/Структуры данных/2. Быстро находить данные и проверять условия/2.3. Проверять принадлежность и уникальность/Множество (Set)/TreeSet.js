@@ -1,8 +1,11 @@
+/**
+ * Берем за основу AVL дерево
+ */
 class TreeSet {
     #tree = [];
 
     add(el) {
-
+        this.#tree.push(el);
     }
 
     delete(el) {
@@ -18,6 +21,10 @@ class TreeSet {
     }
 
     rightChild(elIndex) {
+
+    }
+
+    parent(elIndex) {
 
     }
 }
