@@ -1,5 +1,5 @@
 class TreeSet {
-
+    #tree = [];
 }
 
 console.log('Tree Set')
