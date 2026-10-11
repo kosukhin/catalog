@@ -5,6 +5,7 @@ class TreeSet {
     #tree = [];
 
     add(el) {
+        // Добавляем всегда в конец
         this.#tree.push(el);
         this.#binaryTreeInvariant(this.#tree.length - 1);
         this.#rebalance(this.#tree.length - 1);
@@ -17,7 +18,8 @@ class TreeSet {
 
     // Перестроить дерево для поддержания инварианта бинарного дерева
     #binaryTreeInvariant(elIndex) {
-
+        const parent = this.parent(elIndex);
+        
     }
 
     // Пройти по дереву снизу вверх чтобы проверить его сбалансированность
