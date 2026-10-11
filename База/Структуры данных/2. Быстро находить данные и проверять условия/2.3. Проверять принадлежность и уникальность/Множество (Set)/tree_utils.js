@@ -69,8 +69,8 @@ export function treeToArray(leader) {
         if (node === null) {
             continue;
         }
-        queue.push(node.left ?? null);
-        queue.push(node.right ?? null);
+        queue.push(node?.left ?? null);
+        queue.push(node?.right ?? null);
     }
     return result;
 }
