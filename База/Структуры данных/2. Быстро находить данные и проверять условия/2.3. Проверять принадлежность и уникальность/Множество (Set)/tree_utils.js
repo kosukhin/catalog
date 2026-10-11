@@ -61,16 +61,25 @@ export function printArrayAsTree(arr) {
 }
 
 export function treeToArray(leader) {
+    if (!leader) return []; // Если дерево пустое
+
     const queue = [leader];
     const result = [];
+
     while (queue.length) {
         const node = queue.shift();
-        result.push(node?.value ?? null);
-        if (node === null) {
-            continue;
+
+        if (node !== null && node !== undefined) {
+            result.push(node.value);
+            queue.push(node.left ?? null);
+            queue.push(node.right ?? null);
+        } else {
+            result.push(null);
         }
-        queue.push(node?.left ?? null);
-        queue.push(node?.right ?? null);
     }
+
+    // Отрезаем лишние null с конца массива
+    while (result[result.length - 1] === null) result.pop();
+
     return result;
 }
