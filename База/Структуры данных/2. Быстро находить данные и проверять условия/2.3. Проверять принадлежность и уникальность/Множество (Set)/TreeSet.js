@@ -2,4 +2,4 @@ class TreeSet {
 
 }
 
-console.log('Tree set')
+console.log('Tree Set')
