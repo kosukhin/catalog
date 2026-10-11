@@ -24,8 +24,8 @@ class TreeSet {
     #binaryTreeInvariant(elIndex) {
         const elValue = this.#tree[elIndex];
         const parent = this.#tree[this.parentIndex(elIndex)];
-        const parentLeft = this.leftChildIndex(parent);
-        const parentRight = this.rightChildIndex(parent);
+        const parentLeft = this.#tree[this.leftChildIndex(parent)];
+        const parentRight = this.#tree[this.rightChildIndex(parent)];
     }
 
     // Пройти по дереву снизу вверх чтобы проверить его сбалансированность
