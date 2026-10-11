@@ -143,34 +143,34 @@ for(let i = 0; i < 1_000; i++) {
     badUrls.push('http://bad-url-' + i + '.com');
 }
 
-const correct_urls = [];
+const correctUrls = [];
 for(let i = 0; i < 10_000; i++) {
-    correct_urls.push('http://correct-url-' + i + '.com');
+    correctUrls.push('http://correct-url-' + i + '.com');
 }
 
-const random_urls = shuffle([].concat(correct_urls, badUrls));
+const randomUrls = shuffle([].concat(correctUrls, badUrls));
 
 
-const bad_urls_set = new BloomFilter(random_urls.length);
+const badUrlsSet = new BloomFilter(randomUrls.length);
 
 badUrls.forEach(url => {
-    bad_urls_set.add(urlHashes.bind(null, url));
+    badUrlsSet.add(urlHashes.bind(null, url));
 });
 
-let good_urls_count = 0;
+let goodUrlsCount = 0;
 
-random_urls.forEach(url => {
-    if (!bad_urls_set.contains(urlHashes.bind(null, url))) {
-        good_urls_count += 1;
+randomUrls.forEach(url => {
+    if (!badUrlsSet.contains(urlHashes.bind(null, url))) {
+        goodUrlsCount += 1;
     }
 });
 
-const false_positives = correct_urls.length - good_urls_count;
+const falsePositives = correctUrls.length - goodUrlsCount;
 
 console.log(
-    'Total urls = ', random_urls.length, '\n',
+    'Total urls = ', randomUrls.length, '\n',
     'bad urls', badUrls.length, '\n',
-    'good urls', correct_urls.length, '\n',
-    'bloom filter good urls = ', good_urls_count,  '\n',
-    'bloom filter false positives', false_positives
+    'good urls', correctUrls.length, '\n',
+    'bloom filter good urls = ', goodUrlsCount,  '\n',
+    'bloom filter false positives', falsePositives
 );
