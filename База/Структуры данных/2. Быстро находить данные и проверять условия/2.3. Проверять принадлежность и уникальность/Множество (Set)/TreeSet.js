@@ -13,13 +13,13 @@ class TreeSet {
 
     // По значению найти индекс
     findIndex(el) {
-
+        
     }
 
     // Перестроить дерево для поддержания инварианта бинарного дерева
     #binaryTreeInvariant(elIndex) {
         const parent = this.parent(elIndex);
-        
+
     }
 
     // Пройти по дереву снизу вверх чтобы проверить его сбалансированность
