@@ -67,6 +67,8 @@ export function treeToArray(leader) {
         const node = queue.shift();
         result.push(node?.value ?? null);
         if (node === null) {
+            queue.push(null);
+            queue.push(null);
             continue;
         }
         queue.push(node.left ?? null);
