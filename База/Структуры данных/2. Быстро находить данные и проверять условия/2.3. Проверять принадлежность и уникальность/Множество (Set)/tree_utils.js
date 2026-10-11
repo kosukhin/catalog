@@ -68,9 +68,13 @@ export function treeToArray(leader) {
         result.push(node.value);
         if (node.left) {
             queue.push(node.left)
+        } else {
+            result.push(null)
         }
         if (node.right) {
             queue.push(node.right);
+        } else {
+            result.push(null)
         }
     }
     return result;
