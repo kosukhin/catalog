@@ -59,3 +59,16 @@ export function printArrayAsTree(arr) {
         }
     });
 }
+
+export function treeToArray(leader) {
+    const queue = [leader];
+    while (queue.length) {
+        const node = queue.shift();
+        if (node.left) {
+            queue.push(node.left)
+        }
+        if (node.right) {
+            queue.push(node.right);
+        }
+    }
+}
