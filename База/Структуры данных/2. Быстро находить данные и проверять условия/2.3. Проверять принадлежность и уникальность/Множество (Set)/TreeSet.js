@@ -1,4 +1,4 @@
-import { printArrayAsTree, treeToArray } from 'binary-tree-printer';
+import { printAsciiTree } from 'binary-tree-printer';
 
 class Node {
     _height = 0;
@@ -104,40 +104,40 @@ console.log('Tree Set')
 const tree = new TreeSet(true);
 
 tree.add(1);
-printArrayAsTree(tree.tree());
+printAsciiTree(tree.leader());
 
 tree.add(4);
-printArrayAsTree(tree.tree());
+printAsciiTree(tree.leader());
 
 tree.add(21);
-printArrayAsTree(tree.tree());
+printAsciiTree(tree.leader());
 
 tree.add(7);
-printArrayAsTree(tree.tree());
+printAsciiTree(tree.leader());
 
 tree.add(19);
-printArrayAsTree(tree.tree());
+printAsciiTree(tree.leader());
 
 tree.add(22);
-printArrayAsTree(tree.tree());
+printAsciiTree(tree.leader());
 
 tree.add(25);
-printArrayAsTree(tree.tree());
+printAsciiTree(tree.leader());
 
 tree.add(10);
-printArrayAsTree(tree.tree());
+printAsciiTree(tree.leader());
 
 tree.add(26);
-printArrayAsTree(tree.tree());
+printAsciiTree(tree.leader());
 
 tree.add(27);
-printArrayAsTree(tree.tree());
+printAsciiTree(tree.leader());
 
 tree.add(28);
-printArrayAsTree(tree.tree());
+printAsciiTree(tree.leader());
 
 tree.add(11);
-printArrayAsTree(tree.tree());
+printAsciiTree(tree.leader());
 
 tree.add(12);
-printArrayAsTree(tree.tree());
+printAsciiTree(tree.leader());
