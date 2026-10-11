@@ -1,7 +1,23 @@
-# Круг
 
-Просто пример
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Красный круг на Canvas</title>
+</head>
+<body>
 
-```html
-<p>hello</p>
-```
+  <canvas id="myCanvas" width="320" height="180"></canvas>
+
+  <script>
+    const canvas = document.getElementById("myCanvas");
+    const ctx = canvas.getContext("2d");
+
+    ctx.beginPath();
+    ctx.arc(160, 90, 45, 0, Math.PI * 2);
+    ctx.fillStyle = "red";
+    ctx.fill();
+  </script>
+
+</body>
+</html>
