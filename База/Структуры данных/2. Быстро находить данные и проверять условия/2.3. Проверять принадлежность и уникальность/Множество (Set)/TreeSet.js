@@ -94,6 +94,8 @@ tree.add(10);
 tree.add(26);
 tree.add(27);
 tree.add(28);
+tree.add(11);
+tree.add(12);
 
 console.log(tree.tree());
 printArrayAsTree(tree.tree());
