@@ -60,26 +60,33 @@ export function printArrayAsTree(arr) {
     });
 }
 
-export function treeToArray(leader) {
-    if (!leader) return []; // Если дерево пустое
+export function treeToArray(root) {
+    if (!root) return [];
 
-    const queue = [leader];
     const result = [];
+    const queue = [{ node: root, index: 0 }];
 
-    while (queue.length) {
-        const node = queue.shift();
+    let head = 0;
 
-        if (node !== null && node !== undefined) {
-            result.push(node.value);
-            queue.push(node.left ?? null);
-            queue.push(node.right ?? null);
-        } else {
-            result.push(null);
+    while (head < queue.length) {
+        const { node, index } = queue[head++];
+
+        result[index] = node.value;
+
+        if (node.left) {
+            queue.push({
+                node: node.left,
+                index: 2 * index + 1
+            });
+        }
+
+        if (node.right) {
+            queue.push({
+                node: node.right,
+                index: 2 * index + 2
+            });
         }
     }
 
-    // Отрезаем лишние null с конца массива
-    while (result[result.length - 1] === null) result.pop();
-
-    return result;
+    return result.map(value => value ?? null);
 }
