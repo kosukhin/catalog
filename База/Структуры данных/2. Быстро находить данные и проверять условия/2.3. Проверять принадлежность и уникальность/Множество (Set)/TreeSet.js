@@ -46,6 +46,7 @@ class TreeSet {
         if ((iamLeft && elValue > parent) || (iamRight && elValue < parent)) {
             this.#tree[elIndex] = parent;
             this.#tree[parentIndex] = elValue;
+            this.#binaryTreeInvariant(parentIndex);
         }
     }
 
