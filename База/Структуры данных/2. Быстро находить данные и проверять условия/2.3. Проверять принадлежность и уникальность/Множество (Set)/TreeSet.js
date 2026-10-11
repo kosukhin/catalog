@@ -6,9 +6,22 @@ class TreeSet {
 
     add(el) {
         this.#tree.push(el);
+        this.#binaryTreeInvariant(this.#tree.length - 1);
+        this.#rebalance(this.#tree.length - 1);
     }
 
-    #rebalance() {
+    // По значению найти индекс
+    findIndex(el) {
+
+    }
+
+    // Перестроить дерево для поддержания инварианта бинарного дерева
+    #binaryTreeInvariant(elIndex) {
+
+    }
+
+    // Пройти по дереву снизу вверх чтобы проверить его сбалансированность
+    #rebalance(elIndex) {
 
     }
 
@@ -29,7 +42,7 @@ class TreeSet {
     }
 
     parent(elIndex) {
-
+        return (elIndex - 1) / 2 ?? null;
     }
 }
 
