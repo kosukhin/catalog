@@ -140,4 +140,4 @@ tree.add(11);
 printAsciiTree(tree.leader());
 
 tree.add(12);
-printAsciiTree(tree.leader());
+console.log(printAsciiTree(tree.leader()));
