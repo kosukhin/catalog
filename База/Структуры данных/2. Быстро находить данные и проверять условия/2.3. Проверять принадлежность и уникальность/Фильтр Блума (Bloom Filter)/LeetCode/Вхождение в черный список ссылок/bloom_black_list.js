@@ -34,7 +34,11 @@ class BloomFilter {
         return Math.abs(hash % this.#size);
     }
 
-    setBitIndex() {
+    bitIndexValue(index) {
+
+    }
+
+    bitIndexValuePut(index, value) {
 
     }
 }
