@@ -73,8 +73,20 @@ class TreeSet {
 
     }
 
-    contains(el) {
-
+    contains(el, node) {
+        if (!node) {
+            node = this.#leader;
+        }
+        if (node.value === el) {
+            return true;
+        }
+        if (el < node.value && node.left) {
+            return this.contains(el, node.left);
+        }
+        if (el > node.value && node.right) {
+            return this.contains(el, node.right);
+        }
+        return false;
     }
 }
 
@@ -120,3 +132,6 @@ console.log(printAsciiTree(tree.leader()));
 
 tree.add(12);
 console.log(printAsciiTree(tree.leader()));
+
+console.log('have 4', tree.contains(4));
+console.log('have 24', tree.contains(24));
