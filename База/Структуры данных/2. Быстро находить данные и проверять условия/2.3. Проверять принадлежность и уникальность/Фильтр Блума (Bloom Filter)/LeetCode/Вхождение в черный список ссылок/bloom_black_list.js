@@ -6,19 +6,19 @@
  * множество уже добавленных в фильтр элементов
  */
 class BloomFilter {
-    #bitset; // Карта битов
+    #bits; // Карта битов
     #size; // Размер фильтра
 
     constructor(size) {
         this.#size = size;
-        this.#bitset = new Uint8Array(size);
+        this.#bits = new Uint8Array(size);
     }
 
     // Проверить содержит ли фильтр значение по хэшам
     contains(hashesFn) {
         const hashes = hashesFn();
         return hashes.every((hash) => {
-            return this.#bitset[this.bitIndex(hash)] === 1;
+            return this.#bits[this.bitIndex(hash)] === 1;
         });
     }
 
@@ -26,7 +26,7 @@ class BloomFilter {
     add(hashesFn) {
         const hashes = hashesFn();
         hashes.forEach(hash => {
-            this.#bitset[this.bitIndex(hash)] = 1;
+            this.#bits[this.bitIndex(hash)] = 1;
         });
     }
 
@@ -35,11 +35,15 @@ class BloomFilter {
     }
 
     bitIndexValue(index) {
-
+        return (this.#bits[index >> 3] >> (index & 7)) & 1
     }
 
     bitIndexValuePut(index, value) {
+        const byte = index >> 3;
+        const mask = 1 << (index & 7);
 
+        if (value) this.#bits[byte] |= mask;
+        else this.#bits[byte] &= ~mask;
     }
 }
 
