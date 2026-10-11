@@ -1,63 +1,104 @@
 export function printArrayAsTree(arr) {
-    if (!arr || arr.length === 0) return;
+    if (!arr || arr.length === 0 || arr[0] == null) return;
 
-    const maxLevel = Math.floor(Math.log2(arr.length));
-    const totalLines = (maxLevel + 1) * 2 - 1;
+    const nodes = [];
 
-    // Создаем массив строк фиксированной ширины для сетки
-    // Ширина зависит от глубины дерева
-    const width = Math.pow(2, maxLevel + 1) * 3;
-    const grid = Array.from({ length: totalLines }, () => Array(width).fill(" "));
+    // Собираем существующие узлы и их связи
+    function collect(idx, depth) {
+        if (idx >= arr.length || arr[idx] == null) return;
 
-    // Функция для рекурсивной отрисовки
-    // idx - индекс в массиве, level - текущий уровень, (left, right) - границы для центрирования
-    function fillGrid(idx, level, left, right) {
-        if (idx >= arr.length || arr[idx] === null || arr[idx] === undefined) return;
+        const node = {
+            idx,
+            depth,
+            value: String(arr[idx]),
+            left: null,
+            right: null,
+            x: 0
+        };
 
-        // Находим середину выделенного под узел пространства
-        const mid = Math.floor((left + right) / 2);
-        const nodeRow = level * 2;
-        const valStr = String(arr[idx]);
+        nodes.push(node);
 
-        // Записываем значение узла в сетку
-        for (let i = 0; i < valStr.length; i++) {
-            if (mid + i < width) {
-                grid[nodeRow][mid + i] = valStr[i];
-            }
-        }
+        node.left = collect(idx * 2 + 1, depth + 1);
+        node.right = collect(idx * 2 + 2, depth + 1);
 
-        // Рисуем левого потомка (2 * idx + 1)
-        const leftIdx = 2 * idx + 1;
-        if (leftIdx < arr.length && arr[leftIdx] !== null && arr[leftIdx] !== undefined) {
-            const childMid = Math.floor((left + mid) / 2);
-            // Черточка строго посередине между родителем и левым ребенком
-            const lineX = Math.floor((mid + childMid) / 2) + 1;
-            grid[nodeRow + 1][lineX] = "/";
-            fillGrid(leftIdx, level + 1, left, mid);
-        }
+        return node;
+    }
 
-        // Рисуем правого потомка (2 * idx + 2)
-        const rightIdx = 2 * idx + 2;
-        if (rightIdx < arr.length && arr[rightIdx] !== null && arr[rightIdx] !== undefined) {
-            const childMid = Math.floor((mid + right) / 2);
-            // Черточка строго посередине между родителем и правым ребенком
-            const lineX = Math.floor((mid + childMid) / 2);
-            grid[nodeRow + 1][lineX] = "\\";
-            fillGrid(rightIdx, level + 1, mid, right);
+    const root = collect(0, 0);
+    const levels = [];
+
+    // Группируем узлы по уровням
+    for (const node of nodes) {
+        if (!levels[node.depth]) levels[node.depth] = [];
+        levels[node.depth].push(node);
+    }
+
+    // Располагаем узлы каждого уровня с минимальным шагом
+    const gap = 3;
+
+    for (const level of levels) {
+        let x = 0;
+
+        for (const node of level) {
+            node.x = x;
+            x += node.value.length + gap;
         }
     }
 
-    // Запускаем заполнение сетки от корня (индекс 0)
-    fillGrid(0, 0, 0, width);
+    // Корректируем позиции снизу вверх:
+    // родитель располагается между своими детьми
+    function position(node) {
+        if (!node) return;
 
-    // Выводим сетку в консоль, склеивая массивы символов в строки
-    grid.forEach(row => {
-        const lineStr = row.join("");
-        // Печатаем строку, только если она не пустая (чтобы убрать лишние пробелы в конце)
-        if (lineStr.trim().length > 0) {
-            console.log(lineStr.trimEnd());
+        position(node.left);
+        position(node.right);
+
+        if (node.left && node.right) {
+            node.x = Math.floor(
+                (node.left.x + node.right.x) / 2
+            );
+        } else if (node.left) {
+            node.x = node.left.x + 2;
+        } else if (node.right) {
+            node.x = node.right.x - 2;
         }
-    });
+    }
+
+    position(root);
+
+    // Для более компактного вывода используем координаты узлов
+    const minX = Math.min(...nodes.map(n => n.x));
+    for (const node of nodes) node.x -= minX;
+
+    const maxDepth = Math.max(...nodes.map(n => n.depth));
+    const lines = Array.from(
+        { length: maxDepth * 2 + 1 },
+        () => []
+    );
+
+    function put(row, col, text) {
+        while (lines[row].length < col) lines[row].push(" ");
+        for (const ch of text) lines[row].push(ch);
+    }
+
+    // Рисуем связи, затем значения узлов
+    for (const node of nodes) {
+        const row = node.depth * 2;
+        put(row, node.x, node.value);
+
+        if (node.left) {
+            put(row + 1, Math.max(0, node.left.x + 1), "/");
+        }
+
+        if (node.right) {
+            put(row + 1, node.x + node.value.length + 1, "\\");
+        }
+    }
+
+    for (const line of lines) {
+        const text = line.join("").trimEnd();
+        if (text.trim()) console.log(text);
+    }
 }
 
 export function treeToArray(root) {
