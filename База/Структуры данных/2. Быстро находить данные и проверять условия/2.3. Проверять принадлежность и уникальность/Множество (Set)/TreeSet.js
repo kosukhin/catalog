@@ -48,20 +48,9 @@ class TreeSet {
 
 console.log('Tree Set')
 
-const readline = require('node:readline');
-
-function tick() {
-    const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout
-    });
-    rl.question('Как вас зовут? ', (answer) => {
-        console.log(`Привет, ${answer}!`);
-        rl.close();
-        if (answer !== 'x') {
-            tick();
-        }
-    });
-}
-
-tick();
+const tree = new TreeSet();
+tree.add(1);
+tree.add(4);
+tree.add(21);
+tree.add(7);
+tree.add(19);
