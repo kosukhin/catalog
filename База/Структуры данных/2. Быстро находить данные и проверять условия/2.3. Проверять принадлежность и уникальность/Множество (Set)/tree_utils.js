@@ -65,10 +65,10 @@ export function treeToArray(leader) {
     const result = [];
     while (queue.length) {
         const node = queue.shift();
+        result.push(node?.value ?? null);
         if (node === null) {
             continue;
         }
-        result.push(node.value);
         queue.push(node.left ?? null);
         queue.push(node.right ?? null);
     }
