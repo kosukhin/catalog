@@ -1,3 +1,5 @@
+import { printArrayAsTree } from './tree_utils.js';
+
 /**
  * Берем за основу AVL дерево
  */
@@ -77,3 +79,6 @@ tree.add(4);
 tree.add(21);
 tree.add(7);
 tree.add(19);
+
+console.log(tree.tree());
+printArrayAsTree(tree.tree());
