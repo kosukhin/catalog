@@ -33,7 +33,7 @@ class TreeSet {
     add(el, parent) {
         if (this.#debug) {
             console.log('-------------------');
-            console.log('Add: ', el);
+            console.log('Add: ', el, parent?.value);
         }
         if (this.#leader === null) {
             this.#leader = new Node(el);
