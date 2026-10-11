@@ -62,8 +62,10 @@ export function printArrayAsTree(arr) {
 
 export function treeToArray(leader) {
     const queue = [leader];
+    const result = [];
     while (queue.length) {
         const node = queue.shift();
+        result.push(node.value);
         if (node.left) {
             queue.push(node.left)
         }
@@ -71,4 +73,5 @@ export function treeToArray(leader) {
             queue.push(node.right);
         }
     }
+    return result;
 }
