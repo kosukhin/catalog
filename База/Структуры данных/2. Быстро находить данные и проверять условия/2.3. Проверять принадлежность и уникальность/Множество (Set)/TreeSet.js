@@ -104,40 +104,40 @@ console.log('Tree Set')
 const tree = new TreeSet(true);
 
 tree.add(1);
-printAsciiTree(tree.leader());
+console.log(printAsciiTree(tree.leader()));
 
 tree.add(4);
-printAsciiTree(tree.leader());
+console.log(printAsciiTree(tree.leader()));
 
 tree.add(21);
-printAsciiTree(tree.leader());
+console.log(printAsciiTree(tree.leader()));
 
 tree.add(7);
-printAsciiTree(tree.leader());
+console.log(printAsciiTree(tree.leader()));
 
 tree.add(19);
-printAsciiTree(tree.leader());
+console.log(printAsciiTree(tree.leader()));
 
 tree.add(22);
-printAsciiTree(tree.leader());
+console.log(printAsciiTree(tree.leader()));
 
 tree.add(25);
-printAsciiTree(tree.leader());
+console.log(printAsciiTree(tree.leader()));
 
 tree.add(10);
-printAsciiTree(tree.leader());
+console.log(printAsciiTree(tree.leader()));
 
 tree.add(26);
-printAsciiTree(tree.leader());
+console.log(printAsciiTree(tree.leader()));
 
 tree.add(27);
-printAsciiTree(tree.leader());
+console.log(printAsciiTree(tree.leader()));
 
 tree.add(28);
-printAsciiTree(tree.leader());
+console.log(printAsciiTree(tree.leader()));
 
 tree.add(11);
-printAsciiTree(tree.leader());
+console.log(printAsciiTree(tree.leader()));
 
 tree.add(12);
 console.log(printAsciiTree(tree.leader()));
