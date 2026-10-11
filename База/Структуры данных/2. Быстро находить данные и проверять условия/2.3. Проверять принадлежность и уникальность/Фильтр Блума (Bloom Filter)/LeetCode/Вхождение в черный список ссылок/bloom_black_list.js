@@ -11,7 +11,7 @@ class BloomFilter {
 
     constructor(size) {
         this.#size = size;
-        this.#bitset = new Array(size).fill(0);
+        this.#bitset = new Uint8Array(size);
     }
 
     // Проверить содержит ли фильтр значение по хэшам
@@ -32,6 +32,10 @@ class BloomFilter {
 
     bitIndex(hash) {
         return Math.abs(hash % this.#size);
+    }
+
+    setBitIndex() {
+
     }
 }
 
