@@ -46,16 +46,16 @@ class TreeSet {
             return;
         }
         if (parent.value > el) {
-            if (parent.right) {
-                this.add(el, parent.right);
-            } else {
-                parent.right = new Node(el);
-            }
-        } else if (parent.value < el) {
             if (parent.left) {
                 this.add(el, parent.left);
             } else {
                 parent.left = new Node(el);
+            }
+        } else if (parent.value < el) {
+            if (parent.right) {
+                this.add(el, parent.right);
+            } else {
+                parent.right = new Node(el);
             }
         }
     }
