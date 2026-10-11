@@ -60,17 +60,8 @@ class TreeSet {
         }
     }
 
-    tree() {
-        return treeToArray(this.#leader);
-    }
-
     leader() {
         return this.#leader;
-    }
-
-    // По значению найти индекс
-    findIndex(el) {
-        return 1;
     }
 
     // Пройти по дереву снизу вверх чтобы проверить его сбалансированность
@@ -84,18 +75,6 @@ class TreeSet {
 
     contains(el) {
 
-    }
-
-    leftChildIndex(elIndex) {
-        return 2*elIndex + 1;
-    }
-
-    rightChildIndex(elIndex) {
-        return 2*elIndex + 2;
-    }
-
-    parentIndex(elIndex) {
-        return (elIndex - 1) / 2;
     }
 }
 
