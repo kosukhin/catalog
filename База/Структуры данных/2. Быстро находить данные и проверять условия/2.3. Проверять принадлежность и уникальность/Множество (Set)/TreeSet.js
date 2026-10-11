@@ -1,4 +1,4 @@
-import { printArrayAsTree } from './tree_utils.js';
+import { printArrayAsTree, treeToArray } from './tree_utils.js';
 
 class Node {
     _height = 0;
@@ -57,6 +57,10 @@ class TreeSet {
                 parent.left = new Node(el);
             }
         }
+    }
+
+    tree() {
+        return treeToArray(this.#leader);
     }
 
     leader() {
