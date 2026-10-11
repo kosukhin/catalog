@@ -138,9 +138,9 @@ function djb2(str) {
   return hash >>> 0;
 }
 
-const bad_urls = [];
+const badUrls = [];
 for(let i = 0; i < 1_000; i++) {
-    bad_urls.push('http://bad-url-' + i + '.com');
+    badUrls.push('http://bad-url-' + i + '.com');
 }
 
 const correct_urls = [];
@@ -148,12 +148,12 @@ for(let i = 0; i < 10_000; i++) {
     correct_urls.push('http://correct-url-' + i + '.com');
 }
 
-const random_urls = shuffle([].concat(correct_urls, bad_urls));
+const random_urls = shuffle([].concat(correct_urls, badUrls));
 
 
 const bad_urls_set = new BloomFilter(random_urls.length);
 
-bad_urls.forEach(url => {
+badUrls.forEach(url => {
     bad_urls_set.add(urlHashes.bind(null, url));
 });
 
@@ -169,7 +169,7 @@ const false_positives = correct_urls.length - good_urls_count;
 
 console.log(
     'Total urls = ', random_urls.length, '\n',
-    'bad urls', bad_urls.length, '\n',
+    'bad urls', badUrls.length, '\n',
     'good urls', correct_urls.length, '\n',
     'bloom filter good urls = ', good_urls_count,  '\n',
     'bloom filter false positives', false_positives
