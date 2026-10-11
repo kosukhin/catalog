@@ -8,8 +8,16 @@ class TreeSet {
     #tree = [];
     // Высоты узлов для балансировки
     #hights = [];
+    #debug = false;
+
+    constructor(debug = false) {
+        this.#debug = debug
+    }
 
     add(el) {
+        if (this.#debug) {
+            console.log('Add: ', el);
+        }
         // Добавляем всегда в конец
         this.#tree.push(el);
         this.#hights.push(0);
@@ -73,7 +81,7 @@ class TreeSet {
 
 console.log('Tree Set')
 
-const tree = new TreeSet();
+const tree = new TreeSet(true);
 tree.add(1);
 tree.add(4);
 tree.add(21);
