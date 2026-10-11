@@ -19,34 +19,41 @@ export function printArrayAsTree(arr) {
     }
 
     const root = build(0);
-    const gap = 3;
-    let nextX = 0;
+    const gap = 2;
 
-    // Размещаем узлы снизу вверх.
-    // Каждый узел занимает место, достаточное для его значения.
-    function layout(node) {
+    // Вычисляем ширину каждого поддерева
+    function measure(node) {
+        if (!node) return 0;
+
+        node.width = Math.max(
+            node.value.length,
+            measure(node.left) + measure(node.right) + gap
+        );
+
+        return node.width;
+    }
+
+    measure(root);
+
+    // Расставляем узлы внутри выделенного пространства
+    function layout(node, left, right) {
         if (!node) return;
 
-        layout(node.left);
-        layout(node.right);
+        node.x = Math.floor((left + right) / 2);
 
         if (node.left && node.right) {
-            node.x = Math.floor(
-                (node.left.x + node.right.x) / 2
-            );
+            const mid = Math.floor((left + right) / 2);
+            layout(node.left, left, mid - gap);
+            layout(node.right, mid + gap, right);
         } else if (node.left) {
-            node.x = node.left.x + node.left.value.length + gap;
+            layout(node.left, left, right - gap);
         } else if (node.right) {
-            node.x = node.right.x - node.value.length - gap;
-        } else {
-            node.x = nextX;
-            nextX += node.value.length + gap;
+            layout(node.right, left + gap, right);
         }
     }
 
-    layout(root);
+    layout(root, 0, root.width * 2);
 
-    // Сдвигаем дерево вправо, если координаты отрицательные.
     const minX = Math.min(...nodes.map(n => n.x));
     for (const node of nodes) node.x -= minX;
 
@@ -65,7 +72,9 @@ export function printArrayAsTree(arr) {
         if (!node) return;
 
         const row = node.depth * 2;
-        put(row, node.x, node.value);
+        const start = node.x - Math.floor(node.value.length / 2);
+
+        put(row, start, node.value);
 
         if (node.left) {
             put(row + 1, Math.floor((node.x + node.left.x) / 2), "/");
@@ -73,9 +82,7 @@ export function printArrayAsTree(arr) {
         }
 
         if (node.right) {
-            put(row + 1, Math.floor(
-                (node.x + node.value.length + node.right.x) / 2
-            ), "\\");
+            put(row + 1, Math.floor((node.x + node.right.x) / 2), "\\");
             draw(node.right);
         }
     }
@@ -87,6 +94,7 @@ export function printArrayAsTree(arr) {
         if (text.trim()) console.log(text);
     }
 }
+
 
 export function treeToArray(root) {
     if (!root) return [];
