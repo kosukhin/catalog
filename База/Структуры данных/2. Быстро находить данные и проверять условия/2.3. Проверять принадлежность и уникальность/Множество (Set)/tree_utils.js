@@ -1,73 +1,61 @@
 export function printArrayAsTree(arr) {
     if (!arr || arr.length === 0) return;
 
-    // 1. Считаем максимальную глубину дерева на основе длины массива
     const maxLevel = Math.floor(Math.log2(arr.length));
+    const totalLines = (maxLevel + 1) * 2 - 1;
 
-    // Структура для хранения координат: [{ val, level, x, line }]
-    const positions = new Array(arr.length).fill(null);
+    // Создаем массив строк фиксированной ширины для сетки
+    // Ширина зависит от глубины дерева
+    const width = Math.pow(2, maxLevel + 1) * 3;
+    const grid = Array.from({ length: totalLines }, () => Array(width).fill(" "));
 
-    // Очередь для BFS: [индекс, уровень, координата_X]
-    // Начинаем с корня (индекс 0) в центре (координата X зависит от глубины)
-    const initialX = Math.pow(2, maxLevel) * 3;
-    let queue = [{ idx: 0, level: 0, x: initialX }];
+    // Функция для рекурсивной отрисовки
+    // idx - индекс в массиве, level - текущий уровень, (left, right) - границы для центрирования
+    function fillGrid(idx, level, left, right) {
+        if (idx >= arr.length || arr[idx] === null || arr[idx] === undefined) return;
 
-    while (queue.length > 0) {
-        const { idx, level, x } = queue.shift();
-        if (idx >= arr.length || arr[idx] === null) continue;
+        // Находим середину выделенного под узел пространства
+        const mid = Math.floor((left + right) / 2);
+        const nodeRow = level * 2;
+        const valStr = String(arr[idx]);
 
-        positions[idx] = { val: arr[idx], level, x };
-
-        // Смещение для потомков текущего уровня
-        const offset = Math.pow(2, maxLevel - level) * 1.5;
-
-        // Левый потомок строго по формуле: 2 * i + 1
-        const leftIdx = 2 * idx + 1;
-        if (leftIdx < arr.length && arr[leftIdx] !== null) {
-            const nextX = x - Math.max(2, Math.floor(offset));
-            positions[leftIdx] = { val: arr[leftIdx], level: level + 1, x: nextX, line: '/' };
-            queue.push({ idx: leftIdx, level: level + 1, x: nextX });
+        // Записываем значение узла в сетку
+        for (let i = 0; i < valStr.length; i++) {
+            if (mid + i < width) {
+                grid[nodeRow][mid + i] = valStr[i];
+            }
         }
 
-        // Правый потомок строго по формуле: 2 * i + 2
+        // Рисуем левого потомка (2 * idx + 1)
+        const leftIdx = 2 * idx + 1;
+        if (leftIdx < arr.length && arr[leftIdx] !== null && arr[leftIdx] !== undefined) {
+            const childMid = Math.floor((left + mid) / 2);
+            // Черточка строго посередине между родителем и левым ребенком
+            const lineX = Math.floor((mid + childMid) / 2) + 1;
+            grid[nodeRow + 1][lineX] = "/";
+            fillGrid(leftIdx, level + 1, left, mid);
+        }
+
+        // Рисуем правого потомка (2 * idx + 2)
         const rightIdx = 2 * idx + 2;
-        if (rightIdx < arr.length && arr[rightIdx] !== null) {
-            const nextX = x + Math.max(2, Math.floor(offset));
-            positions[rightIdx] = { val: arr[rightIdx], level: level + 1, x: nextX, line: '\\' };
-            queue.push({ idx: rightIdx, level: level + 1, x: nextX });
+        if (rightIdx < arr.length && arr[rightIdx] !== null && arr[rightIdx] !== undefined) {
+            const childMid = Math.floor((mid + right) / 2);
+            // Черточка строго посередине между родителем и правым ребенком
+            const lineX = Math.floor((mid + childMid) / 2);
+            grid[nodeRow + 1][lineX] = "\\";
+            fillGrid(rightIdx, level + 1, mid, right);
         }
     }
 
-    // 2. Строим строки для вывода в консоль
-    const lines = Array.from({ length: (maxLevel + 1) * 2 }, () => []);
+    // Запускаем заполнение сетки от корня (индекс 0)
+    fillGrid(0, 0, 0, width);
 
-    positions.forEach((p, idx) => {
-        if (!p || p.val === null) return;
-
-        const nodeRow = p.level * 2;
-        lines[nodeRow].push({ char: String(p.val), x: p.x });
-
-        // Если это потомок, рисуем соединительную линию над ним
-        if (p.level > 0 && p.line) {
-            const lineRow = nodeRow - 1;
-            // Корректируем положение палочки для красоты
-            const lineX = p.line === '/' ? p.x + String(p.val).length : p.x - 1;
-            lines[lineRow].push({ char: p.line, x: lineX });
+    // Выводим сетку в консоль, склеивая массивы символов в строки
+    grid.forEach(row => {
+        const lineStr = row.join("");
+        // Печатаем строку, только если она не пустая (чтобы убрать лишние пробелы в конце)
+        if (lineStr.trim().length > 0) {
+            console.log(lineStr.trimEnd());
         }
-    });
-
-    // 3. Выводим результат в консоль
-    lines.forEach(row => {
-        if (row.length === 0) return;
-        row.sort((a, b) => a.x - b.x);
-
-        let out = "";
-        let cur = 0;
-        row.forEach(item => {
-            if (item.x > cur) out += " ".repeat(item.x - cur);
-            out += item.char;
-            cur = item.x + item.char.length;
-        });
-        console.log(out);
     });
 }
