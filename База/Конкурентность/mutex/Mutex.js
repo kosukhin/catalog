@@ -42,3 +42,6 @@ async function short(params) {
 
 long.call(m1, 1);
 short.call(m1, 2);
+
+long.call(fm1, 1);
+short.call(fm1, 2);
