@@ -7,21 +7,38 @@ class Mutex {
         const promise = new Promise((resolve) => {
             unlock = resolve;
         })
-        this.promise = this.promise.then(() => promise);
+        this.promise = this.promise.then(() => {
+            return new Promise(r => {
+                setTimeout(r, 1000);
+            })
+        }).then(() => promise);
         return unlock;
     }
 }
 
-const m1 = new Mutex();
+class FakeMutex {
+    lock() {
+        return () => {}
+    }
+}
 
-async function print(num) {
+const m1 = new Mutex();
+const fm1 = new FakeMutex();
+
+async function long() {
     const unlock = await this.lock();
-    console.log('done', num);
+    await new Promise(r => {
+        setTimeout(r, 2000);
+    })
+    console.log('do long');
     unlock();
 }
 
-print.call(m1, 1);
+async function short(params) {
+    const unlock = await this.lock();
+    console.log('do short');
+    unlock();
+}
 
-setTimeout(() => {
-    print.call(m1, 2);
-}, 300);
+long.call(m1, 1);
+short.call(m1, 2);
