@@ -127,11 +127,12 @@ class TreeSet {
         return this.#leader;
     }
 
-    swap(node, child) {
+    parentSlot(node) {
         const parent = node.parent;
         if (!parent) {
-            
+            throw new Error(`Попытка определить слот родителя на узле ${node.value}, родителя нет`);
         }
+        
     }
 
     rotateLeft(node) {
