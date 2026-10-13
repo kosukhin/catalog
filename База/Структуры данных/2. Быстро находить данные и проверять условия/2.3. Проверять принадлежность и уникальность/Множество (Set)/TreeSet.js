@@ -4,10 +4,11 @@ class Node {
     _height = 0;
     _value = null;
 
-    constructor(value, left, right) {
+    constructor(value, left, right, parent) {
         this.value = value;
         this.left = left ?? null;
         this.right = right ?? null;
+        this.parent = parent ?? null;
     }
 
     get value() {
@@ -70,12 +71,17 @@ class TreeSet {
     }
 
     createNewNode(el, parent) {
-        const newNode = new Node(el);
+        const newNode = new Node(el, parent);
         newNode.height = 0;
-        if (parent) {
-            parent.height = Math.max(parent?.left.height, parent?.right.height) + 1;
-        }
+        this.incrementParentHeight(newNode);
         return newNode;
+    }
+
+    incrementParentHeight(node) {
+        if (node.parent) {
+            node.parent.height = Math.max(node.parent?.left.height, node.parent?.right.height) + 1;
+            this.incrementParentHeight(node.parent);
+        }
     }
 
     leader() {
