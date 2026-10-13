@@ -92,6 +92,7 @@ export class TreeSet {
         const rightHeight = node?.right?.subtreeHeight ?? 0;
         const leftHeight = node?.left?.subtreeHeight ?? 0;
         const diff = leftHeight - rightHeight;
+        node.parent.subtreeHeight = Math.max(rightHeight, leftHeight) + 1;
         if (diff >= 2) {
             // Балансируем левую сторону
             const childLeft = node.left;
