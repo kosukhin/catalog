@@ -5,7 +5,7 @@ class Node {
     _value = null;
 
     constructor(value, left, right) {
-        this.value = value;
+        this._value = value;
         this.left = left ?? null;
         this.right = right ?? null;
     }
