@@ -144,18 +144,25 @@ class TreeSet {
         if (parent) {
             const parentSlot = this.parentSlot(node);
             parent[parentSlot] = rightChild;
-            rightChild.parent = parent;
-            rightChild.left = node;
-            node.parent = rightChild;
-        } else {
-            node.parent = rightChild;
-            rightChild.parent = null;
-            rightChild.left = node;
         }
+        rightChild.parent = parent;
+        rightChild.left = node;
+        node.parent = rightChild;
     }
 
     rotateRight(node) {
-
+        const leftChild = node.left;
+        if (!leftChild) {
+            throw new Error(`У узла ${node.value} нет левого потомка`)
+        }
+        const parent = node.parent;
+        if (parent) {
+            const parentSlot = this.parentSlot(node);
+            parent[parentSlot] = leftChild;
+        }
+        leftChild.parent = parent;
+        leftChild.left = node;
+        node.parent = leftChild;
     }
 
     delete(el) {
