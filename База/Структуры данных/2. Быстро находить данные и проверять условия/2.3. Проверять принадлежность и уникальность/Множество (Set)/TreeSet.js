@@ -128,7 +128,10 @@ class TreeSet {
     }
 
     rotateLeft(node) {
-
+        if (!node.right) {
+            throw new Error(`У узла ${node.value} нет правого потомка`)
+        }
+        
     }
 
     rotateRight(node) {
