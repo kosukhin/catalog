@@ -83,7 +83,6 @@ export class TreeSet {
         if (parent && slot) {
             parent[slot] = newNode;
             this.rebalance(newNode);
-            this.incrementParentHeight(newNode);
         }
         return newNode;
     }
@@ -119,16 +118,6 @@ export class TreeSet {
         }
         if (node.parent) {
             this.rebalance(node.parent);
-        }
-    }
-
-    incrementParentHeight(node) {
-        if (node.parent) {
-            node.parent.subtreeHeight = Math.max(
-                node.parent?.left?.subtreeHeight ?? 0,
-                node.parent?.right?.subtreeHeight ?? 0
-            ) + 1;
-            this.incrementParentHeight(node.parent);
         }
     }
 
