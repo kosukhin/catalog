@@ -150,6 +150,7 @@ class TreeSet {
         rightChild.parent = parent;
         rightChild.left = node;
         node.parent = rightChild;
+        node.right = null;
     }
 
     rotateRight(node) {
@@ -167,6 +168,7 @@ class TreeSet {
         leftChild.parent = parent;
         leftChild.right = node;
         node.parent = leftChild;
+        node.left = null;
     }
 
     delete(el) {
