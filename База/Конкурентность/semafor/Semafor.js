@@ -18,9 +18,6 @@ class Semafor {
             } else {
                 this.#delayedResolvers.push(resolver);
             }
-            return () => {
-                this.promiseDone(resolver);
-            };
         });
     }
 
@@ -30,7 +27,9 @@ class Semafor {
 
     activateResolver(resolver) {
         this.#activeResolvers.add(resolver);
-        resolver();
+        resolver(() => {
+            this.promiseDone(resolver);
+        });
     }
 
     promiseDone(resolver) {
