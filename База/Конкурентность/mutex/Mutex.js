@@ -1,4 +1,6 @@
 class Mutex {
+    name = 'Real Mutex';
+
     promise = Promise.resolve();
 
     // Вернет функцию unlock
@@ -6,17 +8,16 @@ class Mutex {
         let unlock = null;
         const promise = new Promise((resolve) => {
             unlock = resolve;
-        })
-        this.promise = this.promise.then(() => {
-            return new Promise(r => {
-                setTimeout(r, 1000);
-            })
-        }).then(() => promise);
-        return unlock;
+        });
+        const resultPromise = this.promise.then(() => unlock);
+        this.promise = promise;
+        return resultPromise;
     }
 }
 
 class FakeMutex {
+    name = 'Fake Mutex';
+
     lock() {
         return () => {}
     }
@@ -30,18 +31,18 @@ async function long() {
     await new Promise(r => {
         setTimeout(r, 2000);
     })
-    console.log('do long');
+    console.log('do long', this.name);
     unlock();
 }
 
 async function short(params) {
     const unlock = await this.lock();
-    console.log('do short');
+    console.log('do short', this.name);
     unlock();
 }
 
-long.call(m1, 1);
-short.call(m1, 2);
+long.call(m1);
+short.call(m1);
 
-long.call(fm1, 1);
-short.call(fm1, 2);
+long.call(fm1);
+short.call(fm1);
