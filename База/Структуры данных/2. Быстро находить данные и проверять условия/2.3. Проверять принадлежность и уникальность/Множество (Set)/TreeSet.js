@@ -36,7 +36,7 @@ class TreeSet {
             console.log('Add: ', el, parent?.value);
         }
         if (this.#leader === null) {
-            this.#leader = new Node(el);
+            this.#leader = this.createNewNode(el);
             return;
         }
         if (!parent) {
@@ -49,15 +49,19 @@ class TreeSet {
             if (parent.left) {
                 this.add(el, parent.left);
             } else {
-                parent.left = new Node(el);
+                parent.left = this.createNewNode(el);
             }
         } else if (parent.value < el) {
             if (parent.right) {
                 this.add(el, parent.right);
             } else {
-                parent.right = new Node(el);
+                parent.right = this.createNewNode(el);
             }
         }
+    }
+
+    createNewNode(el, parent) {
+        return new Node(el);
     }
 
     leader() {
