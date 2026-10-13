@@ -151,6 +151,7 @@ class TreeSet {
         }
         rightChild.parent = parent;
         rightChild.left = node;
+        rightChild.subtreeHeight += 1;
         node.parent = rightChild;
         node.right = null;
     }
