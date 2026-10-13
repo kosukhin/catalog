@@ -1,6 +1,4 @@
 class Mutex {
-    name = 'Real Mutex';
-
     promise = Promise.resolve();
 
     // Вернет функцию unlock
@@ -16,8 +14,6 @@ class Mutex {
 }
 
 class FakeMutex {
-    name = 'Fake Mutex';
-
     lock() {
         return () => { }
     }
@@ -28,13 +24,13 @@ async function long() {
     await new Promise(r => {
         setTimeout(r, 2000);
     })
-    console.log('do long: ', this.name);
+    console.log('do long');
     unlock();
 }
 
 async function short(params) {
     const unlock = await this.lock();
-    console.log('do short: ', this.name);
+    console.log('do short');
     unlock();
 }
 
