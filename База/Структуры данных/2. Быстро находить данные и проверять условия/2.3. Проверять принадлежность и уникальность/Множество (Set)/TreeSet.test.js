@@ -11,4 +11,15 @@ describe('TreeSet', () => {
     // 4 потому что балансировка должна сработать
     assert.equal(tree.leader().value, 4);
   });
+
+  it('содержание элемента в множестве', () => {
+    const tree = new TreeSet();
+    tree.add(1);
+    tree.add(4);
+    tree.add(21);
+    // 4 потому что балансировка должна сработать
+    assert.equal(tree.contains(4), true);
+    assert.equal(tree.contains(19), false);
+    assert.equal(tree.contains(21), true);
+  });
 });
