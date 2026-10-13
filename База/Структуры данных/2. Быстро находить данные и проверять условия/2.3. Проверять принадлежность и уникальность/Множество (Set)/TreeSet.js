@@ -18,11 +18,11 @@ class Node {
         this._value = value;
     }
 
-    set height(height) {
+    set subtreeHeight(height) {
         this._height = height;
     }
 
-    get height() {
+    get subtreeHeight() {
         return this._height;
     }
 }
@@ -71,7 +71,7 @@ class TreeSet {
 
     createNewNode(el, parent) {
         const newNode = new Node(el, parent);
-        newNode.height = 0;
+        newNode.subtreeHeight = 0;
         // this.incrementParentHeight(newNode);
         return newNode;
     }
