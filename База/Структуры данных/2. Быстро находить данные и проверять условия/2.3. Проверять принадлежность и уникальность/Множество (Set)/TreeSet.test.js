@@ -8,6 +8,7 @@ describe('TreeSet', () => {
     tree.add(1);
     tree.add(4);
     tree.add(21);
+    // 4 потому что балансировка должна сработать
     assert.equal(tree.leader().value, 4);
   });
 });
