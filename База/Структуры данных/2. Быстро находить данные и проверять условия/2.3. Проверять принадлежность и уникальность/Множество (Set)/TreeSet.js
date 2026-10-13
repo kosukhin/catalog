@@ -127,6 +127,10 @@ class TreeSet {
         return this.#leader;
     }
 
+    swap(node, child) {
+        
+    }
+
     rotateLeft(node) {
         const rightChild = node.right;
         if (!rightChild) {
