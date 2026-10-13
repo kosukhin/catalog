@@ -4,11 +4,10 @@ class Node {
     _height = 0;
     _value = null;
 
-    constructor(value, left, right, parent) {
+    constructor(value, left, right) {
         this.value = value;
         this.left = left ?? null;
         this.right = right ?? null;
-        this.parent = parent ?? null;
     }
 
     get value() {
