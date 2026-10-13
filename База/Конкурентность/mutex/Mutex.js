@@ -34,7 +34,7 @@ async function short(params) {
     unlock();
 }
 
-async function batch(cb, name) {
+async function batch(name, cb) {
     const unlock = await this.lock();
     console.log('========================');
     console.log('doing batch: ', name);
@@ -45,18 +45,18 @@ async function batch(cb, name) {
 
 const mbatch = new Mutex();
 
-batch.call(mbatch, () => {
+batch.call(mbatch, 'Real Mutex', () => {
     const m1 = new Mutex();
     return Promise.all([
         long.call(m1),
         short.call(m1)
     ]);
-}, 'Real Mutex');
+});
 
-batch.call(mbatch, () => {
+batch.call(mbatch, 'Fake Mutex', () => {
     const fm1 = new FakeMutex();
     return Promise.all([
         long.call(fm1),
         short.call(fm1)
     ]);
-}, 'Fake Mutex');
+});
