@@ -92,6 +92,14 @@ class TreeSet {
         const diff = leftHeight - rightHeight;
         if (diff >= 2) {
             // Балансируем левую сторону
+            const childLeft = node.left;
+            // RL
+            if (childLeft.right) {
+
+            // LL
+            } else {
+                
+            }
         }
         if (diff <= -2) {
             // Балансируем правую сторону
@@ -111,6 +119,14 @@ class TreeSet {
 
     // Пройти по дереву снизу вверх чтобы проверить его сбалансированность
     #rebalance(elIndex) {
+
+    }
+
+    rotateLeft(node) {
+
+    }
+
+    rotateRight(node) {
 
     }
 
