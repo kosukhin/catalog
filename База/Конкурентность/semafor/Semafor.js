@@ -12,6 +12,7 @@ class Semafor {
 
     lock() {
         const thePromise = new Promise(r => {
+            
             return () => {
                 this.promiseDone(thePromise);
             };
