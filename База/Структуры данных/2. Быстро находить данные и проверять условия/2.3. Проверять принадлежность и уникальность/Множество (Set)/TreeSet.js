@@ -172,8 +172,10 @@ class TreeSet {
         }
         leftChild.parent = parent;
         leftChild.right = node;
+        rightChild.subtreeHeight += 1;
         node.parent = leftChild;
         node.left = null;
+        node.subtreeHeight -= 1;
     }
 
     delete(el) {
