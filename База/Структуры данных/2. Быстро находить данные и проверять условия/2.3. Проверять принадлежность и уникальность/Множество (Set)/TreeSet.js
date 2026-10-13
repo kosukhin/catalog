@@ -127,11 +127,6 @@ class TreeSet {
         return this.#leader;
     }
 
-    // Пройти по дереву снизу вверх чтобы проверить его сбалансированность
-    #rebalance(elIndex) {
-
-    }
-
     rotateLeft(node) {
 
     }
