@@ -61,7 +61,9 @@ class TreeSet {
     }
 
     createNewNode(el, parent) {
-        return new Node(el);
+        const newNode = new Node(el);
+        newNode.setHeight((parent?.height() ?? 0) + 1)
+        return newNode;
     }
 
     leader() {
