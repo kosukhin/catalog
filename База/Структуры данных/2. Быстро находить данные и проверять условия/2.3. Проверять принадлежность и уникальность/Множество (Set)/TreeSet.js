@@ -93,16 +93,26 @@ class TreeSet {
         if (diff >= 2) {
             // Балансируем левую сторону
             const childLeft = node.left;
-            // RL
+            // LR
             if (childLeft.right) {
-
-            // LL
+                this.rotateLeft(childLeft);
+                this.rotateRight(node);
+            // RR
             } else {
-                
+                this.rotateRight(node);
             }
         }
         if (diff <= -2) {
             // Балансируем правую сторону
+            const childRight = node.right;
+            // RL
+            if (childRight.left) {
+                this.rotateRight(childRight);
+                this.rotateLeft(node);
+            // LL
+            } else {
+                this.rotateLeft(node);
+            }
         }
         if (node.parent) {
             node.parent.subtreeHeight = Math.max(
