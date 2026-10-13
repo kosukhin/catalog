@@ -71,7 +71,10 @@ class TreeSet {
 
     createNewNode(el, parent) {
         const newNode = new Node(el);
-        newNode.height = (parent?.height ?? 0) + 1;
+        newNode.height = 0;
+        if (parent) {
+            parent.height = Math.max(parent?.left.height, parent?.right.height) + 1;
+        }
         return newNode;
     }
 
