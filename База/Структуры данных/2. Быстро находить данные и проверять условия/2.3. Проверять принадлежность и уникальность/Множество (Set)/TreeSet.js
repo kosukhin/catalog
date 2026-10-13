@@ -140,7 +140,14 @@ class TreeSet {
         if (!rightChild) {
             throw new Error(`У узла ${node.value} нет правого потомка`)
         }
-        const parentSlot = this.parentSlot(node);
+        const parent = node.parent;
+        if (parent) {
+            const parentSlot = this.parentSlot(node);
+        } else {
+            node.parent = rightChild;
+            rightChild.parent = null;
+            rightChild.left = node;
+        }
         node.parent
     }
 
