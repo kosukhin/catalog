@@ -2,11 +2,20 @@ import { printAsciiTree } from 'binary-tree-printer';
 
 class Node {
     _height = 0;
+    _value = null;
 
     constructor(value, left, right) {
         this.value = value;
         this.left = left ?? null;
         this.right = right ?? null;
+    }
+
+    get value() {
+        return this._value;
+    }
+
+    set value(value) {
+        this._value = value;
     }
 
     setHeight(height) {
