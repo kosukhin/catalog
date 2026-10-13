@@ -143,12 +143,14 @@ class TreeSet {
         const parent = node.parent;
         if (parent) {
             const parentSlot = this.parentSlot(node);
+            node.parent = rightChild;
+            rightChild.parent = parent;
+            rightChild.left = node;
         } else {
             node.parent = rightChild;
             rightChild.parent = null;
             rightChild.left = node;
         }
-        node.parent
     }
 
     rotateRight(node) {
