@@ -73,14 +73,14 @@ class TreeSet {
     createNewNode(el, parent) {
         const newNode = new Node(el, parent);
         newNode.height = 0;
-        this.incrementParentHeight(newNode);
+        // this.incrementParentHeight(newNode);
         return newNode;
     }
 
     incrementParentHeight(node) {
         if (node.parent) {
-            node.parent.height = Math.max(node.parent?.left.height, node.parent?.right.height) + 1;
-            this.incrementParentHeight(node.parent);
+            // node.parent.height = Math.max(node.parent?.left.height, node.parent?.right.height) + 1;
+            // this.incrementParentHeight(node.parent);
         }
     }
 
