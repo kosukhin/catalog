@@ -19,7 +19,7 @@ class FakeMutex {
     name = 'Fake Mutex';
 
     lock() {
-        return () => {}
+        return () => { }
     }
 }
 
@@ -41,8 +41,23 @@ async function short(params) {
     unlock();
 }
 
-long.call(m1);
-short.call(m1);
+async function batch(cb, name) {
+    const unlock = await this.lock();
+    console.log('========================');
+    console.log('doing batch: ', name);
+    cb();
+    console.log('========================');
+    unlock();
+}
 
-long.call(fm1);
-short.call(fm1);
+const mbatch = new Mutex();
+
+batch.call(mbatch, () => {
+    long.call(m1);
+    short.call(m1);
+}, 'Real Mutex');
+
+batch.call(mbatch, () => {
+    long.call(fm1);
+    short.call(fm1);
+}, 'Fake Mutex');
