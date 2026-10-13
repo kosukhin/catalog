@@ -88,7 +88,7 @@ class TreeSet {
 
     incrementParentHeight(node) {
         if (node.parent) {
-            node.parent.height = Math.max(node.parent?.left?.height, node.parent?.right?.height) + 1;
+            node.parent.subtreeHeight = Math.max(node.parent?.left?.subtreeHeight, node.parent?.right?.subtreeHeight) + 1;
             this.incrementParentHeight(node.parent);
         }
     }
