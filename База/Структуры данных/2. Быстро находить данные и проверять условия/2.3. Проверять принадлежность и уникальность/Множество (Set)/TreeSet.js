@@ -130,9 +130,9 @@ class TreeSet {
     parentSlot(node) {
         const parent = node.parent;
         if (!parent) {
-            throw new Error(`Попытка определить слот родителя на узле ${node.value}, родителя нет`);
+            return null;
         }
-        
+        return parent.left === node ? 'left' : parent.right === node ? 'right' : null;
     }
 
     rotateLeft(node) {
@@ -140,6 +140,7 @@ class TreeSet {
         if (!rightChild) {
             throw new Error(`У узла ${node.value} нет правого потомка`)
         }
+        const parentSlot = this.parentSlot(node);
         node.parent
     }
 
