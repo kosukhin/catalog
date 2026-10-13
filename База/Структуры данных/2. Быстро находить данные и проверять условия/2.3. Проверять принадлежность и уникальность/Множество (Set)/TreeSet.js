@@ -128,10 +128,11 @@ class TreeSet {
     }
 
     rotateLeft(node) {
-        if (!node.right) {
+        const rightChild = node.right;
+        if (!rightChild) {
             throw new Error(`У узла ${node.value} нет правого потомка`)
         }
-        
+        node.parent
     }
 
     rotateRight(node) {
