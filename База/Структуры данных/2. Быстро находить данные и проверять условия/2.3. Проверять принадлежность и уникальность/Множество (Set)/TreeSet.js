@@ -91,10 +91,10 @@ class TreeSet {
         const leftHeight = node?.left?.subtreeHeight ?? 0;
         const diff = leftHeight - rightHeight;
         if (diff >= 2) {
-
+            // Балансируем левую сторону
         }
         if (diff <= -2) {
-            
+            // Балансируем правую сторону
         }
         if (node.parent) {
             node.parent.subtreeHeight = Math.max(
