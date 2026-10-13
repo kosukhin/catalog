@@ -11,18 +11,12 @@ class Semafor {
     }
 
     lock() {
-        const unlock = null;
         const thePromise = new Promise(r => {
-            unlock = () => {
-                r();
+            return () => {
                 this.promiseDone(thePromise);
             };
         });
-        if (this.activePromises.size < this.#size) {
-
-        } else {
-
-        }
+        return thePromise;
     }
 
     promiseDone(thePromise) {
