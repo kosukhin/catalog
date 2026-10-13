@@ -54,5 +54,5 @@ const s1 = new Semafor(2);
 
 lockableTest.call(s1, 'one', 2000);
 lockableTest.call(s1, 'two', 1000);
-lockableTest.call(s1, 'three', 300);
+lockableTest.call(s1, 'three', 3000);
 lockableTest.call(s1, 'four', 0);
