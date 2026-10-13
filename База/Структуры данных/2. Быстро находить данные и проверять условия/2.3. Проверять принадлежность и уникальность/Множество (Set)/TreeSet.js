@@ -116,6 +116,9 @@ export class TreeSet {
                 this.rotateLeft(node);
             }
         }
+        if (node.parent) {
+            this.rebalance(node.parent);
+        }
     }
 
     incrementParentHeight(node) {
