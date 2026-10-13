@@ -28,13 +28,13 @@ async function long() {
     await new Promise(r => {
         setTimeout(r, 2000);
     })
-    console.log('do long', this.name);
+    console.log('do long: ', this.name);
     unlock();
 }
 
 async function short(params) {
     const unlock = await this.lock();
-    console.log('do short', this.name);
+    console.log('do short: ', this.name);
     unlock();
 }
 
