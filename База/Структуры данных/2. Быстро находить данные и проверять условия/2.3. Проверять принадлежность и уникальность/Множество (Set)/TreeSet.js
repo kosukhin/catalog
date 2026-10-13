@@ -161,7 +161,7 @@ class TreeSet {
             parent[parentSlot] = leftChild;
         }
         leftChild.parent = parent;
-        leftChild.left = node;
+        leftChild.right = node;
         node.parent = leftChild;
     }
 
