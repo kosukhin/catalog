@@ -13,6 +13,7 @@ class Semafor {
     lock() {
         const thePromise = new Promise(r => {
             if (this.hasFreeSlot()) {
+                this.activePromises.add(thePromise);
                 r();
             } else {
                 this.delayedPromises.push(r);
