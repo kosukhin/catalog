@@ -29,7 +29,7 @@ class Semafor {
         this.activePromises.delete(thePromise);
         if (this.delayedPromises.length) {
             const nextPromise = this.delayedPromises.shift();
-            
+            this.activePromises.add(nextPromise);
         }
     }
 }
