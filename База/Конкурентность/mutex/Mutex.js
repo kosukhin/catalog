@@ -49,7 +49,6 @@ async function batch(cb, name) {
 
 const mbatch = new Mutex();
 
-
 batch.call(mbatch, () => {
     const m1 = new Mutex();
     return Promise.all([
