@@ -40,7 +40,7 @@ class Node {
 /**
  * Берем за основу AVL дерево
  */
-class TreeSet {
+export class TreeSet {
     // Само дерево
     #leader = null;
     #debug = false;
