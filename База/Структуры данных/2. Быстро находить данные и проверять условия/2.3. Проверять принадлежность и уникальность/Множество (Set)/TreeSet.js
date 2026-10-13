@@ -66,25 +66,29 @@ export class TreeSet {
             if (parent.left) {
                 this.add(el, parent.left);
             } else {
-                parent.left = this.createNewNode(el, parent);
+                this.createNewNode(el, parent, 'left');
             }
         } else if (parent.value < el) {
             if (parent.right) {
                 this.add(el, parent.right);
             } else {
-                parent.right = this.createNewNode(el, parent);
+                this.createNewNode(el, parent, 'right');
             }
         }
     }
 
-    createNewNode(el, parent) {
+    createNewNode(el, parent, slot) {
         const newNode = new Node(el, null, null, parent);
         newNode.subtreeHeight = 0;
-        this.incrementParentHeight(newNode);
+        if (parent && slot) {
+            parent[slot] = newNode;
+            this.rebalance(newNode);
+            this.incrementParentHeight(newNode);
+        }
         return newNode;
     }
 
-    rebalance() {
+    rebalance(node) {
         const rightHeight = node?.right?.subtreeHeight ?? 0;
         const leftHeight = node?.left?.subtreeHeight ?? 0;
         const diff = leftHeight - rightHeight;
