@@ -1,5 +1,5 @@
 import { printAsciiTree } from 'binary-tree-printer';
-import { TreeSet } from './TreeSet';
+import { TreeSet } from './TreeSet.js';
 
 console.log('Tree Set')
 
