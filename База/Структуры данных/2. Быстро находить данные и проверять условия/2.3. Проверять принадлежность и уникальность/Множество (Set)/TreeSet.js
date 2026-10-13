@@ -84,7 +84,7 @@ export class TreeSet {
         return newNode;
     }
 
-    incrementParentHeight(node) {
+    rebalance() {
         const rightHeight = node?.right?.subtreeHeight ?? 0;
         const leftHeight = node?.left?.subtreeHeight ?? 0;
         const diff = leftHeight - rightHeight;
@@ -95,7 +95,7 @@ export class TreeSet {
             if (childLeft.right) {
                 this.rotateLeft(childLeft);
                 this.rotateRight(node);
-            // RR
+                // RR
             } else {
                 this.rotateRight(node);
             }
@@ -107,11 +107,14 @@ export class TreeSet {
             if (childRight.left) {
                 this.rotateRight(childRight);
                 this.rotateLeft(node);
-            // LL
+                // LL
             } else {
                 this.rotateLeft(node);
             }
         }
+    }
+
+    incrementParentHeight(node) {
         if (node.parent) {
             node.parent.subtreeHeight = Math.max(
                 node.parent?.left?.subtreeHeight ?? 0,
