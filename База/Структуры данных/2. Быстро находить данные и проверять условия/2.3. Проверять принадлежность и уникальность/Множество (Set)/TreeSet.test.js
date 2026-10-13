@@ -3,7 +3,7 @@ import { test, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
 describe('TreeSet', () => {
-  it('должна корректно складывать два числа', () => {
+  it('корректный поворот дерева', () => {
     const tree = new TreeSet();
     tree.add(1);
     tree.add(4);
