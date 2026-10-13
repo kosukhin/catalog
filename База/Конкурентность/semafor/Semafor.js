@@ -7,13 +7,16 @@ class Semafor {
 
     constructor(size) {
         this.#size = size;
-        this.schedule = this.schedule.bind(this);
+        this.schedule = this.promiseDone.bind(this);
     }
 
     lock() {
         const unlock = null;
         const thePromise = new Promise(r => {
-            unlock = r;
+            unlock = () => {
+                r();
+                this.promiseDone(thePromise);
+            };
         });
         if (this.activePromises.size < this.#size) {
 
@@ -22,7 +25,11 @@ class Semafor {
         }
     }
 
-    schedule() {
-
+    promiseDone(thePromise) {
+        this.activePromises.delete(thePromise);
+        if (this.delayedPromises.length) {
+            const nextPromise = this.delayedPromises.shift();
+            
+        }
     }
 }
