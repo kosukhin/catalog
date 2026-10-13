@@ -58,13 +58,13 @@ class TreeSet {
             if (parent.left) {
                 this.add(el, parent.left);
             } else {
-                parent.left = this.createNewNode(el);
+                parent.left = this.createNewNode(el, parent);
             }
         } else if (parent.value < el) {
             if (parent.right) {
                 this.add(el, parent.right);
             } else {
-                parent.right = this.createNewNode(el);
+                parent.right = this.createNewNode(el, parent);
             }
         }
     }
