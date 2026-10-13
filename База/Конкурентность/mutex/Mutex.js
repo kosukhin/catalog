@@ -45,7 +45,7 @@ async function batch(cb, name) {
     const unlock = await this.lock();
     console.log('========================');
     console.log('doing batch: ', name);
-    cb();
+    await cb();
     console.log('========================');
     unlock();
 }
@@ -54,10 +54,10 @@ const mbatch = new Mutex();
 
 batch.call(mbatch, () => {
     long.call(m1);
-    short.call(m1);
+    return short.call(m1);
 }, 'Real Mutex');
 
 batch.call(mbatch, () => {
     long.call(fm1);
-    short.call(fm1);
+    return short.call(fm1);
 }, 'Fake Mutex');
