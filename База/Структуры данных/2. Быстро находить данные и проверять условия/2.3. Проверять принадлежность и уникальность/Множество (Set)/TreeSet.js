@@ -144,6 +144,7 @@ class TreeSet {
         if (parent) {
             const parentSlot = this.parentSlot(node);
             parent[parentSlot] = rightChild;
+            parent.subtreeHeight = 0;
         } else {
             this.#leader = rightChild;
             this.#leader.parent = null;
