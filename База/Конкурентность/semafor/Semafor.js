@@ -7,12 +7,22 @@ class Semafor {
 
     constructor(size) {
         this.#size = size;
+        this.schedule = this.schedule.bind(this);
     }
 
     lock() {
         const unlock = null;
-        new Promise(r => {
+        const thePromise = new Promise(r => {
             unlock = r;
         });
+        if (this.activePromises.size < this.#size) {
+
+        } else {
+
+        }
+    }
+
+    schedule() {
+
     }
 }
