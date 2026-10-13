@@ -2,12 +2,22 @@ import { printAsciiTree } from 'binary-tree-printer';
 
 class Node {
     _height = 0;
+    _parent = null;
     _value = null;
 
-    constructor(value, left, right) {
+    constructor(value, left, right, parent) {
         this._value = value;
         this.left = left ?? null;
         this.right = right ?? null;
+        this._parent = parent;
+    }
+
+    get parent() {
+        return this._parent;
+    }
+
+    set parent(parent) {
+        this._parent = parent;
     }
 
     get value() {
@@ -70,16 +80,16 @@ class TreeSet {
     }
 
     createNewNode(el, parent) {
-        const newNode = new Node(el, parent);
+        const newNode = new Node(el, null, null, parent);
         newNode.subtreeHeight = 0;
-        // this.incrementParentHeight(newNode);
+        this.incrementParentHeight(newNode);
         return newNode;
     }
 
     incrementParentHeight(node) {
         if (node.parent) {
-            // node.parent.height = Math.max(node.parent?.left.height, node.parent?.right.height) + 1;
-            // this.incrementParentHeight(node.parent);
+            node.parent.height = Math.max(node.parent?.left?.height, node.parent?.right?.height) + 1;
+            this.incrementParentHeight(node.parent);
         }
     }
 
