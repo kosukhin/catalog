@@ -8,6 +8,6 @@ describe('TreeSet', () => {
     tree.add(1);
     tree.add(4);
     tree.add(21);
-    expect.equals(tree.leader().value, 4);
+    assert.equal(tree.leader().value, 4);
   });
 });
