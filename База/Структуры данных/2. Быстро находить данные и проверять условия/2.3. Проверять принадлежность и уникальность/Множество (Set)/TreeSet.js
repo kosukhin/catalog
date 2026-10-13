@@ -87,6 +87,15 @@ class TreeSet {
     }
 
     incrementParentHeight(node) {
+        const rightHeight = node?.right?.subtreeHeight ?? 0;
+        const leftHeight = node?.left?.subtreeHeight ?? 0;
+        const diff = leftHeight - rightHeight;
+        if (diff >= 2) {
+
+        }
+        if (diff <= -2) {
+            
+        }
         if (node.parent) {
             node.parent.subtreeHeight = Math.max(
                 node.parent?.left?.subtreeHeight ?? 0,
