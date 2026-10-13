@@ -12,12 +12,20 @@ class Semafor {
 
     lock() {
         const thePromise = new Promise(r => {
-            
+            if (this.hasFreeSlot()) {
+                r();
+            } else {
+                this.delayedPromises.push(r);
+            }
             return () => {
                 this.promiseDone(thePromise);
             };
         });
         return thePromise;
+    }
+
+    hasFreeSlot() {
+        return this.activePromises.size < this.#size;
     }
 
     promiseDone(thePromise) {
