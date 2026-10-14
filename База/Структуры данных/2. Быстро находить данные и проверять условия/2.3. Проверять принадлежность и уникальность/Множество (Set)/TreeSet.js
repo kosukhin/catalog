@@ -59,7 +59,7 @@ export class TreeSet {
     // Основной метод ради которого и создается множество
     // Чтобы добавить в него элемент и проверить существование
     contains(el) {
-        return this.find(el);
+        return !!this.find(el);
     }
 
     // Убрать элемент из множества по значению
@@ -86,7 +86,7 @@ export class TreeSet {
             return this.find(el, candidate.left);
         }
         if (el > candidate.value && candidate.right) {
-            return this.contains(el, candidate.right);
+            return this.find(el, candidate.right);
         }
         return null;
     }
