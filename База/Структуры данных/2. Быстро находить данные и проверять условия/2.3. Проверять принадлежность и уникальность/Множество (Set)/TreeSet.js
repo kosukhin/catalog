@@ -76,11 +76,14 @@ export class TreeSet {
                 node.parent[slot] = null;
             }
         }
-        if (!node.left && node.right) {
-
-        }
-        if (node.left && !node.right) {
-
+        if (!node.left && node.right || node.left && !node.right) {
+            const successor = node.right ?? node.left;
+            if (!node.parent) {
+                this.#leader = successor;
+            } else {
+                const slot = this.parentSlot(node);
+                node.parent[slot] = successor;
+            }
         }
         // TODO доделать когда есть оба потомка
         if (node.left && node.right) {
