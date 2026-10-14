@@ -64,12 +64,7 @@ export class TreeSet {
 
     // Убрать элемент из множества по значению
     delete(el) {
-        this.traverse((layer) => {
-            const node = layer.find((n) = n.value === el);
-            if (node) {
-
-            }
-        });
+        const node = this.find(el);
     }
 
     // Логарифмически ищет узел по значению
