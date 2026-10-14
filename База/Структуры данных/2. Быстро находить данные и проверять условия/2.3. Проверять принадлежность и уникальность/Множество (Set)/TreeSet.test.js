@@ -28,10 +28,10 @@ describe('TreeSet', () => {
         tree.add(11);
         tree.add(12);
 
-        assert.equal(tree.contains(4), true);
-        assert.equal(tree.contains(19), false);
-        assert.equal(tree.contains(21), true);
-        assert.equal(tree.contains(12), true);
+        assert.equal(tree.contains(4), true, 'contains 4');
+        assert.equal(tree.contains(19), false, 'contains 19');
+        assert.equal(tree.contains(21), true, 'contains 21');
+        assert.equal(tree.contains(12), true, 'contains 12');
     });
 
     it('корректная балансировка', () => {
@@ -43,6 +43,6 @@ describe('TreeSet', () => {
         tree.add(19);
         tree.add(22);
 
-        assert.equal(tree.leader().subtreeHeight, 3);
+        assert.equal(tree.leader().subtreeHeight, 3, 'высота поддерева 3');
     })
 });
