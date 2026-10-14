@@ -121,6 +121,14 @@ export class TreeSet {
         }
     }
 
+    bubbling(fromNode, cb) {
+        if (!fromNode.parent) {
+            return;
+        }
+        cb(fromNode.parent);
+        this.bubbling(fromNode.parent);
+    }
+
     updateNodeHeight(node) {
         const rightHeight = node?.right?.subtreeHeight ?? 0;
         const leftHeight = node?.left?.subtreeHeight ?? 0;
