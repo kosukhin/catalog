@@ -177,6 +177,7 @@ export class TreeSet {
         return parent.left === node ? 'left' : parent.right === node ? 'right' : null;
     }
 
+    // Поворот поддерева влево от узла
     rotateLeft(node) {
         const rightChild = node.right;
         if (!rightChild) {
@@ -206,6 +207,7 @@ export class TreeSet {
         }
     }
 
+    // Поворот поддерева вправо от узла
     rotateRight(node) {
         const leftChild = node.left;
         if (!leftChild) {
