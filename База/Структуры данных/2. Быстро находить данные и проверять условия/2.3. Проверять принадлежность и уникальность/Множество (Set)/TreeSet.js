@@ -85,6 +85,7 @@ export class TreeSet {
             parent[slot] = newNode;
             this.bubbling(newNode, this.updateNodeHeight);
             this.rebalance(newNode);
+            this.bubbling(newNode, this.updateNodeHeight);
         }
         return newNode;
     }
