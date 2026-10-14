@@ -98,7 +98,7 @@ export class TreeSet {
             // Балансируем левую сторону
             const childLeft = node.left;
             // LR
-            if (childLeft.right) {
+            if (childLeft.right && !childLeft.left) {
                 this.rotateLeft(childLeft);
                 this.rotateRight(node);
                 // RR
@@ -110,7 +110,7 @@ export class TreeSet {
             // Балансируем правую сторону
             const childRight = node.right;
             // RL
-            if (childRight.left) {
+            if (childRight.left && !childRight.right) {
                 this.rotateRight(childRight);
                 this.rotateLeft(node);
                 // LL
