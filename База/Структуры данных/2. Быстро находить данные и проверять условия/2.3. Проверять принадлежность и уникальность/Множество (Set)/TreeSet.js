@@ -79,9 +79,16 @@ export class TreeSet {
         this.traverse((layer) => {
             const node = layer.find((n) = n.value === el);
             if (node) {
-                
+
             }
         });
+    }
+
+    // Логарифмически ищет узел по значению
+    // Если находит то возвращает его, если не находит
+    // То возвращает null
+    find(el) {
+
     }
 
     // Обход дерева в ширину BFS
