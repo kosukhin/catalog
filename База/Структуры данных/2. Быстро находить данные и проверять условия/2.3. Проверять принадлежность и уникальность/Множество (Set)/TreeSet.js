@@ -45,6 +45,7 @@ export class TreeSet {
 
     constructor(debug = false) {
         this.#debug = debug
+        this.updateNodeHeight = this.updateNodeHeight.bind(this);
     }
 
     add(el, candidate) {
@@ -82,6 +83,7 @@ export class TreeSet {
         newNode.subtreeHeight = 0;
         if (parent && slot) {
             parent[slot] = newNode;
+            this.bubbling(newNode, this.updateNodeHeight);
             this.rebalance(newNode);
         }
         return newNode;
@@ -122,11 +124,10 @@ export class TreeSet {
     }
 
     bubbling(fromNode, cb) {
-        if (!fromNode.parent) {
-            return;
+        cb(fromNode);
+        if (fromNode.parent) {
+            this.bubbling(fromNode.parent);
         }
-        cb(fromNode.parent);
-        this.bubbling(fromNode.parent);
     }
 
     updateNodeHeight(node) {
