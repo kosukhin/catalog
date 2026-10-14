@@ -79,6 +79,11 @@ export class TreeSet {
 
     }
 
+    // Обход дерева в ширину BFS
+    traverse() {
+
+    }
+
     // Поместить элемент в корректную позицию по BST инварианту
     placeBST(el, candidate) {
         if (this.#leader === null) {
