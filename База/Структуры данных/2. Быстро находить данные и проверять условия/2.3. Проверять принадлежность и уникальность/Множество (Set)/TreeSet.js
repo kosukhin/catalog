@@ -168,7 +168,7 @@ export class TreeSet {
         node.right = null;
         if (rightChildLeft) {
             node.right = rightChildLeft;
-            rightChildLeft.parent = node.right;
+            rightChildLeft.parent = node;
         }
         this.updateNodeHeight(node);
         this.updateNodeHeight(rightChild);
