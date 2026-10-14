@@ -56,6 +56,25 @@ export class TreeSet {
         this.placeBST(el, this.#leader);
     }
 
+    // Основной метод ради которого и создается множество
+    // Чтобы добавить в него элемент и проверить существование
+    contains(el, node) {
+        if (!node) {
+            node = this.#leader;
+        }
+        if (node.value === el) {
+            return true;
+        }
+        if (el < node.value && node.left) {
+            return this.contains(el, node.left);
+        }
+        if (el > node.value && node.right) {
+            return this.contains(el, node.right);
+        }
+        return false;
+    }
+
+    // Поместить элемент в корректную позицию по BST инварианту
     placeBST(el, candidate) {
         if (this.#leader === null) {
             this.#leader = this.createNewNode(el);
@@ -82,6 +101,7 @@ export class TreeSet {
         }
     }
 
+    // Создание нового узла в дереве
     createNewNode(el, parent, slot) {
         const newNode = new Node(el, null, null, parent);
         newNode.subtreeHeight = 0;
@@ -94,6 +114,7 @@ export class TreeSet {
         return newNode;
     }
 
+    // Перебалансировка от узла к родителю
     rebalance(node) {
         const rightHeight = node?.right?.subtreeHeight ?? 0;
         const leftHeight = node?.left?.subtreeHeight ?? 0;
@@ -127,6 +148,7 @@ export class TreeSet {
         }
     }
 
+    // Всплытие к родителю
     bubbling(fromNode, cb) {
         cb(fromNode);
         if (fromNode.parent) {
@@ -134,16 +156,19 @@ export class TreeSet {
         }
     }
 
+    // Пересчет высоты поддерева узла
     updateNodeHeight(node) {
         const rightHeight = node?.right?.subtreeHeight ?? 0;
         const leftHeight = node?.left?.subtreeHeight ?? 0;
         node.subtreeHeight = Math.max(rightHeight, leftHeight) + 1;
     }
 
+    // Корень дерева
     leader() {
         return this.#leader;
     }
 
+    // Определение с какой стороны от родителя находится узел
     parentSlot(node) {
         const parent = node.parent;
         if (!parent) {
@@ -212,21 +237,5 @@ export class TreeSet {
 
     delete(el) {
 
-    }
-
-    contains(el, node) {
-        if (!node) {
-            node = this.#leader;
-        }
-        if (node.value === el) {
-            return true;
-        }
-        if (el < node.value && node.left) {
-            return this.contains(el, node.left);
-        }
-        if (el > node.value && node.right) {
-            return this.contains(el, node.right);
-        }
-        return false;
     }
 }
