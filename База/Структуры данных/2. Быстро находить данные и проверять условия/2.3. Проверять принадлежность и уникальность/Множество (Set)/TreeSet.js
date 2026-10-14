@@ -48,11 +48,15 @@ export class TreeSet {
         this.updateNodeHeight = this.updateNodeHeight.bind(this);
     }
 
-    add(el, candidate) {
+    add(el) {
         if (this.#debug) {
             console.log('-------------------');
-            console.log('Add: ', el, candidate?.value);
+            console.log('Add: ', el);
         }
+        this.placeBST(el, this.#leader);
+    }
+
+    placeBST(el, candidate) {
         if (this.#leader === null) {
             this.#leader = this.createNewNode(el);
             return;
@@ -65,13 +69,13 @@ export class TreeSet {
         }
         if (candidate.value > el) {
             if (candidate.left) {
-                this.add(el, candidate.left);
+                this.placeBST(el, candidate.left);
             } else {
                 this.createNewNode(el, candidate, 'left');
             }
         } else if (candidate.value < el) {
             if (candidate.right) {
-                this.add(el, candidate.right);
+                this.placeBST(el, candidate.right);
             } else {
                 this.createNewNode(el, candidate, 'right');
             }
