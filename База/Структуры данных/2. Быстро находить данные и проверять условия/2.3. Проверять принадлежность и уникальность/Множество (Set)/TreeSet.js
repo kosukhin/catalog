@@ -58,20 +58,8 @@ export class TreeSet {
 
     // Основной метод ради которого и создается множество
     // Чтобы добавить в него элемент и проверить существование
-    contains(el, node) {
-        if (!node) {
-            node = this.#leader;
-        }
-        if (node.value === el) {
-            return true;
-        }
-        if (el < node.value && node.left) {
-            return this.contains(el, node.left);
-        }
-        if (el > node.value && node.right) {
-            return this.contains(el, node.right);
-        }
-        return false;
+    contains(el) {
+        return this.find(el);
     }
 
     // Убрать элемент из множества по значению
@@ -87,8 +75,20 @@ export class TreeSet {
     // Логарифмически ищет узел по значению
     // Если находит то возвращает его, если не находит
     // То возвращает null
-    find(el) {
-
+    find(el, candidate) {
+        if (!candidate) {
+            candidate = this.#leader;
+        }
+        if (candidate.value === el) {
+            return candidate;
+        }
+        if (el < candidate.value && candidate.left) {
+            return this.find(el, candidate.left);
+        }
+        if (el > candidate.value && candidate.right) {
+            return this.contains(el, candidate.right);
+        }
+        return null;
     }
 
     // Обход дерева в ширину BFS
