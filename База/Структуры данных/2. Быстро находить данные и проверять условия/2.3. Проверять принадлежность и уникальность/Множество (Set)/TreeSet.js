@@ -68,6 +68,15 @@ export class TreeSet {
         if (!node) {
             return;
         }
+        if (!node.left && !node.right) {
+            if (!node.parent) {
+                this.#leader = null;
+            } else {
+                const slot = this.parentSlot(node);
+                node.parent[slot] = null;
+            }
+        }
+        // TODO доделать когда есть оба потомка
     }
 
     // Логарифмически ищет узел по значению
