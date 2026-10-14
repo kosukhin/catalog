@@ -43,5 +43,12 @@ describe('TreeSet', () => {
         tree.add(22);
 
         assert.equal(tree.leader().subtreeHeight, 3, 'высота поддерева 3');
+    });
+
+    it('удаление элемента', () => {
+        const tree = new TreeSet();
+        tree.add(1);
+        tree.add(4);
+        tree.add(21);
     })
 });
