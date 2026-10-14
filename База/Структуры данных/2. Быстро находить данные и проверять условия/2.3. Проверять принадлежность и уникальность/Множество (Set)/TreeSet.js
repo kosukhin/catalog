@@ -121,6 +121,12 @@ export class TreeSet {
         }
     }
 
+    updateNodeHeight(node) {
+        const rightHeight = node?.right?.subtreeHeight ?? 0;
+        const leftHeight = node?.left?.subtreeHeight ?? 0;
+        node.subtreeHeight = Math.max(rightHeight, leftHeight) + 1;
+    }
+
     leader() {
         return this.#leader;
     }
