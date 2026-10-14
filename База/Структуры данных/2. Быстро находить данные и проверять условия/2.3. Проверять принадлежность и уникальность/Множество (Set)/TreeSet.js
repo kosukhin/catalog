@@ -47,32 +47,32 @@ export class TreeSet {
         this.#debug = debug
     }
 
-    add(el, parent) {
+    add(el, candidate) {
         if (this.#debug) {
             console.log('-------------------');
-            console.log('Add: ', el, parent?.value);
+            console.log('Add: ', el, candidate?.value);
         }
         if (this.#leader === null) {
             this.#leader = this.createNewNode(el);
             return;
         }
-        if (!parent) {
-            parent = this.#leader;
+        if (!candidate) {
+            candidate = this.#leader;
         }
-        if (parent.value === el) {
+        if (candidate.value === el) {
             return;
         }
-        if (parent.value > el) {
-            if (parent.left) {
-                this.add(el, parent.left);
+        if (candidate.value > el) {
+            if (candidate.left) {
+                this.add(el, candidate.left);
             } else {
-                this.createNewNode(el, parent, 'left');
+                this.createNewNode(el, candidate, 'left');
             }
-        } else if (parent.value < el) {
-            if (parent.right) {
-                this.add(el, parent.right);
+        } else if (candidate.value < el) {
+            if (candidate.right) {
+                this.add(el, candidate.right);
             } else {
-                this.createNewNode(el, parent, 'right');
+                this.createNewNode(el, candidate, 'right');
             }
         }
     }
