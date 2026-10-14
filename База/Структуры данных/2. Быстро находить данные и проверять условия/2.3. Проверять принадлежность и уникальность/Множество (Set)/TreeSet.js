@@ -77,10 +77,6 @@ export class TreeSet {
         }
     }
 
-    newElementPosition(el, candidate) {
-        
-    }
-
     createNewNode(el, parent, slot) {
         const newNode = new Node(el, null, null, parent);
         newNode.subtreeHeight = 0;
