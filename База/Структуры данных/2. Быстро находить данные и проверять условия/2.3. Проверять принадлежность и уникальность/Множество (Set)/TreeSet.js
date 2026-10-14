@@ -126,7 +126,7 @@ export class TreeSet {
     bubbling(fromNode, cb) {
         cb(fromNode);
         if (fromNode.parent) {
-            this.bubbling(fromNode.parent);
+            this.bubbling(fromNode.parent, cb);
         }
     }
 
