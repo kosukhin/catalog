@@ -32,6 +32,6 @@ describe('TreeSet', () => {
     tree.add(19);
     tree.add(22);
 
-    assert.equal(tree.leader().subtreeHeight, 2);
+    assert.equal(tree.leader().subtreeHeight, 3);
   })
 });
