@@ -76,6 +76,12 @@ export class TreeSet {
                 node.parent[slot] = null;
             }
         }
+        if (!node.left && node.right) {
+
+        }
+        if (node.left && !node.right) {
+
+        }
         // TODO доделать когда есть оба потомка
     }
 
