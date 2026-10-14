@@ -148,17 +148,19 @@ export class TreeSet {
         if (parent) {
             const parentSlot = this.parentSlot(node);
             parent[parentSlot] = rightChild;
-            parent.subtreeHeight -= 1;
         } else {
             this.#leader = rightChild;
             this.#leader.parent = null;
         }
         rightChild.parent = parent;
         rightChild.left = node;
-        rightChild.subtreeHeight += 1;
         node.parent = rightChild;
         node.right = null;
-        node.subtreeHeight -= 1;
+        this.updateNodeHeight(node);
+        this.updateNodeHeight(rightChild);
+        if (parent) {
+            this.updateNodeHeight(parent);
+        }
     }
 
     rotateRight(node) {
@@ -170,17 +172,19 @@ export class TreeSet {
         if (parent) {
             const parentSlot = this.parentSlot(node);
             parent[parentSlot] = leftChild;
-            parent.subtreeHeight -= 1;
         } else {
             this.#leader = leftChild;
             this.#leader.parent = null;
         }
         leftChild.parent = parent;
         leftChild.right = node;
-        leftChild.subtreeHeight += 1;
         node.parent = leftChild;
         node.left = null;
-        node.subtreeHeight -= 1;
+        this.updateNodeHeight(node);
+        this.updateNodeHeight(leftChild);
+        if (parent) {
+            this.updateNodeHeight(parent);
+        }
     }
 
     delete(el) {
