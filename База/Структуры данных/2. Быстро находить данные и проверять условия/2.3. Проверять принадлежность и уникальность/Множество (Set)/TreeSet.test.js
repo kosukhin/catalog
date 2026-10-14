@@ -50,5 +50,10 @@ describe('TreeSet', () => {
         tree.add(1);
         tree.add(4);
         tree.add(21);
+
+        assert.equal(tree.contains(4), true, '4 в дереве')
+        tree.delete(4);
+
+        assert.equal(tree.contains(4), false, '4 уже нет в дереве')
     })
 });
