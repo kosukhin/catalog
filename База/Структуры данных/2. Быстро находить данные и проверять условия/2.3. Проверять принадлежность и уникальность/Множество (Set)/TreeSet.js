@@ -76,12 +76,30 @@ export class TreeSet {
 
     // Убрать элемент из множества по значению
     delete(el) {
-
+        this.traverse((layer) => {
+            const node = layer.find((n) = n.value === el);
+            if (node) {
+                
+            }
+        });
     }
 
     // Обход дерева в ширину BFS
-    traverse() {
-
+    // Передает в cb массив найденных узлов на слое
+    // Если cb вернет false поиск прекратить
+    traverse(cb) {
+        const queue = [this.#leader];
+        let interruptedByCb = false;
+        while(queue.length && !interruptedByCb) {
+            interruptedByCb = !cb(queue);
+            const node = queue.shift();
+            if (node.left) {
+                queue.push(node.left);
+            }
+            if (node.right) {
+                queue.push(node.right);
+            }
+        }
     }
 
     // Поместить элемент в корректную позицию по BST инварианту
