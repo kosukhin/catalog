@@ -22,4 +22,15 @@ describe('TreeSet', () => {
     assert.equal(tree.contains(19), false);
     assert.equal(tree.contains(21), true);
   });
+
+  it('корректная балансировка', () => {
+    const tree = new TreeSet();
+    tree.add(1);
+    tree.add(4);
+    tree.add(21);
+    tree.add(7);
+    tree.add(19);
+    tree.add(22);
+    
+  })
 });
