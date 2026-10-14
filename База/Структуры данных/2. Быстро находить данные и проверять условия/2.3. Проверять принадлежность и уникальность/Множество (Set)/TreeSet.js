@@ -83,6 +83,9 @@ export class TreeSet {
 
         }
         // TODO доделать когда есть оба потомка
+        if (node.left && node.right) {
+
+        }
     }
 
     // Логарифмически ищет узел по значению
