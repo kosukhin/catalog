@@ -18,7 +18,6 @@ describe('TreeSet', () => {
         tree.add(4);
         tree.add(21);
         tree.add(7);
-        tree.add(19);
         tree.add(22);
         tree.add(25);
         tree.add(10);
