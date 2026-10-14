@@ -162,9 +162,13 @@ export class TreeSet {
             this.#leader.parent = null;
         }
         rightChild.parent = parent;
+        const rightChildLeft = rightChild.left;
         rightChild.left = node;
         node.parent = rightChild;
         node.right = null;
+        if (rightChildLeft) {
+            node.right = rightChildLeft;
+        }
         this.updateNodeHeight(node);
         this.updateNodeHeight(rightChild);
         if (parent) {
