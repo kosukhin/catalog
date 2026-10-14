@@ -74,6 +74,13 @@ export class TreeSet {
         return false;
     }
 
+    /**
+     * Убрать элемент из множества по значению
+     */
+    delete(el) {
+
+    }
+
     // Поместить элемент в корректную позицию по BST инварианту
     placeBST(el, candidate) {
         if (this.#leader === null) {
@@ -235,9 +242,5 @@ export class TreeSet {
         if (parent) {
             this.updateNodeHeight(parent);
         }
-    }
-
-    delete(el) {
-
     }
 }
