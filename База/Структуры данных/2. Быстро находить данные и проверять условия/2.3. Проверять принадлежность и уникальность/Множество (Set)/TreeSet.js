@@ -64,6 +64,10 @@ export class TreeSet {
 
     // Убрать элемент из множества по значению
     delete(el) {
+        if (this.#debug) {
+            console.log('-------------------');
+            console.log('Delete: ', el);
+        }
         const node = this.find(el);
         if (!node) {
             return;
