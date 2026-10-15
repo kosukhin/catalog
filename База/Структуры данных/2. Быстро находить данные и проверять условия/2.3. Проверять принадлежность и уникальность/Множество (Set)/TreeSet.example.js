@@ -47,3 +47,4 @@ console.log(printAsciiTree(tree.leader()));
 console.log('have 4', tree.contains(4));
 console.log('have 24', tree.contains(24));
 console.log('have 12', tree.contains(12));
+

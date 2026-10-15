@@ -69,6 +69,18 @@ describe('TreeSet', () => {
         assert.equal(leftMost.value, 1);
     });
 
+    it('самый правый узел', () => {
+        const tree = new TreeSet();
+
+        tree.add(1);
+        tree.add(4);
+        tree.add(7);
+        tree.add(21);
+
+        const leftMost = tree.findRightMostChild(tree.leader());
+        assert.equal(leftMost.value, 21);
+    });
+
     it('удаление элемента с двумя потомками', () => {
         const tree = new TreeSet();
         tree.add(1);

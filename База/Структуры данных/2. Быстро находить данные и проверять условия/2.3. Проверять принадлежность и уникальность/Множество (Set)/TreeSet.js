@@ -85,9 +85,29 @@ export class TreeSet {
                 node.parent[slot] = successor;
             }
         }
-        // TODO доделать когда есть оба потомка
         if (node.left && node.right) {
-
+            const leftMostRight = this.findLeftMostChild(node.right);
+            const rightMostLeft = this.findRightMostChild(node.left);
+            const successor = leftMostRight.subtreeHeight < rightMostLeft.subtreeHeight ? leftMostRight : rightMostLeft;
+            const successorSlot = leftMostRight.subtreeHeight < rightMostLeft.subtreeHeight ? 'left' : 'right';
+            const successorReverseSlot = leftMostRight.subtreeHeight < rightMostLeft.subtreeHeight ? 'right' : 'left';
+            const slot = this.#parentSlot(node);
+            const successorReverseSlotNode = successor[successorReverseSlot];
+            // Существующее поддерево с обратной стороны у приемника переходит к родителю приемника
+            if (successorReverseSlotNode) {
+                successorReverseSlotNode.parent = successor.parent;
+                successor.parent[successorSlot] = successorReverseSlotNode;
+            }
+            // К родителю удаляемого узла привязываем преемника
+            if (slot) {
+                node.parent[slot] = successor;
+            } else {
+                this.#leader = successor;
+            }
+            successor.left = node.left;
+            successor.right = node.right;
+            this.#updateNodeHeight(successor);
+            this.#rebalance(successor);
         }
     }
 
@@ -138,7 +158,7 @@ export class TreeSet {
         while(queue.length) {
             const currentNode = queue.shift();
             if (currentNode.left) {
-                queue.push(currentNode);
+                queue.push(currentNode.left);
             } else {
                 return currentNode;
             }
@@ -151,7 +171,7 @@ export class TreeSet {
         while(queue.length) {
             const currentNode = queue.shift();
             if (currentNode.right) {
-                queue.push(currentNode);
+                queue.push(currentNode.right);
             } else {
                 return currentNode;
             }
