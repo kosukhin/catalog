@@ -94,5 +94,17 @@ describe('TreeSet', () => {
         assert.equal(tree.contains(4), false, '4 уже нет в дереве')
     });
 
+    it('Пропажа единички', () => {
+        const tree = new TreeSet();
+        tree.add(21);
+        tree.add(4);
+        tree.add(1);
+        tree.add(27);
+        tree.add(28);
+        tree.delete(21);
+
+        assert.equal(tree.contains(1), true, '1 в дереве')
+    });
+
     // TODO проверить более сложные случаи с удалением и перебалансировкой
 });
