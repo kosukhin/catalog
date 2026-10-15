@@ -84,9 +84,11 @@ export class TreeSet {
             const successor = node.right ?? node.left;
             if (!node.parent) {
                 this.#leader = successor;
+                successor.parent = null;
             } else {
                 const slot = this.#parentSlot(node);
                 node.parent[slot] = successor;
+                successor.parent = node.parent;
             }
         }
         if (node.left && node.right) {
