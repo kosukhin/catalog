@@ -112,6 +112,12 @@ export class TreeSet {
             }
             successor.left = node.left;
             successor.right = node.right;
+            if (successor.left?.parent) {
+                successor.left.parent = successor;
+            }
+            if (successor.right?.parent) {
+                successor.right.parent = successor;
+            }
             this.#updateNodeHeight(successor);
             this.#rebalance(successor);
         }
