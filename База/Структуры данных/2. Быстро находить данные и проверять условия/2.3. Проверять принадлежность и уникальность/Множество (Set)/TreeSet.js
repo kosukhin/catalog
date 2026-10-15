@@ -97,9 +97,9 @@ export class TreeSet {
             const successorReverseSlot = leftMostRight.subtreeHeight < rightMostLeft.subtreeHeight ? 'right' : 'left';
             const nodeSlot = this.#parentSlot(node);
             const successorReverseSlotNode = successor[successorReverseSlot];
-            // Существующее поддерево с обратной стороны у приемника переходит к родителю удаляемого узла
+            // Существующее поддерево с обратной стороны у приемника переходит к родителю приемника
             if (successorReverseSlotNode) {
-                successorReverseSlotNode.parent = node.parent;
+                successorReverseSlotNode.parent = successor.parent;
                 successor.parent[successorSlot] = successorReverseSlotNode;
             }
             // К родителю удаляемого узла привязываем преемника
