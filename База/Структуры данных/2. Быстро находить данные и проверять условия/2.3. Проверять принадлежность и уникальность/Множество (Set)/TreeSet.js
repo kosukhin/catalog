@@ -102,6 +102,9 @@ export class TreeSet {
                 successorReverseSlotNode.parent = successor.parent;
                 successor.parent[successorSlot] = successorReverseSlotNode;
             }
+            if (successor.parent) {
+                successor.parent[successorSlot] = null;
+            }
             // К родителю удаляемого узла привязываем преемника
             if (nodeSlot) {
                 node.parent[nodeSlot] = successor;
