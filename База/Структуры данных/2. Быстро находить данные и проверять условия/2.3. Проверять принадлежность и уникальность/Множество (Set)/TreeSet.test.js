@@ -45,7 +45,7 @@ describe('TreeSet', () => {
         assert.equal(tree.leader().subtreeHeight, 3, 'высота поддерева 3');
     });
 
-    it('удаление элемента', () => {
+    it('удаление элемента справа', () => {
         const tree = new TreeSet();
         tree.add(1);
         tree.add(4);
@@ -55,6 +55,19 @@ describe('TreeSet', () => {
         tree.delete(21);
 
         assert.equal(tree.contains(21), false, '21 уже нет в дереве')
+    })
+
+    it('удаление элемента с двумя потомками', () => {
+        const tree = new TreeSet();
+        tree.add(1);
+        tree.add(4);
+        tree.add(7);
+        tree.add(21);
+
+        assert.equal(tree.contains(4), true, '4 в дереве')
+        tree.delete(4);
+
+        assert.equal(tree.contains(4), false, '4 уже нет в дереве')
     })
 
     // TODO проверить более сложные случаи с удалением и перебалансировкой
