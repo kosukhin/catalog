@@ -57,6 +57,18 @@ describe('TreeSet', () => {
         assert.equal(tree.contains(21), false, '21 уже нет в дереве')
     })
 
+    it('самый левый узел', () => {
+        const tree = new TreeSet();
+
+        tree.add(1);
+        tree.add(4);
+        tree.add(7);
+        tree.add(21);
+
+        const leftMost = tree.findLeftMostChild(tree.leader());
+        assert.equal(leftMost.value, 1);
+    });
+
     it('удаление элемента с двумя потомками', () => {
         const tree = new TreeSet();
         tree.add(1);
@@ -68,7 +80,7 @@ describe('TreeSet', () => {
         tree.delete(4);
 
         assert.equal(tree.contains(4), false, '4 уже нет в дереве')
-    })
+    });
 
     // TODO проверить более сложные случаи с удалением и перебалансировкой
 });

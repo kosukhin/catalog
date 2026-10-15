@@ -133,12 +133,30 @@ export class TreeSet {
         return this.#leader;
     }
 
-    findLeftMostChild() {
-
+    findLeftMostChild(node) {
+        const queue = [node];
+        while(queue.length) {
+            const currentNode = queue.shift();
+            if (currentNode.left) {
+                queue.push(currentNode);
+            } else {
+                return currentNode;
+            }
+        }
+        return node;
     }
 
-    findRightMostChild() {
-        
+    findRightMostChild(node) {
+        const queue = [node];
+        while(queue.length) {
+            const currentNode = queue.shift();
+            if (currentNode.right) {
+                queue.push(currentNode);
+            } else {
+                return currentNode;
+            }
+        }
+        return node;
     }
 
     // Поместить элемент в корректную позицию по BST инварианту
