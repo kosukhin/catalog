@@ -133,6 +133,14 @@ export class TreeSet {
         return this.#leader;
     }
 
+    findLeftMostChild() {
+
+    }
+
+    findRightMostChild() {
+        
+    }
+
     // Поместить элемент в корректную позицию по BST инварианту
     #placeBST(el, candidate) {
         if (this.#leader === null) {
