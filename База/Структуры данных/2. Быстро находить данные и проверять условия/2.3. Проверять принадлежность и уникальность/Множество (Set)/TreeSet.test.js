@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
-import { TreeSet } from './TreeSet.js';
 import assert from 'node:assert/strict';
+import { TreeSet } from './TreeSet.js';
 
 describe('TreeSet', () => {
     it('корректный поворот дерева', () => {
