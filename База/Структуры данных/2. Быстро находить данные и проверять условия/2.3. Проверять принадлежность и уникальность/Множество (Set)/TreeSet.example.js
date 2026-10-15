@@ -56,3 +56,6 @@ console.log(printAsciiTree(tree.leader()));
 
 tree.delete(25);
 console.log(printAsciiTree(tree.leader()));
+
+tree.delete(10);
+console.log(printAsciiTree(tree.leader()));

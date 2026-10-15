@@ -82,6 +82,9 @@ export class TreeSet {
         }
         if (!node.left && node.right || node.left && !node.right) {
             const successor = node.right ?? node.left;
+            if (this.#debug) {
+                console.log('Successor:', successor.value);
+            }
             if (!node.parent) {
                 this.#leader = successor;
                 successor.parent = null;
@@ -95,6 +98,9 @@ export class TreeSet {
             const leftMostRight = this.findLeftMostChild(node.right);
             const rightMostLeft = this.findRightMostChild(node.left);
             const successor = leftMostRight.subtreeHeight < rightMostLeft.subtreeHeight ? leftMostRight : rightMostLeft;
+            if (this.#debug) {
+                console.log('Successor:', successor.value);
+            }
             const successorSlot = this.#parentSlot(successor);
             const successorReverseSlot = successorSlot && (successorSlot === 'left' ? 'right' : 'left');
             const nodeSlot = this.#parentSlot(node);
