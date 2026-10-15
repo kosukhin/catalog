@@ -45,7 +45,7 @@ export class TreeSet {
 
     constructor(debug = false) {
         this.#debug = debug
-        this.updateNodeHeight = this.updateNodeHeight.bind(this);
+        this.updateNodeHeight = this.#updateNodeHeight.bind(this);
     }
 
     add(el) {
@@ -53,7 +53,7 @@ export class TreeSet {
             console.log('-------------------');
             console.log('Add: ', el);
         }
-        this.placeBST(el, this.#leader);
+        this.#placeBST(el, this.#leader);
     }
 
     // Основной метод ради которого и создается множество
@@ -72,7 +72,7 @@ export class TreeSet {
             if (!node.parent) {
                 this.#leader = null;
             } else {
-                const slot = this.parentSlot(node);
+                const slot = this.#parentSlot(node);
                 node.parent[slot] = null;
             }
         }
@@ -81,7 +81,7 @@ export class TreeSet {
             if (!node.parent) {
                 this.#leader = successor;
             } else {
-                const slot = this.parentSlot(node);
+                const slot = this.#parentSlot(node);
                 node.parent[slot] = successor;
             }
         }
@@ -128,10 +128,15 @@ export class TreeSet {
         }
     }
 
+    // Корень дерева
+    leader() {
+        return this.#leader;
+    }
+
     // Поместить элемент в корректную позицию по BST инварианту
-    placeBST(el, candidate) {
+    #placeBST(el, candidate) {
         if (this.#leader === null) {
-            this.#leader = this.createNewNode(el);
+            this.#leader = this.#createNewNode(el);
             return;
         }
         if (!candidate) {
@@ -142,34 +147,34 @@ export class TreeSet {
         }
         if (candidate.value > el) {
             if (candidate.left) {
-                this.placeBST(el, candidate.left);
+                this.#placeBST(el, candidate.left);
             } else {
-                this.createNewNode(el, candidate, 'left');
+                this.#createNewNode(el, candidate, 'left');
             }
         } else if (candidate.value < el) {
             if (candidate.right) {
-                this.placeBST(el, candidate.right);
+                this.#placeBST(el, candidate.right);
             } else {
-                this.createNewNode(el, candidate, 'right');
+                this.#createNewNode(el, candidate, 'right');
             }
         }
     }
 
     // Создание нового узла в дереве
-    createNewNode(el, parent, slot) {
+    #createNewNode(el, parent, slot) {
         const newNode = new Node(el, null, null, parent);
         newNode.subtreeHeight = 0;
         if (parent && slot) {
             parent[slot] = newNode;
-            this.bubbling(newNode, this.updateNodeHeight);
-            this.rebalance(newNode);
-            this.bubbling(newNode, this.updateNodeHeight);
+            this.#bubbling(newNode, this.#updateNodeHeight);
+            this.#rebalance(newNode);
+            this.#bubbling(newNode, this.#updateNodeHeight);
         }
         return newNode;
     }
 
     // Перебалансировка от узла к родителю
-    rebalance(node) {
+    #rebalance(node) {
         const rightHeight = node?.right?.subtreeHeight ?? 0;
         const leftHeight = node?.left?.subtreeHeight ?? 0;
         const diff = leftHeight - rightHeight;
@@ -178,11 +183,11 @@ export class TreeSet {
             const childLeft = node.left;
             // LR
             if (childLeft.right && !childLeft.left) {
-                this.rotateLeft(childLeft);
-                this.rotateRight(node);
+                this.#rotateLeft(childLeft);
+                this.#rotateRight(node);
                 // RR
             } else {
-                this.rotateRight(node);
+                this.#rotateRight(node);
             }
         }
         if (diff <= -2) {
@@ -190,40 +195,35 @@ export class TreeSet {
             const childRight = node.right;
             // RL
             if (childRight.left && !childRight.right) {
-                this.rotateRight(childRight);
-                this.rotateLeft(node);
+                this.#rotateRight(childRight);
+                this.#rotateLeft(node);
                 // LL
             } else {
-                this.rotateLeft(node);
+                this.#rotateLeft(node);
             }
         }
         if (node.parent) {
-            this.rebalance(node.parent);
+            this.#rebalance(node.parent);
         }
     }
 
     // Всплытие к родителю
-    bubbling(fromNode, cb) {
+    #bubbling(fromNode, cb) {
         cb(fromNode);
         if (fromNode.parent) {
-            this.bubbling(fromNode.parent, cb);
+            this.#bubbling(fromNode.parent, cb);
         }
     }
 
     // Пересчет высоты поддерева узла
-    updateNodeHeight(node) {
+    #updateNodeHeight(node) {
         const rightHeight = node?.right?.subtreeHeight ?? 0;
         const leftHeight = node?.left?.subtreeHeight ?? 0;
         node.subtreeHeight = Math.max(rightHeight, leftHeight) + 1;
     }
 
-    // Корень дерева
-    leader() {
-        return this.#leader;
-    }
-
-    // Определение с какой стороны от родителя находится узел
-    parentSlot(node) {
+    // Определение в каком слоте родителя находится узел
+    #parentSlot(node) {
         const parent = node.parent;
         if (!parent) {
             return null;
@@ -232,14 +232,14 @@ export class TreeSet {
     }
 
     // Поворот поддерева влево от узла
-    rotateLeft(node) {
+    #rotateLeft(node) {
         const rightChild = node.right;
         if (!rightChild) {
             throw new Error(`У узла ${node.value} нет правого потомка`)
         }
         const parent = node.parent;
         if (parent) {
-            const parentSlot = this.parentSlot(node);
+            const parentSlot = this.#parentSlot(node);
             parent[parentSlot] = rightChild;
         } else {
             this.#leader = rightChild;
@@ -254,22 +254,22 @@ export class TreeSet {
             node.right = rightChildLeft;
             rightChildLeft.parent = node;
         }
-        this.updateNodeHeight(node);
-        this.updateNodeHeight(rightChild);
+        this.#updateNodeHeight(node);
+        this.#updateNodeHeight(rightChild);
         if (parent) {
-            this.updateNodeHeight(parent);
+            this.#updateNodeHeight(parent);
         }
     }
 
     // Поворот поддерева вправо от узла
-    rotateRight(node) {
+    #rotateRight(node) {
         const leftChild = node.left;
         if (!leftChild) {
             throw new Error(`У узла ${node.value} нет левого потомка`)
         }
         const parent = node.parent;
         if (parent) {
-            const parentSlot = this.parentSlot(node);
+            const parentSlot = this.#parentSlot(node);
             parent[parentSlot] = leftChild;
         } else {
             this.#leader = leftChild;
@@ -284,10 +284,10 @@ export class TreeSet {
             node.left = leftChildRight;
             leftChildRight.parent = node;
         }
-        this.updateNodeHeight(node);
-        this.updateNodeHeight(leftChild);
+        this.#updateNodeHeight(node);
+        this.#updateNodeHeight(leftChild);
         if (parent) {
-            this.updateNodeHeight(parent);
+            this.#updateNodeHeight(parent);
         }
     }
 }
