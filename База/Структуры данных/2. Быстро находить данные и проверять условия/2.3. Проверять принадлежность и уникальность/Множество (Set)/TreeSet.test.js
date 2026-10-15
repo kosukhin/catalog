@@ -1,5 +1,5 @@
-import { TreeSet } from './TreeSet.js';
 import { describe, it } from 'node:test';
+import { TreeSet } from './TreeSet.js';
 import assert from 'node:assert/strict';
 
 describe('TreeSet', () => {
