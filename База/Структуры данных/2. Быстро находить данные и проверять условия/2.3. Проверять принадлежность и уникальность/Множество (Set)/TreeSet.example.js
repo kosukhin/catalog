@@ -50,3 +50,6 @@ console.log('have 12', tree.contains(12));
 
 tree.delete(26);
 console.log(printAsciiTree(tree.leader()));
+
+tree.delete(22);
+console.log(printAsciiTree(tree.leader()));
