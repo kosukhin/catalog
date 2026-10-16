@@ -110,6 +110,8 @@ export class TreeSet {
                 successorReverseSlotNode.parent = successor.parent;
                 successor.parent[successorSlot] = successorReverseSlotNode;
             }
+            successor.left = node.left;
+            successor.right = node.right;
             if (successor.parent) {
                 successor.parent[successorSlot] = null;
             }
@@ -121,8 +123,6 @@ export class TreeSet {
                 this.#leader = successor;
                 successor.parent = null;
             }
-            successor.left = node.left;
-            successor.right = node.right;
             if (successor.left?.parent) {
                 successor.left.parent = successor;
             }
