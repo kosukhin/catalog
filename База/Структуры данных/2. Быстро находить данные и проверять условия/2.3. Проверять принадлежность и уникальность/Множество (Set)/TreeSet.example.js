@@ -78,3 +78,9 @@ console.log('1 in tree', tree.contains(1));
 
 tree.delete(4);
 console.log(printAsciiTree(tree.leader()));
+
+tree.delete(27);
+console.log(printAsciiTree(tree.leader()));
+
+tree.delete(1);
+console.log(printAsciiTree(tree.leader()));
