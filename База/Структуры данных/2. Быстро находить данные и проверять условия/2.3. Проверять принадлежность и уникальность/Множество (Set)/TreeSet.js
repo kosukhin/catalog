@@ -78,6 +78,7 @@ export class TreeSet {
             } else {
                 const slot = this.#parentSlot(node);
                 node.parent[slot] = null;
+                this.#rebalance(node.parent);
             }
         }
         if (!node.left && node.right || node.left && !node.right) {
@@ -93,6 +94,8 @@ export class TreeSet {
                 node.parent[slot] = successor;
                 successor.parent = node.parent;
             }
+            this.#updateNodeHeight(successor);
+            this.#rebalance(successor);
         }
         if (node.left && node.right) {
             const leftMostRight = this.findLeftMostChild(node.right);
