@@ -121,8 +121,8 @@ export class TreeSet {
                 this.#leader = successor;
                 successor.parent = null;
             }
-            successor.left = node.left;
-            successor.right = node.right;
+            successor.left = node.left !== null && successor.left !== node.left ? node.left : successor.left;
+            successor.right = node.right !== null && successor.right !== node.right ? node.right : successor.right;
             if (successor.left?.parent) {
                 successor.left.parent = successor;
             }
