@@ -12,3 +12,8 @@ tree.add(1);
 tree.add(27);
 tree.add(28);
 console.log(printAsciiTree(tree.leader()));
+
+tree.delete(7);
+console.log(printAsciiTree(tree.leader()));
+
+        tree.delete(21);
