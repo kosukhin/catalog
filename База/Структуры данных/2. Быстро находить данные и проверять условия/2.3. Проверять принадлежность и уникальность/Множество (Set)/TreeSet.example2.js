@@ -13,11 +13,14 @@ tree.add(27);
 tree.add(28);
 console.log(printAsciiTree(tree.leader()));
 console.log('balanced', tree.balanced());
+console.log('elementsSorted', tree.elementsSorted());
 
 tree.delete(7);
 console.log(printAsciiTree(tree.leader()));
 console.log('balanced', tree.balanced());
+console.log('elementsSorted', tree.elementsSorted());
 
 tree.delete(21);
 console.log(printAsciiTree(tree.leader()));
 console.log('balanced', tree.balanced());
+console.log('elementsSorted', tree.elementsSorted());

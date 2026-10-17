@@ -382,9 +382,9 @@ export class TreeSet {
     }
 
     elementsSorted(exclude = []) {
-        const elements = [];
+        let elements = [];
         this.traverse((els) => {
-            elements.concat(els.filter(el => {
+            elements = elements.concat(els.filter(el => {
                 if (exclude.length) {
                     return !exclude.includes(el);
                 }
