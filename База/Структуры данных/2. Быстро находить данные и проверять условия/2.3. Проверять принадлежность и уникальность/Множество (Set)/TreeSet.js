@@ -300,6 +300,7 @@ export class TreeSet {
     }
 
     // Пересчет высоты поддерева узла
+    // ## Закон расчета высоты поддерева
     #updateNodeHeight(node) {
         const rightHeight = node?.right?.subtreeHeight ?? 0;
         const leftHeight = node?.left?.subtreeHeight ?? 0;
