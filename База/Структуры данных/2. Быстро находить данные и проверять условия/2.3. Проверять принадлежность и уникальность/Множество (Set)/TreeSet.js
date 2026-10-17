@@ -391,7 +391,7 @@ export class TreeSet {
                 return el;
             }))
         });
-        elements.sort();
+        elements.sort((a, b) => a - b);
         return [...Array.from(new Set(elements))];
     }
 }
