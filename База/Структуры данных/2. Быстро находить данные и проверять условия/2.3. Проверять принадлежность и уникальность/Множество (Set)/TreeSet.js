@@ -366,12 +366,12 @@ export class TreeSet {
         }
     }
 
-    balanced(tree) {
+    balanced() {
         let balanced = true;
-        tree.traverse(els => {
+        this.traverse(els => {
             els.forEach(el => {
                 if (balanced) {
-                    balanced = Max.abs((el?.left?.subtreeHeight ?? 0) - (el?.right?.subtreeHeight ?? 0)) <= 2;
+                    balanced = Math.abs((el?.left?.subtreeHeight ?? 0) - (el?.right?.subtreeHeight ?? 0)) <= 2;
                 }
             });
             if (!balanced) {
@@ -381,9 +381,9 @@ export class TreeSet {
         return balanced;
     }
 
-    elementsSorted(tree, exclude = []) {
+    elementsSorted(exclude = []) {
         const elements = [];
-        tree.traverse((els) => {
+        this.traverse((els) => {
             elements.concat(els.filter(el => {
                 if (exclude.length) {
                     return !exclude.includes(el);
