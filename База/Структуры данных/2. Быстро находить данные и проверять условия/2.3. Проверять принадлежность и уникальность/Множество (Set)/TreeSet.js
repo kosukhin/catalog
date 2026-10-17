@@ -384,13 +384,14 @@ export class TreeSet {
     elementsSorted(exclude = []) {
         let elements = [];
         this.traverse((els) => {
-            elements = elements.concat(els.filter(el => {
+            elements = elements.concat(els.map(el => el.value).filter(el => {
                 if (exclude.length) {
                     return !exclude.includes(el);
                 }
                 return el;
             }))
         });
+        elements.sort();
         return elements;
     }
 }
