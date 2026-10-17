@@ -167,6 +167,11 @@ export class TreeSet {
         return candidate < treeNode.value ? SLOTS.LFT : SLOTS.RGT;
     }
 
+    // Слот заполнен
+    slotFilled(treeNode, slot) {
+        return Boolean(treeNode[slot]);
+    }
+
     // Обход дерева в ширину BFS
     // Передает в cb массив найденных узлов на слое
     // Если cb вернет false поиск прекратить
@@ -228,21 +233,14 @@ export class TreeSet {
         if (!treeNode) {
             treeNode = this.#leader;
         }
-        if (treeNode.value === candidate) {
+        const candidateSlot = this.bstSlotRule(candidate, treeNode);
+        if (candidateSlot === SLOTS.CUR) {
             return;
         }
-        if (treeNode.value > candidate) {
-            if (treeNode.left) {
-                this.#placeBST(candidate, treeNode.left);
-            } else {
-                this.#createNewNode(candidate, treeNode, 'left');
-            }
-        } else if (treeNode.value < candidate) {
-            if (treeNode.right) {
-                this.#placeBST(candidate, treeNode.right);
-            } else {
-                this.#createNewNode(candidate, treeNode, 'right');
-            }
+        if (this.slotFilled(treeNode, candidateSlot)) {
+            this.#placeBST(candidate, treeNode[candidateSlot]);
+        } else {
+            this.#createNewNode(candidate, treeNode, 'left');
         }
     }
 
