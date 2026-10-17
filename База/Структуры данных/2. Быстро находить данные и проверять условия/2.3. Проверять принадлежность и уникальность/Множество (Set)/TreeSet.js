@@ -220,28 +220,28 @@ export class TreeSet {
     }
 
     // Поместить элемент в корректную позицию по BST инварианту
-    #placeBST(el, candidate) {
+    #placeBST(candidate, treeNode) {
         if (this.#leader === null) {
-            this.#leader = this.#createNewNode(el);
+            this.#leader = this.#createNewNode(candidate);
             return;
         }
-        if (!candidate) {
-            candidate = this.#leader;
+        if (!treeNode) {
+            treeNode = this.#leader;
         }
-        if (candidate.value === el) {
+        if (treeNode.value === candidate) {
             return;
         }
-        if (candidate.value > el) {
-            if (candidate.left) {
-                this.#placeBST(el, candidate.left);
+        if (treeNode.value > candidate) {
+            if (treeNode.left) {
+                this.#placeBST(candidate, treeNode.left);
             } else {
-                this.#createNewNode(el, candidate, 'left');
+                this.#createNewNode(candidate, treeNode, 'left');
             }
-        } else if (candidate.value < el) {
-            if (candidate.right) {
-                this.#placeBST(el, candidate.right);
+        } else if (treeNode.value < candidate) {
+            if (treeNode.right) {
+                this.#placeBST(candidate, treeNode.right);
             } else {
-                this.#createNewNode(el, candidate, 'right');
+                this.#createNewNode(candidate, treeNode, 'right');
             }
         }
     }
