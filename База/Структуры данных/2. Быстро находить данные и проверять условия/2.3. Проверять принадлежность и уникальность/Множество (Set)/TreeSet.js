@@ -240,9 +240,9 @@ export class TreeSet {
         newNode.subtreeHeight = 0;
         if (parent && slot) {
             parent[slot] = newNode;
-            this.#bubbling(newNode, this.#updateNodeHeight);
+            this.#bubbling(newNode, this.#updateNodeHeight.bind(this));
             this.#rebalance(newNode);
-            this.#bubbling(newNode, this.#updateNodeHeight);
+            this.#bubbling(newNode, this.#updateNodeHeight.bind(this));
         }
         return newNode;
     }
