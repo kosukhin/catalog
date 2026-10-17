@@ -365,4 +365,32 @@ export class TreeSet {
             this.#updateNodeHeight(parent);
         }
     }
+
+    balanced(tree) {
+        let balanced = true;
+        tree.traverse(els => {
+            els.forEach(el => {
+                if (balanced) {
+                    balanced = Max.abs((el?.left?.subtreeHeight ?? 0) - (el?.right?.subtreeHeight ?? 0)) <= 2;
+                }
+            });
+            if (!balanced) {
+                return false;
+            }
+        })
+        return balanced;
+    }
+
+    elementsSorted(tree, exclude = []) {
+        const elements = [];
+        tree.traverse((els) => {
+            elements.concat(els.filter(el => {
+                if (exclude.length) {
+                    return !exclude.includes(el);
+                }
+                return el;
+            }))
+        });
+        return elements;
+    }
 }
