@@ -1,5 +1,14 @@
-export function balanced(root) {
-
+export function balanced(tree) {
+    let balanced = false;
+    tree.traverse(els => {
+        els.forEach(el => {
+            
+        });
+        if (!balanced) {
+            return false;
+        }
+    })
+    return balanced;
 }
 
 export function elementsSorted(tree, exclude = []) {
