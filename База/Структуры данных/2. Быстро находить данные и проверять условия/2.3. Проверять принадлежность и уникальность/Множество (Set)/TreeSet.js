@@ -159,6 +159,7 @@ export class TreeSet {
         return this.find(candidate, treeNode[candidateSlot]);
     }
 
+    // ## Закон связей в слотах
     bstSlotRule(candidate, treeNode) {
         if (treeNode.value === candidate) {
             return SLOTS.CUR;
