@@ -240,7 +240,7 @@ export class TreeSet {
         if (this.slotFilled(treeNode, candidateSlot)) {
             this.#placeBST(candidate, treeNode[candidateSlot]);
         } else {
-            this.#createNewNode(candidate, treeNode, 'left');
+            this.#createNewNode(candidate, treeNode, candidateSlot);
         }
     }
 
