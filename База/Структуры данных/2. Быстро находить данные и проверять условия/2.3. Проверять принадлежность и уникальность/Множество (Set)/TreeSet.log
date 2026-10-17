@@ -300,7 +300,7 @@ Successor: 12
     4      11     21     28
    /
   /
- /
+ />
 1
 
 -------------------
@@ -345,7 +345,7 @@ Successor: 21
 
 -------------------
 Delete:  21
-Successor: 4
+Successor: 4>
     4
    / \
   /   \
@@ -379,4 +379,3 @@ Successor: 1
 Delete:  1
 Successor: 28
 28
-
