@@ -45,7 +45,6 @@ export class TreeSet {
 
     constructor(debug = false) {
         this.#debug = debug
-        this.updateNodeHeight = this.#updateNodeHeight.bind(this);
     }
 
     add(el) {
