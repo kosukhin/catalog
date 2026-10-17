@@ -35,6 +35,12 @@ class Node {
     }
 }
 
+const SLOTS = {
+    CUR: 'current',
+    LFT: 'left',
+    RGT: 'right',
+};
+
 /**
  * Берем за основу AVL дерево
  */
@@ -139,27 +145,22 @@ export class TreeSet {
     // Логарифмически ищет узел по значению
     // Если находит то возвращает его, если не находит
     // То возвращает null
-    find(el, candidate) {
-        if (!candidate) {
-            candidate = this.#leader;
+    find(candidate, treeNode) {
+        if (!treeNode) {
+            treeNode = this.#leader;
         }
-        if (candidate.value === el) {
-            return candidate;
+        const candidateSlot = this.bstSlotRule(treeNode, candidate);
+        if (candidateSlot === SLOTS.CUR) {
+            return treeNode;
         }
-        if (el < candidate.value && candidate.left) {
-            return this.find(el, candidate.left);
-        }
-        if (el > candidate.value && candidate.right) {
-            return this.find(el, candidate.right);
-        }
-        return this.find(el, candidate.right);
+        return this.find(candidate, treeNode[candidateSlot]);
     }
 
-    bstSlotRule(treeNode, candidateValue) {
-        if (treeNode.value === candidateValue) {
-            return null;
+    bstSlotRule(candidate, treeNode) {
+        if (treeNode.value === candidate) {
+            return SLOTS.CUR;
         }
-        return candidateValue < treeNode.value ? 'left' : 'right';
+        return candidate < treeNode.value ? SLOTS.LFT : SLOTS.RGT;
     }
 
     // Обход дерева в ширину BFS
