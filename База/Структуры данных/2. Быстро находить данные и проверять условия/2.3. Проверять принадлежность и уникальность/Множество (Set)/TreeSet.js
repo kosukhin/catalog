@@ -149,7 +149,7 @@ export class TreeSet {
         if (!treeNode) {
             treeNode = this.#leader;
         }
-        const candidateSlot = this.bstSlotRule(treeNode, candidate);
+        const candidateSlot = this.bstSlotRule(candidate, treeNode);
         if (candidateSlot === SLOTS.CUR) {
             return treeNode;
         }
