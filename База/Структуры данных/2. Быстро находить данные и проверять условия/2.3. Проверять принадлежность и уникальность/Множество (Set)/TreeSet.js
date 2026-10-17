@@ -153,6 +153,9 @@ export class TreeSet {
         if (candidateSlot === SLOTS.CUR) {
             return treeNode;
         }
+        if (!treeNode[candidateSlot]) {
+            return null;
+        }
         return this.find(candidate, treeNode[candidateSlot]);
     }
 
