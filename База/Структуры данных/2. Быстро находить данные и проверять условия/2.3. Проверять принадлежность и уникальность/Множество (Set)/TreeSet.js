@@ -163,7 +163,10 @@ export class TreeSet {
         const queue = [this.#leader];
         let interruptedByCb = false;
         while(queue.length && !interruptedByCb) {
-            interruptedByCb = !cb(queue);
+            const cbResult = cb(queue);
+            if (cbResult === false) {
+                interruptedByCb = true;
+            }
             const node = queue.shift();
             if (node.left) {
                 queue.push(node.left);
