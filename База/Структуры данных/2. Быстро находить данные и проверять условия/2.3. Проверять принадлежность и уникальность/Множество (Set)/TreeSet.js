@@ -152,7 +152,14 @@ export class TreeSet {
         if (el > candidate.value && candidate.right) {
             return this.find(el, candidate.right);
         }
-        return null;
+        return this.find(el, candidate.right);
+    }
+
+    bstSlotRule(treeNode, candidateValue) {
+        if (treeNode.value === candidateValue) {
+            return null;
+        }
+        return candidateValue < treeNode.value ? 'left' : 'right';
     }
 
     // Обход дерева в ширину BFS
