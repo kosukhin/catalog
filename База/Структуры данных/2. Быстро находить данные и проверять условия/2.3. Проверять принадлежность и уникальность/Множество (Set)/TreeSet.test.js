@@ -108,88 +108,78 @@ describe('TreeSet', () => {
         assert.equal(tree.contains(1), true, '1 в дереве')
     });
 
-    it('Проберка сбалансированности и налия всех узлов', () => {
-
-const tree = new TreeSet(true);
-
-tree.add(1);
-console.log(printAsciiTree(tree.leader()));
-
-tree.add(4);
-console.log(printAsciiTree(tree.leader()));
-
-tree.add(21);
-console.log(printAsciiTree(tree.leader()));
-
-tree.add(7);
-console.log(printAsciiTree(tree.leader()));
-
-tree.add(19);
-console.log(printAsciiTree(tree.leader()));
-
-tree.add(22);
-console.log(printAsciiTree(tree.leader()));
-
-tree.add(25);
-console.log(printAsciiTree(tree.leader()));
-
-tree.add(10);
-console.log(printAsciiTree(tree.leader()));
-
-tree.add(26);
-console.log(printAsciiTree(tree.leader()));
-
-tree.add(27);
-console.log(printAsciiTree(tree.leader()));
-
-tree.add(28);
-console.log(printAsciiTree(tree.leader()));
-
-tree.add(11);
-console.log(printAsciiTree(tree.leader()));
-
-tree.add(12);
-console.log(printAsciiTree(tree.leader()));
-
-console.log('have 4', tree.contains(4));
-console.log('have 24', tree.contains(24));
-console.log('have 12', tree.contains(12));
-
-tree.delete(26);
-console.log(printAsciiTree(tree.leader()));
-
-tree.delete(22);
-console.log(printAsciiTree(tree.leader()));
-
-tree.delete(25);
-console.log(printAsciiTree(tree.leader()));
-
-tree.delete(10);
-console.log(printAsciiTree(tree.leader()));
-
-tree.delete(19);
-console.log(printAsciiTree(tree.leader()));
-
-tree.delete(11);
-console.log(printAsciiTree(tree.leader()));
-
-tree.delete(7);
-console.log(printAsciiTree(tree.leader()));
-
-tree.delete(12);
-console.log(printAsciiTree(tree.leader()));
-
-tree.delete(21);
-console.log(printAsciiTree(tree.leader()));
-console.log('1 in tree', tree.contains(1));
-
-tree.delete(4);
-console.log(printAsciiTree(tree.leader()));
-
-tree.delete(27);
-console.log(printAsciiTree(tree.leader()));
-
-tree.delete(1);
-console.log(printAsciiTree(tree.leader()));
+    it('Проверка сбалансированности и налия всех узлов', () => {
+        const tree = new TreeSet();
+        tree.add(1);
+        tree.add(4);
+        assert.equal(tree.balanced(), true);
+        assert.equal(tree.elementsSorted().join(), '1,4');
+        tree.add(21);
+        assert.equal(tree.balanced(), true);
+        assert.equal(tree.elementsSorted().join(), '1,4,21');
+        tree.add(7);
+        assert.equal(tree.balanced(), true);
+        assert.equal(tree.elementsSorted().join(), '1,4,7,21');
+        tree.add(19);
+        assert.equal(tree.balanced(), true);
+        assert.equal(tree.elementsSorted().join(), '1,4,7,19,21');
+        tree.add(22);
+        assert.equal(tree.balanced(), true);
+        assert.equal(tree.elementsSorted().join(), '1,4,7,19,21,22');
+        tree.add(25);
+        assert.equal(tree.balanced(), true);
+        assert.equal(tree.elementsSorted().join(), '1,4,7,19,21,22,25');
+        tree.add(10);
+        assert.equal(tree.balanced(), true);
+        assert.equal(tree.elementsSorted().join(), '1,4,7,10,19,21,22,25');
+        tree.add(26);
+        assert.equal(tree.balanced(), true);
+        assert.equal(tree.elementsSorted().join(), '1,4,7,10,19,21,22,25,26');
+        tree.add(27);
+        assert.equal(tree.balanced(), true);
+        assert.equal(tree.elementsSorted().join(), '1,4,7,10,19,21,22,25,26,27');
+        tree.add(28);
+        assert.equal(tree.balanced(), true);
+        assert.equal(tree.elementsSorted().join(), '1,4,7,10,19,21,22,25,26,27,28');
+        tree.add(11);
+        assert.equal(tree.balanced(), true);
+        assert.equal(tree.elementsSorted().join(), '1,4,7,10,11,19,21,22,25,26,27,28');
+        tree.add(12);
+        assert.equal(tree.balanced(), true);
+        assert.equal(tree.elementsSorted().join(), '1,4,7,10,11,12,19,21,22,25,26,27,28');
+        tree.delete(26);
+        assert.equal(tree.balanced(), true);
+        assert.equal(tree.elementsSorted().join(), '1,4,7,10,11,12,19,21,22,25,27,28');
+        tree.delete(22);
+        assert.equal(tree.balanced(), true);
+        assert.equal(tree.elementsSorted().join(), '1,4,7,10,11,12,19,21,25,27,28');
+        tree.delete(25);
+        assert.equal(tree.balanced(), true);
+        assert.equal(tree.elementsSorted().join(), '1,4,7,10,11,12,19,21,27,28');
+        tree.delete(10);
+        assert.equal(tree.balanced(), true);
+        assert.equal(tree.elementsSorted().join(), '1,4,7,11,12,19,21,27,28');
+        tree.delete(19);
+        assert.equal(tree.balanced(), true);
+        assert.equal(tree.elementsSorted().join(), '1,4,7,11,12,21,27,28');
+        tree.delete(11);
+        assert.equal(tree.balanced(), true);
+        assert.equal(tree.elementsSorted().join(), '1,4,7,12,21,27,28');
+        tree.delete(7);
+        assert.equal(tree.balanced(), true);
+        assert.equal(tree.elementsSorted().join(), '1,4,12,21,27,28');
+        tree.delete(12);
+        assert.equal(tree.balanced(), true);
+        assert.equal(tree.elementsSorted().join(), '1,4,21,27,28');
+        tree.delete(21);
+        assert.equal(tree.balanced(), true);
+        assert.equal(tree.elementsSorted().join(), '1,4,27,28');
+        tree.delete(4);
+        assert.equal(tree.balanced(), true);
+        assert.equal(tree.elementsSorted().join(), '1,27,28');
+        tree.delete(27);
+        assert.equal(tree.balanced(), true);
+        assert.equal(tree.elementsSorted().join(), '1,28');
+        tree.delete(1);
     })
 });
