@@ -66,6 +66,10 @@ export class HashSetSeparateChaining {
 
     add(el) {
         const bucketNumber = this.bucketNumber(this.hashFunction(el));
+        if (!this.#buckets[bucketNumber]) {
+            this.#buckets[bucketNumber] = new BucketSet();
+        }
+        this.#buckets[bucketNumber].add(el);
     }
 
     contains(el) {
