@@ -316,64 +316,58 @@ export class TreeSet {
         return parent.left === node ? 'left' : parent.right === node ? 'right' : null;
     }
 
-    // Поворот поддерева влево от узла
-    #rotateLeft(node) {
-        const rightChild = node.right;
-        if (!rightChild) {
-            throw new Error(`У узла ${node.value} нет правого потомка`)
+    // Вместо старого узла поставить новый
+    #replaceNode(oldNode, newNode) {
+        const parent = oldNode.parent;
+        if (!parent) {
+            this.#leader = newNode;
+            newNode.parent = null;
+            return;
         }
-        const parent = node.parent;
-        if (parent) {
-            const parentSlot = this.#parentSlot(node);
-            parent[parentSlot] = rightChild;
-        } else {
-            this.#leader = rightChild;
-            this.#leader.parent = null;
+        const parentSlot = this.#parentSlot(oldNode);
+        parent[parentSlot] = newNode;
+        newNode.parent = parent;
+        oldNode.parent = null;
+    }
+
+    #inheritNode(parentNode, childNode, slot) {
+        childNode.parent = parentNode;
+        parentNode[slot] = childNode;
+    }
+
+    // Поворот в зависимости от слота
+    #rotateSlot(node, slot) {
+        const reverseSlot = this.#reverseSlot(slot);
+        const reverseChildNode = node[reverseSlot];
+        if (!reverseChildNode) {
+            throw new Error(`У узла ${node.value} нет ${reverseSlot} потомка`)
         }
-        rightChild.parent = parent;
-        const rightChildLeft = rightChild.left;
-        rightChild.left = node;
-        node.parent = rightChild;
-        node.right = null;
-        if (rightChildLeft) {
-            node.right = rightChildLeft;
-            rightChildLeft.parent = node;
+        this.#replaceNode(node, reverseChildNode);
+        this.#inheritNode(reverseChildNode, node, slot);
+        node[reverseSlot] = null;
+        const nodeSlotChild = reverseChildNode[slot];
+        if (nodeSlotChild) {
+            this.#inheritNode(node, nodeSlotChild, reverseSlot);
         }
         this.#updateNodeHeight(node);
-        this.#updateNodeHeight(rightChild);
-        if (parent) {
-            this.#updateNodeHeight(parent);
+        this.#updateNodeHeight(reverseChildNode);
+        if (node.parent) {
+            this.#updateNodeHeight(node.parent);
         }
+    }
+
+    // Поворот поддерева влево от узла
+    #rotateLeft(node) {
+        this.#rotateSlot(node, SLOTS.LFT);
     }
 
     // Поворот поддерева вправо от узла
     #rotateRight(node) {
-        const leftChild = node.left;
-        if (!leftChild) {
-            throw new Error(`У узла ${node.value} нет левого потомка`)
-        }
-        const parent = node.parent;
-        if (parent) {
-            const parentSlot = this.#parentSlot(node);
-            parent[parentSlot] = leftChild;
-        } else {
-            this.#leader = leftChild;
-            this.#leader.parent = null;
-        }
-        leftChild.parent = parent;
-        const leftChildRight = leftChild.right;
-        leftChild.right = node;
-        node.parent = leftChild;
-        node.left = null;
-        if (leftChildRight) {
-            node.left = leftChildRight;
-            leftChildRight.parent = node;
-        }
-        this.#updateNodeHeight(node);
-        this.#updateNodeHeight(leftChild);
-        if (parent) {
-            this.#updateNodeHeight(parent);
-        }
+        this.#rotateSlot(node, SLOTS.RGT);
+    }
+
+    #reverseSlot(slot) {
+        return slot === SLOTS.LFT ? SLOTS.RGT : SLOTS.LFT;
     }
 
     balanced() {

@@ -1,12 +1,112 @@
-<svg host="65bd71144e" xmlns="http://www.w3.org/2000/svg" style="background: transparent; background-color: transparent; color-scheme: light;" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="262px" height="732px" viewBox="0 0 262 732" id="ge-svg-5qIcBuocLUlgWoZcGrpS" content="&lt;mxfile&gt;&lt;diagram id=&quot;-jnhlrJmEUvJVoQY2eSK&quot; name=&quot;Page-1&quot;&gt;7ZVLb5wwEMc/jY+VeOyW7DEQ8lBaqc1W6jFy8CxYNZjYZtnNp+8YzEubtE1yi3qxZn6e8diev4GESXm4UrQuvkoGggQeO5DwggRBFHg4WnDswWqz7kGuOOuRP4EtfwIHXV7ecAZ6EWikFIbXS5jJqoLMLBhVSrbLsJ0Uy6o1zeEEbDMqTulPzkzR07O1N/Fr4HkxVPY9N1PSIdgBXVAm2xkKUxImSkrTW+UhAWHvbriXPu/yhdlxYwoq8y8J5zc7f3PzPYuS+4Kb7Pbp/tfq0zOrOKTNcbgD3HltzaYUX/gOBK/Qi2tQvAQDCmeEw98mFrdYBbY1zWxqi+JAVphSoOejiQ0zFFOU85mS9Q+qcrDb8LoAIWit+UO3DUsUZI3SfA93oHuhWCobY0snowAsrKUySLRRWMNCoNq0oNGMK2hThk0eDhjFJPj82Ng+xDBOjIiE55Oj4bGBKoP0mbggmRzBH+hecnaHu+NVvljNW0TikfbA/hCgZFOxk4jooitpO7WnonGdInj4+LIb024MBtsnZ97MDlwqKAOHWd+ddK5AYhvVEUOKmbrH19xOT2EUvFsmHF7u8OCdS91DzMelJ62i4eT6CukG/6X70aS7WXUSXc/kul7I+E2iDf8u2lX0btGiO33Lu7nZDzFMfwM=&lt;/diagram&gt;&lt;/mxfile&gt;">
+<svg host="65bd71144e" xmlns="http://www.w3.org/2000/svg" style="background: transparent; background-color: transparent; color-scheme: light;" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="432px" height="732px" viewBox="0 0 432 732" id="ge-svg-pVdCTPvZut56pczVG3X5" content="&lt;mxfile&gt;&lt;diagram id=&quot;-jnhlrJmEUvJVoQY2eSK&quot; name=&quot;Page-1&quot;&gt;7Vpbj5s4FP41SNOHjABDSB5zbUfbarudSvtYOeAk7BBgDElm+uvXV7AJYWAmiaIqrcTYx8fXc87nz3YMMNm8fMYwXX9LAhQZthm8GGBq2HbfHpAvFbxygWMBLljhMOAiqxQ8hr+REJpCug0DlGmKeZJEeZjqQj+JY+TnmgxinOx1tWUS6b2mcIUOBI8+jA6l/4ZBvubSgWuW8i8oXK1lz5YpSjZQKgtBtoZBsldEYGaACU6SnKc2LxMU0bWT68LrzY+UFgPDKM7bVBg9LK3hwz++N/m1DnP/r9+/npxeTStClOWvcg3IyFOa3G6ir+ESRWFMcuMU4XCDcoRJSSTE30vZeE96QY8p9GnVPXEOIlvnm4jkLJIkBsshqYJFPsBJ+hPiFaLDMJlCFME0CxdsGFSCkb/FWbhDP1DGHYVKk21Ou54UDkCFaYJzIslyTPqgQgSzfI8ykhzHaD8LiJHlBL2xYfeft9QOY1QUFCIDjMpMhp63KPbRrEbPnpSZKFzAXRIGP8jowniltWZqmmRKOxQ0KOBkGwcHGt6UdUkttYPRVljKIJMfz9l3xr62TFvGwFTStqiKcI5eFLsL1/mMEmJG/EpU1op3e9KX92UoFA4vmgEycmXAiywUgbgqmi59lSSEu3ZwXfvmun+a6w4d5qKu4q6u5sbvclrwttM63oWc1uHtUlsdhXHpxckW++ht7Fa8HSm+cWhuzYerVhaOyy0qfFZYj+fE3ivdvDEqDw2CUQRz4v76/lyzuqzqCGP4qiikCYmETGn5OxWU5nNt3XwWMCuW4i2WdiuG9n5TuhrxgAtpBPPQok2uUDHfV7ggBEozFYzCVUzSPmmPwRMNgJBQlJEo2IRBwOyLKbjAEnXEupHG3bHhHg87dccYs+AD7OsxyUDsGPRLlsrUNxleVFSfsO+IfU2mTBSIvftwQ1E0XmQpG0Y/ongQhDuSXDFoKNuwlPg3lR6mis6wbFsbgrrP8SpEIgAu4lg3V3utH8jQlW3zFWGrUJ154/Zazr9Qm+vTUmGt9dCUqb7PEOWEVGQ12w+hakltbabK5ApbHiMg9T22RPhaQBFVzHtg9oGOCG8gzgGk9GxHr5IslxlBvuoGcAIg6d+IzB9HZEYacpThNj0z+7acCxEZ74REpn+NRKYL7pyMyAC3QmSsCxCZwQeJjHdtRObw/ODoXIITGb7/ZCmMtdEXoJBECWbAY+LV4o5uKJT9lH8/sWGYC+g/rZiL9ZQqEY3bXgDx051hgyX7xyvuIL7r9VaIFYoqrIDoWTb9/4m3XILasa2XEzUyM0+Z61huxqM6ZsAXhnEiQaPqmRnxJL4yTUyglsM18yNTJ5YKAylnUJDMQReSB5o5zBl4Rs+8J0ePYVdqYXlnYBYPX/B/Ufy0Xsyfp5PM//b3Op3KE+JJQNq+gbS8LADDe1eDads8LUzXGtNuD9NNznANMO0pIa/CxUQ5RNSeOtufD4F+tDoKUs2npnMeUTzdh3qdjyigUuN8OAJOiCO3W6vi1srUyZ7tXgBFnA+iCLgeFLF1olMhPQWPqFx7qDHvSgXQ6oKqQjscHacUAkYl83b3RZIPdbmdaiBOLZhdW8Jr0QWmS6gmLs55j3FcMH+DqZ4HtPtOvytM9+QT+Plx2r3xvTPgNKg8DoETH8prTdn/IE67V4PTozr0FbjbCU5PEsH2UB6/pDW7xrO8GJa8rdLA+aL7lFduNxZWsLDK7xXAJVhYhyu3Jle4gugWT/bqY4/6tlV7iivCvxYZTkO8Gq7G+INk3YGy0ztcy4fHc94+AVPKJBjZndHM/Th8kWz5MzauXv4WEMz+Bw==&lt;/diagram&gt;&lt;/mxfile&gt;">
     <style type="text/css">
-        @supports (color: light-dark(#000, #fff)) { #ge-svg-5qIcBuocLUlgWoZcGrpS { --ge-adaptive-bg: light-dark(#ffffff, var(--ge-dark-color, #121212)); } }
+        @supports (color: light-dark(#000, #fff)) { #ge-svg-pVdCTPvZut56pczVG3X5 { --ge-adaptive-bg: light-dark(#ffffff, var(--ge-dark-color, #121212)); } }
     </style>
     <defs/>
     <g>
         <g data-cell-id="0">
             <g data-cell-id="1">
                 <g data-cell-id="AIf19IQc7C_hitcKz_k4-1">
+                    <g transform="translate(0.5,0.5)">
+                        <rect x="170" y="0" width="100" height="40" fill="#ffffff" stroke="#000000" pointer-events="all" style="fill: var(--ge-adaptive-bg, #ffffff); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+                        <path d="M 220 40 L 220 720" fill="none" stroke="#000000" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="all" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+                    </g>
+                    <g>
+                        <g>
+                            <switch>
+                                <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 98px; height: 1px; padding-top: 20px; margin-left: 171px;">
+                                        <div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
+                                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
+                                                поворот
+                                            </div>
+                                        </div>
+                                    </div>
+                                </foreignObject>
+                                <text x="220" y="24" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+                                    поворот
+                                </text>
+                            </switch>
+                        </g>
+                    </g>
+                </g>
+                <g data-cell-id="AIf19IQc7C_hitcKz_k4-2">
+                    <g transform="translate(0.5,0.5)">
+                        <rect x="330" y="0" width="100" height="40" fill="#ffffff" stroke="#000000" pointer-events="all" style="fill: var(--ge-adaptive-bg, #ffffff); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+                        <path d="M 380 40 L 380 730" fill="none" stroke="#000000" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="all" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+                    </g>
+                    <g>
+                        <g>
+                            <switch>
+                                <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 98px; height: 1px; padding-top: 20px; margin-left: 331px;">
+                                        <div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
+                                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
+                                                Дерево
+                                            </div>
+                                        </div>
+                                    </div>
+                                </foreignObject>
+                                <text x="380" y="24" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+                                    Дерево
+                                </text>
+                            </switch>
+                        </g>
+                    </g>
+                </g>
+                <g data-cell-id="AIf19IQc7C_hitcKz_k4-4">
+                    <g transform="translate(0.5,0.5)">
+                        <path d="M 219.5 90 L 300 90 L 373.13 90" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+                        <path d="M 378.38 90 L 371.38 93.5 L 373.13 90 L 371.38 86.5 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+                    </g>
+                    <g data-cell-id="AIf19IQc7C_hitcKz_k4-5">
+                        <g>
+                            <g>
+                                <switch>
+                                    <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                                        <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 90px; margin-left: 301px;">
+                                            <div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; background-color: #ffffff; ">
+                                                <div style="display: inline-block; font-size: 11px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; background-color: var(--ge-adaptive-bg, #ffffff); white-space: nowrap; ">
+                                                    Получить потомка с
+                                                    <div>
+                                                        обратной стороны,
+                                                    </div>
+                                                    <div>
+                                                        Если поворота вправо
+                                                    </div>
+                                                    <div>
+                                                        то потомка слева
+                                                    </div>
+                                                    <div>
+                                                        и наоборот
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </foreignObject>
+                                    <text x="301" y="67" fill="#000000" font-family="Helvetica" font-size="11px" text-anchor="middle" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+                                        <tspan x="301" y="67">
+                                            Получить потомка с
+                                        </tspan>
+                                        <tspan x="301" y="80">
+                                            обратной стороны,
+                                        </tspan>
+                                        <tspan x="301" y="93">
+                                            Если поворота вправо
+                                        </tspan>
+                                        <tspan x="301" y="106">
+                                            то потомка слева
+                                        </tspan>
+                                        <tspan x="301" y="119">
+                                            и наоборот
+                                        </tspan>
+                                    </text>
+                                </switch>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+                <g data-cell-id="AIf19IQc7C_hitcKz_k4-6">
                     <g transform="translate(0.5,0.5)">
                         <rect x="0" y="0" width="100" height="40" fill="#ffffff" stroke="#000000" pointer-events="all" style="fill: var(--ge-adaptive-bg, #ffffff); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
                         <path d="M 50 40 L 50 720" fill="none" stroke="#000000" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="all" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
@@ -18,39 +118,197 @@
                                     <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 98px; height: 1px; padding-top: 20px; margin-left: 1px;">
                                         <div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
                                             <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-                                                поворот
+                                                Клиент
                                             </div>
                                         </div>
                                     </div>
                                 </foreignObject>
                                 <text x="50" y="24" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
-                                    поворот
+                                    Клиент
                                 </text>
                             </switch>
                         </g>
                     </g>
                 </g>
-                <g data-cell-id="AIf19IQc7C_hitcKz_k4-2">
+                <g data-cell-id="AIf19IQc7C_hitcKz_k4-7">
                     <g transform="translate(0.5,0.5)">
-                        <rect x="160" y="0" width="100" height="40" fill="#ffffff" stroke="#000000" pointer-events="all" style="fill: var(--ge-adaptive-bg, #ffffff); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-                        <path d="M 210 40 L 210 730" fill="none" stroke="#000000" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="all" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+                        <path d="M 49.5 70 L 135 70 L 213.13 70" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+                        <path d="M 218.38 70 L 211.38 73.5 L 213.13 70 L 211.38 66.5 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
                     </g>
-                    <g>
+                    <g data-cell-id="AIf19IQc7C_hitcKz_k4-8">
                         <g>
-                            <switch>
-                                <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-                                    <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 98px; height: 1px; padding-top: 20px; margin-left: 161px;">
-                                        <div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-                                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-                                                Дерево
+                            <g>
+                                <switch>
+                                    <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                                        <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 71px; margin-left: 131px;">
+                                            <div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; background-color: #ffffff; ">
+                                                <div style="display: inline-block; font-size: 11px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; background-color: var(--ge-adaptive-bg, #ffffff); white-space: nowrap; ">
+                                                    Передать
+                                                    <span style="color: light-dark(rgb(63, 63, 63), rgb(183, 183, 183)); background-color: var(--ge-adaptive-bg, #ffffff);">
+                                                        узел который
+                                                    </span>
+                                                    <div>
+                                                        <div>
+                                                            поворачиваем и сторону
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </foreignObject>
-                                <text x="210" y="24" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
-                                    Дерево
-                                </text>
-                            </switch>
+                                    </foreignObject>
+                                    <text x="131" y="67" fill="#000000" font-family="Helvetica" font-size="11px" text-anchor="middle" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+                                        <tspan x="131" y="67">
+                                            Передать узел который
+                                        </tspan>
+                                        <tspan x="131" y="80">
+                                            поворачиваем и сторону
+                                        </tspan>
+                                    </text>
+                                </switch>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+                <g data-cell-id="IHrjlnkhbFqDCscMOhpD-1">
+                    <g transform="translate(0.5,0.5)">
+                        <path d="M 379.5 160 L 300 160 L 225.87 160" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+                        <path d="M 220.62 160 L 227.62 156.5 L 225.87 160 L 227.62 163.5 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+                    </g>
+                    <g data-cell-id="IHrjlnkhbFqDCscMOhpD-2">
+                        <g>
+                            <g>
+                                <switch>
+                                    <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                                        <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 160px; margin-left: 301px;">
+                                            <div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; background-color: #ffffff; ">
+                                                <div style="display: inline-block; font-size: 11px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; background-color: var(--ge-adaptive-bg, #ffffff); white-space: nowrap; ">
+                                                    Запомнить обратного
+                                                    <div>
+                                                        потомка
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </foreignObject>
+                                    <text x="301" y="156" fill="#000000" font-family="Helvetica" font-size="11px" text-anchor="middle" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+                                        <tspan x="301" y="156">
+                                            Запомнить обратного
+                                        </tspan>
+                                        <tspan x="301" y="169">
+                                            потомка
+                                        </tspan>
+                                    </text>
+                                </switch>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+                <g data-cell-id="IHrjlnkhbFqDCscMOhpD-3">
+                    <g transform="translate(0.5,0.5)">
+                        <path d="M 219.5 210 L 300 210 L 373.13 210" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+                        <path d="M 378.38 210 L 371.38 213.5 L 373.13 210 L 371.38 206.5 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+                    </g>
+                    <g data-cell-id="IHrjlnkhbFqDCscMOhpD-4">
+                        <g>
+                            <g>
+                                <switch>
+                                    <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                                        <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 211px; margin-left: 301px;">
+                                            <div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; background-color: #ffffff; ">
+                                                <div style="display: inline-block; font-size: 11px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; background-color: var(--ge-adaptive-bg, #ffffff); white-space: nowrap; ">
+                                                    В каком слоте у
+                                                    <div>
+                                                        родителя поворач
+                                                    </div>
+                                                    <div>
+                                                        иваемый
+                                                        <span style="color: light-dark(rgb(192, 192, 192), rgb(72, 72, 72)); background-color: var(--ge-adaptive-bg, #ffffff);">
+                                                            узел?
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </foreignObject>
+                                    <text x="301" y="201" fill="#000000" font-family="Helvetica" font-size="11px" text-anchor="middle" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+                                        <tspan x="301" y="201">
+                                            В каком слоте у
+                                        </tspan>
+                                        <tspan x="301" y="214">
+                                            родителя поворач
+                                        </tspan>
+                                        <tspan x="301" y="227">
+                                            иваемый узел?
+                                        </tspan>
+                                    </text>
+                                </switch>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+                <g data-cell-id="IHrjlnkhbFqDCscMOhpD-5">
+                    <g transform="translate(0.5,0.5)">
+                        <path d="M 379.5 270 L 300 270 L 225.87 270" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+                        <path d="M 220.62 270 L 227.62 266.5 L 225.87 270 L 227.62 273.5 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+                    </g>
+                    <g data-cell-id="IHrjlnkhbFqDCscMOhpD-6">
+                        <g>
+                            <g>
+                                <switch>
+                                    <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                                        <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 271px; margin-left: 301px;">
+                                            <div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; background-color: #ffffff; ">
+                                                <div style="display: inline-block; font-size: 11px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; background-color: var(--ge-adaptive-bg, #ffffff); white-space: nowrap; ">
+                                                    Слот родителя
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </foreignObject>
+                                    <text x="301" y="274" fill="#000000" font-family="Helvetica" font-size="11px" text-anchor="middle" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+                                        Слот родителя
+                                    </text>
+                                </switch>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+                <g data-cell-id="IHrjlnkhbFqDCscMOhpD-7">
+                    <g transform="translate(0.5,0.5)">
+                        <path d="M 219.5 310 L 300 310 L 373.13 310" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+                        <path d="M 378.38 310 L 371.38 313.5 L 373.13 310 L 371.38 306.5 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+                    </g>
+                    <g data-cell-id="IHrjlnkhbFqDCscMOhpD-8">
+                        <g>
+                            <g>
+                                <switch>
+                                    <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                                        <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 313px; margin-left: 301px;">
+                                            <div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; background-color: #ffffff; ">
+                                                <div style="display: inline-block; font-size: 11px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; background-color: var(--ge-adaptive-bg, #ffffff); white-space: nowrap; ">
+                                                    Добавить в слот
+                                                    <div>
+                                                        родителя узел с обр
+                                                    </div>
+                                                    <div>
+                                                        стороны
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </foreignObject>
+                                    <text x="301" y="303" fill="#000000" font-family="Helvetica" font-size="11px" text-anchor="middle" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+                                        <tspan x="301" y="303">
+                                            Добавить в слот
+                                        </tspan>
+                                        <tspan x="301" y="316">
+                                            родителя узел с обр
+                                        </tspan>
+                                        <tspan x="301" y="329">
+                                            стороны
+                                        </tspan>
+                                    </text>
+                                </switch>
+                            </g>
                         </g>
                     </g>
                 </g>
