@@ -41,4 +41,14 @@ describe('HashSetSeparateChaining', () => {
 
         assert.equal(hash.contains(4), false, '4 больше не в множестве');
     })
+
+    it('Коллизия, плохая хэш функция', () => {
+        const hash = new HashSetSeparateChaining(() => 1, 6);
+        hash.add(1);
+        hash.add(4);
+        hash.add(21);
+        hash.add(42);
+
+        assert.equal(hash.contains(4), true, '4 больше не в множестве');
+    })
 });
