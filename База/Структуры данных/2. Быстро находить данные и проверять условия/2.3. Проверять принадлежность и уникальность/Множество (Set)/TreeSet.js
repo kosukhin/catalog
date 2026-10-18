@@ -199,24 +199,19 @@ export class TreeSet {
     }
 
     findLeftMostChild(node) {
-        const queue = [node];
-        while(queue.length) {
-            const currentNode = queue.shift();
-            if (currentNode.left) {
-                queue.push(currentNode.left);
-            } else {
-                return currentNode;
-            }
-        }
-        return node;
+        return this.#findSlotMostChild(node, SLOTS.LFT);
     }
 
     findRightMostChild(node) {
+        return this.#findSlotMostChild(node, SLOTS.RGT);
+    }
+
+    #findSlotMostChild(node, slot) {
         const queue = [node];
         while(queue.length) {
             const currentNode = queue.shift();
-            if (currentNode.right) {
-                queue.push(currentNode.right);
+            if (currentNode[slot]) {
+                queue.push(currentNode[slot]);
             } else {
                 return currentNode;
             }
