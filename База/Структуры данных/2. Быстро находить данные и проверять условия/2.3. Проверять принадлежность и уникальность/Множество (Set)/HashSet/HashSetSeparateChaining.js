@@ -70,9 +70,13 @@ export class HashSetSeparateChaining {
             this.#buckets[bucketNumber] = new BucketSet();
         }
         this.#buckets[bucketNumber].add(el);
+        if (this.#rearrangeInvariant()) {
+            this.#rearrange();
+        }
     }
 
     contains(el) {
+        const bucketNumber = this.bucketNumber(this.hashFunction(el));
 
     }
 
