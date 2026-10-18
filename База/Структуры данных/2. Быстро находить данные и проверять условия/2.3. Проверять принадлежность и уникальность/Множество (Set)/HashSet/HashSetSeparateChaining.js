@@ -65,7 +65,7 @@ export class HashSetSeparateChaining {
     }
 
     add(el) {
-
+        const bucketNumber = this.bucketNumber(this.hashFunction(el));
     }
 
     contains(el) {
@@ -74,6 +74,10 @@ export class HashSetSeparateChaining {
 
     remove(el) {
 
+    }
+
+    bucketNumber(hashIndex) {
+        return hashIndex % this.size;
     }
 
     elementsCount() {
