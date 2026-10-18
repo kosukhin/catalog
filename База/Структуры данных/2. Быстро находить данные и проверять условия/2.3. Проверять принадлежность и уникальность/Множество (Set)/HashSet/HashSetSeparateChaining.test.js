@@ -9,7 +9,36 @@ describe('HashSetSeparateChaining', () => {
         hash.add(1);
         hash.add(4);
         hash.add(21);
-        // 4 потому что балансировка должна сработать
+
         assert.equal(hash.contains(4), true);
     });
+
+    it('Достижение лоад фактора', () => {
+        const hash = new HashSetSeparateChaining(murmurHash3, 4);
+        hash.add(1);
+        hash.add(4);
+        hash.add(21);
+
+        assert.equal(hash.size, 8, 'Удвоился размер хэш сета');
+    });
+
+    it('Размер хэш сета корректный', () => {
+        const hash = new HashSetSeparateChaining(murmurHash3, 8);
+        hash.add(1);
+        hash.add(4);
+        hash.add(21);
+
+        assert.equal(hash.elementsCount(), 3, '3 элемента в множестве');
+    })
+
+    it('Удаление элемента', () => {
+        const hash = new HashSetSeparateChaining(murmurHash3, 8);
+        hash.add(1);
+        hash.add(4);
+        hash.add(21);
+
+        hash.remove(4);
+
+        assert.equal(hash.contains(4), false, '4 больше не в множестве');
+    })
 });
