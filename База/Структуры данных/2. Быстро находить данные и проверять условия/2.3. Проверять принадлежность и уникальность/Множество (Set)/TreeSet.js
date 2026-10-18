@@ -342,12 +342,12 @@ export class TreeSet {
         if (!reverseChildNode) {
             throw new Error(`У узла ${node.value} нет ${reverseSlot} потомка`)
         }
+        const reverseChildChildNode = reverseChildNode[slot];
         this.#replaceNode(node, reverseChildNode);
         this.#inheritNode(reverseChildNode, node, slot);
         node[reverseSlot] = null;
-        const nodeSlotChild = reverseChildNode[slot];
-        if (nodeSlotChild) {
-            this.#inheritNode(node, nodeSlotChild, reverseSlot);
+        if (reverseChildChildNode) {
+            this.#inheritNode(node, reverseChildChildNode, reverseSlot);
         }
         this.#updateNodeHeight(node);
         this.#updateNodeHeight(reverseChildNode);
