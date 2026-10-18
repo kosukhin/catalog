@@ -1,4 +1,4 @@
-function murmurHash3(str, seed = 0) {
+export function murmurHash3(str, seed = 0) {
   const data = new TextEncoder().encode(str);
   const len = data.length;
   let h = seed;

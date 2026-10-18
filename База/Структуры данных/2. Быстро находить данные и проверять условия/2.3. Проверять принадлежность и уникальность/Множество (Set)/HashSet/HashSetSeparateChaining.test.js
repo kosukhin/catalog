@@ -1,14 +1,15 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { TreeSet } from './TreeSet.js';
+import { HashSetSeparateChaining } from './HashSetSeparateChaining.js';
+import { murmurHash3 } from 'determinism';
 
 describe('HashSetSeparateChaining', () => {
     it('Добавление элементов', () => {
-        const tree = new TreeSet();
-        tree.add(1);
-        tree.add(4);
-        tree.add(21);
+        const hash = new HashSetSeparateChaining(murmurHash3, 8);
+        hash.add(1);
+        hash.add(4);
+        hash.add(21);
         // 4 потому что балансировка должна сработать
-        assert.equal(tree.leader().value, 4);
+        assert.equal(hash.contains(4), true);
     });
 });

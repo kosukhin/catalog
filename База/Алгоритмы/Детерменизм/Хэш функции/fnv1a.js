@@ -1,4 +1,4 @@
-function fnv1a(str) {
+export function fnv1a(str) {
   let hash = 0x811c9dc5;
   const data = new TextEncoder().encode(str);
 
