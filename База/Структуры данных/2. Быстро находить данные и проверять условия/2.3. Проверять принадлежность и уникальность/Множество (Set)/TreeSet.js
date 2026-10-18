@@ -142,6 +142,19 @@ export class TreeSet {
         }
     }
 
+    #deleteNode(node, successor = null) {
+        if (!node.parent) {
+            this.#leader = successor;
+            if (successor) {
+                successor.parent = null;
+            }
+        } else if (successor) {
+            const slot = this.#parentSlot(node);
+            node.parent[slot] = successor;
+            successor.parent = node.parent;
+        }
+    }
+
     // Логарифмически ищет узел по значению
     // Если находит то возвращает его, если не находит
     // То возвращает null
@@ -178,7 +191,7 @@ export class TreeSet {
     traverse(cb) {
         const queue = [this.#leader];
         let interruptedByCb = false;
-        while(queue.length && !interruptedByCb) {
+        while (queue.length && !interruptedByCb) {
             const cbResult = cb(queue);
             if (cbResult === false) {
                 interruptedByCb = true;
@@ -208,7 +221,7 @@ export class TreeSet {
 
     #findSlotMostChild(node, slot) {
         const queue = [node];
-        while(queue.length) {
+        while (queue.length) {
             const currentNode = queue.shift();
             if (currentNode[slot]) {
                 queue.push(currentNode[slot]);
