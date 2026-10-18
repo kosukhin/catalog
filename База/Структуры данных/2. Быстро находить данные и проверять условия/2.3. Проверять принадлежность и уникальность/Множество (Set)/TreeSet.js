@@ -78,30 +78,14 @@ export class TreeSet {
             return;
         }
         if (!node.left && !node.right) {
-
-            if (!node.parent) {
-                this.#leader = null;
-            } else {
-                const slot = this.#parentSlot(node);
-                node.parent[slot] = null;
-                this.#rebalance(node.parent);
-            }
+            this.#deleteNode(node);
         }
         if (!node.left && node.right || node.left && !node.right) {
             const successor = node.right ?? node.left;
             if (this.#debug) {
                 console.log('Successor:', successor.value);
             }
-            if (!node.parent) {
-                this.#leader = successor;
-                successor.parent = null;
-            } else {
-                const slot = this.#parentSlot(node);
-                node.parent[slot] = successor;
-                successor.parent = node.parent;
-            }
-            this.#updateNodeHeight(successor);
-            this.#rebalance(successor);
+            this.#deleteNode(node, successor);
         }
         if (node.left && node.right) {
             const leftMostRight = this.findLeftMostChild(node.right);
