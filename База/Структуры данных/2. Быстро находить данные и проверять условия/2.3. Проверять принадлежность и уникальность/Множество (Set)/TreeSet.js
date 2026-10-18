@@ -106,7 +106,14 @@ export class TreeSet {
             if (successor.parent) {
                 successor.parent[successorSlot] = null;
             }
-            this.#deleteNode(node, successor);
+            // К родителю удаляемого узла привязываем преемника
+            if (nodeSlot) {
+                node.parent[nodeSlot] = successor;
+                successor.parent = node.parent;
+            } else {
+                this.#leader = successor;
+                successor.parent = null;
+            }
             successor.left = node.left !== null && successor.left !== node.left ? node.left : successor.left;
             successor.right = node.right !== null && successor.right !== node.right ? node.right : successor.right;
             if (successor.left?.parent) {
