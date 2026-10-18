@@ -49,6 +49,10 @@ describe('HashSetSeparateChaining', () => {
         hash.add(21);
         hash.add(42);
 
-        assert.equal(hash.contains(4), true, '4 больше не в множестве');
+        assert.equal(
+            [hash.contains(1), hash.contains(4), hash.contains(21), hash.contains(42)].every(Boolean),
+            true,
+            'Все элементы есть в множестве'
+        );
     })
 });
