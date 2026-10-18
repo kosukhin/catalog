@@ -28,6 +28,33 @@ class BucketSet {
         }
     }
 
+    remove(el) {
+        let node = this.#leader;
+        let parent = null;
+        while(node) {
+            if (node.value === el) {
+                if (parent) {
+                    parent.child = node.child ?? null;
+                } else {
+                    this.#leader = node.child ?? null;
+                }
+                return;
+            }
+            parent = node;
+            node = node.child;
+        }
+    }
+
+    elements() {
+        const elements = [];
+        let node = this.#leader;
+        while(node) {
+            elements.push(node.value);
+            node = node.child;
+        }
+        return elements;
+    }
+
     size() {
         return this.#size;
     }
@@ -77,11 +104,17 @@ export class HashSetSeparateChaining {
 
     contains(el) {
         const bucketNumber = this.bucketNumber(this.hashFunction(el));
-
+        if (!this.#buckets[bucketNumber]) {
+            return false;
+        }
+        return this.#buckets[bucketNumber].contains(el);
     }
 
     remove(el) {
-
+        const bucketNumber = this.bucketNumber(this.hashFunction(el));
+        if (this.#buckets[bucketNumber]) {
+            this.#buckets[bucketNumber].remove(el);
+        }
     }
 
     bucketNumber(hashIndex) {
@@ -104,6 +137,15 @@ export class HashSetSeparateChaining {
     }
 
     #rearrange() {
-
+        const oldBuckets = this.#buckets;
+        this.size = this.size * 2;
+        this.#buckets = new Array(this.size);
+        oldBuckets.forEach(bucket => {
+            if (bucket) {
+                bucket.elements().forEach(el => {
+                    this.add(el);
+                })
+            }
+        });
     }
 }
