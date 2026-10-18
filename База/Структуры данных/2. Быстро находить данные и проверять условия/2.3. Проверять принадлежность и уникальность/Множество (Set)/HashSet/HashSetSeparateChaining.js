@@ -18,6 +18,7 @@ class BucketSet {
         let node = this.#leader;
         if (!this.#leader) {
             this.#leader = new Node(el);
+            this.#size += 1;
         }
         while(node) {
             if (node.value === el) {
