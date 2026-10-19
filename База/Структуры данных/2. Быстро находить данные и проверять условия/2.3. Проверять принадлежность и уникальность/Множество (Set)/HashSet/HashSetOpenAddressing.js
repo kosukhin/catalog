@@ -1,7 +1,7 @@
 export function createHashSetOpenAddressing(
     hashFn,
-    probingFn,
     size,
+    probingFn,
     loadFactor = 0.75
 ) {
     const buckets = new Array(size);
@@ -16,7 +16,11 @@ export function createHashSetOpenAddressing(
 
     return {
         add(el) {
-
+            const index = bucketIndex(el);
+            const bucketValue = buckets[index];
+            if (bucketValue === undefined || bucketValue === el) {
+                buckets[index] = el;
+            }
         },
         contains(el) {
 
