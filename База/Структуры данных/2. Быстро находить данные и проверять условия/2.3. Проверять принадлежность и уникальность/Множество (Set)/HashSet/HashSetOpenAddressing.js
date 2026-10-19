@@ -1,4 +1,10 @@
-export function createHashSetOpenAddressing(hashFn, probingFn, size) {
+export function createHashSetOpenAddressing(
+    hashFn,
+    probingFn,
+    size,
+    loadFactor = 0.75
+) {
+    const buckets = new Array(size);
     return {
         add(el) {
 
@@ -10,4 +16,8 @@ export function createHashSetOpenAddressing(hashFn, probingFn, size) {
 
         }
     }
+}
+
+function probe() {
+
 }
