@@ -20,6 +20,8 @@ export function createHashSetOpenAddressing(
             const bucketValue = buckets[index];
             if (bucketValue === undefined || bucketValue === el) {
                 buckets[index] = el;
+            } else {
+                
             }
         },
         contains(el) {
