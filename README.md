@@ -14,4 +14,5 @@
 
 ## Полезные ссылки
 
-- (William Fiset)
+- [William Fiset](https://github.com/williamfiset/algorithms)
+- [Js ALGS](https://github.com/trekhleb/javascript-algorithms)
