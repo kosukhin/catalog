@@ -1,9 +1,32 @@
 const TOMBSTONE = Symbol('tombstone');
 
+// Линейное пробирование: смещение равно номеру итерации.
+export function linearProbing(iteration) {
+    return iteration;
+}
+
+// Квадратичное пробирование: смещение равно квадрату номера итерации.
+export function quadraticProbing(iteration) {
+    return iteration * iteration;
+}
+
+// Экспоненциальное пробирование: смещение растёт степенью двойки.
+export function exponentialProbing(iteration) {
+    return 2 ** iteration;
+}
+
+// Двойное хеширование: смещение равно номеру итерации, умноженному
+// на второй хеш значения (для него нужен отдельный hashFn2).
+export function createDoubleHashing(hashFn2) {
+    return function doubleHashing(iteration, value) {
+        return iteration * hashFn2(value);
+    };
+}
+
 export function createHashSetOpenAddressing(
     hashFn,
     size,
-    probingFn = (iteration) => iteration,
+    probingFn = linearProbing,
     loadFactor = 0.75
 ) {
     let capacity = Math.max(1, Math.floor(size));
@@ -20,7 +43,7 @@ export function createHashSetOpenAddressing(
     }
 
     function probe(value, iteration) {
-        return normalize(hashFn(value) + probingFn(iteration));
+        return normalize(hashFn(value) + probingFn(iteration, value));
     }
 
     // Ищет значение по цепочке пробирования. Возвращает индекс или -1.
