@@ -1,5 +1,5 @@
 import { describe, it } from 'node:test';
-import { createHashSetOpenAddressing } from './HashSetOpenAddressing';
+import { createHashSetOpenAddressing } from './HashSetOpenAddressing.js';
 import { murmurHash3 } from 'determinism';
 import assert from 'node:assert/strict';
 
@@ -14,5 +14,6 @@ describe('HashSetOpenAddressing', () => {
         set.add(12);
 
         assert.equal(set.contains(4), false);
+        assert.equal(set.contains(12), false);
     });
 });
