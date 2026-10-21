@@ -4,8 +4,8 @@ import {
 } from './HashSetOpenAddressing.js';
 import { murmurHash3 } from 'determinism';
 
-const TOMBSTONE_LABEL = '<tombstone>';
-const EMPTY_LABEL = '<empty>';
+const TOMBSTONE_LABEL = 'RIP';
+const EMPTY_LABEL = 'x';
 
 function formatValue(value) {
     if (value === TOMBSTONE) {
@@ -59,7 +59,8 @@ export function renderHashSet(set, title = 'HashSet (open addressing)') {
 }
 
 const stupidHash = () => 1;
-const set = createHashSetOpenAddressing(stupidHash, 10);
+const stupidProbing = (x) => x*3;
+const set = createHashSetOpenAddressing(stupidHash, 9, stupidProbing);
 
 console.log(renderHashSet(set, 'HashSet (open addressing) — пусто'));
 
