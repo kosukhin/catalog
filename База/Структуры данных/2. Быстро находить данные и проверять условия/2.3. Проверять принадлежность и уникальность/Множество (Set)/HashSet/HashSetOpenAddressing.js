@@ -66,6 +66,7 @@ export function createHashSetOpenAddressing(
         return -1;
     }
 
+    // ok
     // Ищет свободное место для вставки (с учётом tombstone). -1 — места нет.
     function findSlot(value) {
         let index = bucketIndex(value);
