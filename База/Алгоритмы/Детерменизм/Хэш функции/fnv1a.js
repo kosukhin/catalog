@@ -9,5 +9,3 @@ export function fnv1a(str) {
 
   return hash >>> 0;
 }
-
-console.log(fnv1a('AAABBB'));

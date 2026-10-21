@@ -47,5 +47,3 @@ export function murmurHash3(str, seed = 0) {
 
   return h >>> 0;
 }
-
-console.log(murmurHash3('AAABBB'));

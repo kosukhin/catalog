@@ -7,5 +7,3 @@ export function djb2(str) {
 
   return hash >>> 0;
 }
-
-console.log(djb2('AAABBB'));
