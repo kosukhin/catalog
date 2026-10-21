@@ -34,18 +34,22 @@ export function createHashSetOpenAddressing(
     let count = 0;
     let tombstones = 0;
 
+    // OK
     function normalize(index) {
         return ((index % capacity) + capacity) % capacity;
     }
 
+    // ok
     function bucketIndex(value) {
         return normalize(hashFn(value));
     }
 
+    // ok
     function probe(value, iteration) {
         return normalize(hashFn(value) + probingFn(iteration, value));
     }
 
+    // ok
     // Ищет значение по цепочке пробирования. Возвращает индекс или -1.
     function findValue(value) {
         let index = bucketIndex(value);
