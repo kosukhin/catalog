@@ -1,4 +1,4 @@
-const TOMBSTONE = Symbol('tombstone');
+export const TOMBSTONE = Symbol('tombstone');
 
 // Линейное пробирование: смещение равно номеру итерации.
 export function linearProbing(iteration) {
@@ -139,6 +139,15 @@ export function createHashSetOpenAddressing(
         },
         get size() {
             return count;
+        },
+        get buckets() {
+            return buckets;
+        },
+        get capacity() {
+            return capacity;
+        },
+        get tombstonesCount() {
+            return tombstones;
         },
         values() {
             const result = [];
