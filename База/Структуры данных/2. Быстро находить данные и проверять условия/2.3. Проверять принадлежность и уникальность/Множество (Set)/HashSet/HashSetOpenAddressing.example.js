@@ -58,7 +58,8 @@ export function renderHashSet(set, title = 'HashSet (open addressing)') {
     ].join('\n');
 }
 
-const set = createHashSetOpenAddressing(murmurHash3, 10);
+const stupidHash = () => 1;
+const set = createHashSetOpenAddressing(stupidHash, 10);
 
 console.log(renderHashSet(set, 'HashSet (open addressing) — пусто'));
 
@@ -72,4 +73,3 @@ console.log(renderHashSet(set, 'HashSet (open addressing) — после доб�
 set.remove('banana');
 
 console.log(renderHashSet(set, 'HashSet (open addressing) — после удаления'));
-
