@@ -68,7 +68,7 @@ export function createHashSetOpenAddressing(
 
     // ok
     // Ищет свободное место для вставки (с учётом tombstone). -1 — места нет.
-    function findSlot(value) {
+    function findEmptySlot(value) {
         let index = bucketIndex(value);
         let firstTombstone = -1;
         for (let iteration = 0; iteration < capacity; iteration++) {
@@ -96,7 +96,7 @@ export function createHashSetOpenAddressing(
             if (bucket === undefined || bucket === TOMBSTONE) {
                 continue;
             }
-            const slot = findSlot(bucket);
+            const slot = findEmptySlot(bucket);
             if (slot !== -1) {
                 buckets[slot] = bucket;
             }
@@ -104,7 +104,7 @@ export function createHashSetOpenAddressing(
     }
 
     function insert(el) {
-        const slot = findSlot(el);
+        const slot = findEmptySlot(el);
         if (slot === -1) {
             rehash(capacity * 2);
             return insert(el);
