@@ -35,5 +35,14 @@ describe('HashSetOpenAddressing', () => {
         }
         assert.deepEqual(set.values().sort((a, b) => a - b), values.sort((a, b) => a - b));
     });
+
+    it('неполное покрытие: rehash спасает значение', () => {
+        const set = createHashSetOpenAddressing(() => 0, 8, quadraticProbing, 1.0);
+
+        for (let i = 0; i < 3; i++) set.add(i + 100);
+
+        set.add(42);
+        assert.equal(set.contains(42), true);
+    });
 });
 
