@@ -14,6 +14,6 @@ describe('HashSetOpenAddressing', () => {
         set.add(12);
 
         assert.equal(set.contains(4), false);
-        assert.equal(set.contains(12), false);
+        assert.equal(set.contains(12), true);
     });
 });
