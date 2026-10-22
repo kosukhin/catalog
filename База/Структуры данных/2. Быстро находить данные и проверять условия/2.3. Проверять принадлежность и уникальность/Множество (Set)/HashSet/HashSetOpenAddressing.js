@@ -86,6 +86,7 @@ export function createHashSetOpenAddressing(
         return firstTombstone;
     }
 
+    // ok
     function rehash(newCapacity) {
         const oldBuckets = buckets;
         capacity = Math.max(1, Math.floor(newCapacity));
