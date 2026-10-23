@@ -1,0 +1,16 @@
+{
+  "name": "typesense-search-app",
+  "version": "1.0.0",
+  "description": "Test search app with Typesense and Node.js",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "index": "node scripts/index-data.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "typesense": "^1.8.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5"
+  }
+}
