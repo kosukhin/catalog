@@ -23,7 +23,7 @@ const schema = {
     { name: "description", type: "string" },
     { name: "category", type: "string", facet: true },
     { name: "location", type: "string" },
-    { name: "date", type: "string" },
+    { name: "date", type: "string", sort: true },
     { name: "age_group", type: "string", facet: true },
   ],
   default_sorting_field: "date",
