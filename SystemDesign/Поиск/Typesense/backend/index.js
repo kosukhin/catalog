@@ -28,9 +28,13 @@ app.get("/health", (_req, res) => res.json({ ok: true }));
 app.get("/search", async (req, res) => {
     try {
         const q = req.query.q || "";
+        const page = parseInt(req.query.page || "1", 10);
+        const perPage = parseInt(req.query.per_page || "20", 10);
+
         const params = {
             query_by: "title,description,category,location",
-            per_page: 20,
+            per_page: perPage,
+            page: page,
             sort_by: "date:asc",
             exclude_fields: "embedding",
             highlight_fields: "none"
@@ -90,19 +94,36 @@ app.post("/similar-text", async (req, res) => {
 app.get("/hybrid", async (req, res) => {
   try {
     const q = req.query.q || "";
-    const alpha = parseFloat(req.query.alpha || "0.5");
+    const page = parseInt(req.query.page || "1", 10);
+    const perPage = parseInt(req.query.per_page || "20", 10);
     const vec = embed(q || "");
-    const results = await client.collections(COLLECTION).documents().search({
+    const textRes = await client.collections(COLLECTION).documents().search({
       q: q || "*",
       query_by: "title,description,category,location",
-      vector_query: `embedding:([${vec.join(",")}], alpha:${alpha})`,
-      sort_by: "_text_match:desc,_vector_distance:asc",
-      per_page: 20,
+      sort_by: "date:asc",
+      per_page: 250,
       exclude_fields: "embedding",
       highlight_fields: "none",
     });
-    if (results.hits) results.hits = results.hits.map(({ highlight, highlights, ...r }) => r);
-    res.json(results);
+    const vecRes = await client.collections(COLLECTION).documents().search({
+      q: "*",
+      vector_query: `embedding:([${vec.join(",")}], k:1000)`,
+      per_page: 250,
+      exclude_fields: "embedding",
+      highlight_fields: "none",
+    });
+    const seen = new Set();
+    const merged = [];
+    for (const h of textRes.hits || []) {
+      if (!seen.has(h.document.id)) { seen.add(h.document.id); merged.push({ ...h, _type: "text" }); }
+    }
+    for (const h of vecRes.hits || []) {
+      if (!seen.has(h.document.id)) { seen.add(h.document.id); merged.push({ ...h, _type: "vector" }); }
+    }
+    const start = (page - 1) * perPage;
+    const slice = merged.slice(start, start + perPage);
+    const hits = slice.map(({ highlight, highlights, ...r }) => r);
+    res.json({ found: merged.length, page, hits });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

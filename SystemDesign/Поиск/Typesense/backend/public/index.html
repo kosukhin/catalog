@@ -5,10 +5,12 @@
   <title>Typesense Search</title>
   <style>
     body { font-family: sans-serif; max-width: 900px; margin: 20px auto; }
-    input { width: 60%; padding: 8px; }
-    button { padding: 8px 12px; }
+    input { width: 50%; padding: 8px; }
+    button { padding: 8px 12px; margin: 4px; }
     .card { border: 1px solid #ddd; padding: 12px; margin: 8px 0; border-radius: 6px; }
     .meta { color: #666; font-size: 0.9em; }
+    .type { font-weight: bold; color: #2a6; }
+    .pager { margin: 12px 0; }
   </style>
 </head>
 <body>
@@ -19,32 +21,48 @@
     <option value="hybrid">Гибридный</option>
     <option value="similar-text">Похожие по тексту</option>
   </select>
-  <button onclick="run()">Искать</button>
+  <button onclick="run(1)">Искать</button>
+  <div id="info"></div>
   <div id="results"></div>
+  <div class="pager" id="pager"></div>
   <script>
-    async function run() {
+    async function run(page) {
+      page = page || 1;
       const q = document.getElementById('q').value;
       const mode = document.getElementById('mode').value;
       const base = '';
       let url, opts = {};
-      if (mode === 'search') url = `${base}/search?q=` + encodeURIComponent(q);
-      else if (mode === 'hybrid') url = `${base}/hybrid?q=` + encodeURIComponent(q) + '&alpha=0.5';
+      const perPage = 10;
+      if (mode === 'search') url = `${base}/search?q=` + encodeURIComponent(q) + '&page=' + page + '&per_page=' + perPage;
+      else if (mode === 'hybrid') url = `${base}/hybrid?q=` + encodeURIComponent(q) + '&alpha=0.5&page=' + page + '&per_page=' + perPage;
       else { url = `${base}/similar-text`; opts = { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text: q}) }; }
       const r = await fetch(url, opts);
       const data = await r.json();
       const div = document.getElementById('results');
       div.innerHTML = '';
+      const info = document.getElementById('info');
+      info.innerHTML = 'Найдено: ' + (data.found || 0);
       (data.hits || []).forEach(h => {
         const d = h.document;
+        let type = 'текстовый';
+        if (h.vector_distance != null && h.text_match) type = 'гибридный';
+        else if (h.vector_distance != null) type = 'векторный';
         const card = document.createElement('div');
         card.className = 'card';
-        card.innerHTML = `<b>${d.title}</b><div>${d.description}</div><div class="meta">${d.category} · ${d.location} · ${d.date} · ${d.age_group}</div>`;
+        card.innerHTML = '<b>' + d.title + '</b><div>' + d.description + '</div><div class="meta">' + d.category + ' · ' + d.location + ' · ' + d.date + ' · ' + d.age_group + ' · <span class="type">' + type + '</span></div>';
         div.appendChild(card);
       });
       if (!data.hits || !data.hits.length) div.innerHTML = '<p>Ничего не найдено</p>';
+      const pager = document.getElementById('pager');
+      pager.innerHTML = '';
+      const found = data.found || 0;
+      const totalPages = Math.ceil(found / perPage) || 1;
+      if (totalPages > 1) {
+        if (page > 1) { const prev = document.createElement('button'); prev.textContent = '←'; prev.onclick = () => run(page-1); pager.appendChild(prev); }
+        for (let i = 1; i <= totalPages && i <= 10; i++) { const b = document.createElement('button'); b.textContent = i; if (i === page) b.disabled = true; b.onclick = () => run(i); pager.appendChild(b); }
+        if (page < totalPages) { const next = document.createElement('button'); next.textContent = '→'; next.onclick = () => run(page+1); pager.appendChild(next); }
+      }
     }
   </script>
 </body>
 </html>
-EOF
-echo done
