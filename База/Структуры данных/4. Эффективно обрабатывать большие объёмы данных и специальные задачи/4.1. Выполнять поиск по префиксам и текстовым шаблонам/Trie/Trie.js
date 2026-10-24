@@ -112,7 +112,9 @@ export class Trie {
      * @returns {boolean} — true, если слово существовало и было удалено.
      */
     delete(word) {
-        return this.#delete(this.#root, word, 0);
+        const status = { found: false };
+        this.#delete(this.#root, word, 0, status);
+        return status.found;
     }
 
     /**
@@ -209,15 +211,20 @@ export class Trie {
 
     /**
      * Рекурсивно удаляет слово, начиная с узла node на глубине depth.
+     *
      * Возвращает true, если после удаления текущий узел стал «пустым»
      * (не терминальный и без детей) — тогда родитель может его удалить.
+     * Факт удаления слова фиксируется отдельно в объекте status.found,
+     * потому что возвращаемое значение относится к «подчистке» узлов,
+     * а не к успешности операции.
      *
      * @param {TrieNode} node
      * @param {string} word
      * @param {number} depth
-     * @returns {boolean}
+     * @param {{ found: boolean }} status
+     * @returns {boolean} — нужно ли родителю удалить этот узел.
      */
-    #delete(node, word, depth) {
+    #delete(node, word, depth, status) {
         if (depth === word.length) {
             // Дошли до конца слова.
             if (!node.isEndOfWord) {
@@ -226,6 +233,7 @@ export class Trie {
             node.isEndOfWord = false;
             node.value = null;
             this.#size -= 1;
+            status.found = true;
             // Узел можно удалить, если у него больше нет детей.
             return node.children.size === 0;
         }
@@ -236,7 +244,7 @@ export class Trie {
             return false; // пути нет — слово не существует.
         }
 
-        const shouldDeleteChild = this.#delete(child, word, depth + 1);
+        const shouldDeleteChild = this.#delete(child, word, depth + 1, status);
 
         if (shouldDeleteChild) {
             node.children.delete(char);

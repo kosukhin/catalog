@@ -143,8 +143,8 @@ export class RadixTree {
      * @returns {boolean}
      */
     search(word) {
-        const { node, matched } = this.#walk(word);
-        return node !== null && matched === word.length && node.isEndOfWord;
+        const { node, matched, exact } = this.#walk(word);
+        return exact && node !== null && matched === word.length && node.isEndOfWord;
     }
 
     /**
@@ -153,8 +153,8 @@ export class RadixTree {
      * @returns {*}
      */
     get(word) {
-        const { node, matched } = this.#walk(word);
-        return node !== null && matched === word.length && node.isEndOfWord
+        const { node, matched, exact } = this.#walk(word);
+        return exact && node !== null && matched === word.length && node.isEndOfWord
             ? node.value
             : undefined;
     }
@@ -328,13 +328,15 @@ export class RadixTree {
 
     /**
      * Идёт по строке, следуя рёбрам.
-     * Возвращает узел и число совпавших символов строки.
+     * Возвращает узел, число совпавших символов и флаг exact.
      *
-     * Особенность: если строка заканчивается в середине ребра, возвращается
-     * дочерний узел, а matched равен длине строки (частичное совпадение).
+     * exact === true означает, что строка целиком прошла по рёбрам и
+     * закончилась ровно на границе узла. Если строка заканчивается в
+     * середине ребра (частичное совпадение), matched равен длине строки,
+     * но exact === false — это важно, чтобы не спутать префикс со словом.
      *
      * @param {string} str
-     * @returns {{ node: RadixNode|null, matched: number }}
+     * @returns {{ node: RadixNode|null, matched: number, exact: boolean }}
      */
     #walk(str) {
         let node = this.#root;
@@ -343,7 +345,7 @@ export class RadixTree {
         while (i < str.length) {
             const child = node.children.get(str[i]);
             if (!child) {
-                return { node: null, matched: i };
+                return { node: null, matched: i, exact: false };
             }
 
             const remaining = str.slice(i);
@@ -354,14 +356,14 @@ export class RadixTree {
                 node = child;
             } else if (child.label.startsWith(remaining)) {
                 // Остаток строки целиком лежит внутри ребра.
-                return { node: child, matched: i + remaining.length };
+                return { node: child, matched: i + remaining.length, exact: false };
             } else {
                 // Не совпадает.
-                return { node: null, matched: i };
+                return { node: null, matched: i, exact: false };
             }
         }
 
-        return { node, matched: i };
+        return { node, matched: i, exact: true };
     }
 
     /**
