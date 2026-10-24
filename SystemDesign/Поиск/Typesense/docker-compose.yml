@@ -1,7 +1,7 @@
 services:
   typesense:
     image: typesense/typesense:27.1
-    restart: unless-stopped
+    restart: no
     ports:
       - "8108:8108"
     volumes:
@@ -13,7 +13,7 @@ services:
 
   backend:
     build: ./backend
-    restart: unless-stopped
+    restart: no
     ports:
       - "3000:3000"
     environment:
