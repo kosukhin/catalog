@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Typesense Search</title>
+  <style>
+    body { font-family: sans-serif; max-width: 900px; margin: 20px auto; }
+    input { width: 60%; padding: 8px; }
+    button { padding: 8px 12px; }
+    .card { border: 1px solid #ddd; padding: 12px; margin: 8px 0; border-radius: 6px; }
+    .meta { color: #666; font-size: 0.9em; }
+  </style>
+</head>
+<body>
+  <h1>Поиск школьных событий</h1>
+  <input id="q" placeholder="Введите запрос..." />
+  <select id="mode">
+    <option value="search">Текстовый</option>
+    <option value="hybrid">Гибридный</option>
+    <option value="similar-text">Похожие по тексту</option>
+  </select>
+  <button onclick="run()">Искать</button>
+  <div id="results"></div>
+  <script>
+    async function run() {
+      const q = document.getElementById('q').value;
+      const mode = document.getElementById('mode').value;
+      const base = '';
+      let url, opts = {};
+      if (mode === 'search') url = `${base}/search?q=` + encodeURIComponent(q);
+      else if (mode === 'hybrid') url = `${base}/hybrid?q=` + encodeURIComponent(q) + '&alpha=0.5';
+      else { url = `${base}/similar-text`; opts = { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text: q}) }; }
+      const r = await fetch(url, opts);
+      const data = await r.json();
+      const div = document.getElementById('results');
+      div.innerHTML = '';
+      (data.hits || []).forEach(h => {
+        const d = h.document;
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `<b>${d.title}</b><div>${d.description}</div><div class="meta">${d.category} · ${d.location} · ${d.date} · ${d.age_group}</div>`;
+        div.appendChild(card);
+      });
+      if (!data.hits || !data.hits.length) div.innerHTML = '<p>Ничего не найдено</p>';
+    }
+  </script>
+</body>
+</html>
+EOF
+echo done

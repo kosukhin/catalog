@@ -19,6 +19,7 @@ const client = new Typesense.Client({
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(express.static("public"));
 
 const COLLECTION = "school_events";
 
