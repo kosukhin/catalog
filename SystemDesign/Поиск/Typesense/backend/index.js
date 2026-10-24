@@ -30,6 +30,12 @@ app.get("/search", async (req, res) => {
     const params = { query_by: "title,description,category,location", per_page: 20, sort_by: "date:asc", exclude_fields: "embedding", highlight_fields: "none" };
     params.q = q && q !== "*" ? q : "*";
     const results = await client.collections(COLLECTION).documents().search(params);
+    if (results.hits) {
+      results.hits = results.hits.map((h) => {
+        const { highlight, highlights, ...rest } = h;
+        return rest;
+      });
+    }
     res.json(results);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -48,6 +54,7 @@ app.get("/similar/:id", async (req, res) => {
       exclude_fields: "embedding",
       highlight_fields: "none",
     });
+    if (results.hits) results.hits = results.hits.map(({ highlight, highlights, ...r }) => r);
     res.json(results);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -66,6 +73,7 @@ app.post("/similar-text", async (req, res) => {
       exclude_fields: "embedding",
       highlight_fields: "none",
     });
+    if (results.hits) results.hits = results.hits.map(({ highlight, highlights, ...r }) => r);
     res.json(results);
   } catch (err) {
     res.status(500).json({ error: err.message });
