@@ -1,4 +1,6 @@
 require("dotenv").config();
+const fs = require("fs");
+const path = require("path");
 const Typesense = require("typesense");
 
 const client = new Typesense.Client({
@@ -29,16 +31,7 @@ const schema = {
   default_sorting_field: "date",
 };
 
-const docs = [
-  { id: "1", title: "Поход в кино", description: "Смотрим новый мультфильм в кинотеатре", category: "Кино", location: "Кинотеатр Октябрь", date: "2026-11-05", age_group: "1-4 класс" },
-  { id: "2", title: "Поход на выставку", description: "Экскурсия в музей современного искусства", category: "Выставка", location: "Галерея искусств", date: "2026-11-12", age_group: "5-8 класс" },
-  { id: "3", title: "Школьный спектакль", description: "Постановка по сказке Пушкина", category: "Театр", location: "Актовый зал школы", date: "2026-11-20", age_group: "1-11 класс" },
-  { id: "4", title: "Спортивный день", description: "Соревнования по футболу и легкой атлетике", category: "Спорт", location: "Школьный стадион", date: "2026-11-25", age_group: "5-11 класс" },
-  { id: "5", title: "Научная ярмарка", description: "Проекты учеников по физике и химии", category: "Наука", location: "Школа №42", date: "2026-12-02", age_group: "7-11 класс" },
-  { id: "6", title: "Мастер-класс по рисованию", description: "Рисуем акварелью с художником", category: "Творчество", location: "Арт-студия", date: "2026-12-09", age_group: "1-6 класс" },
-  { id: "7", title: "Экскурсия в планетарий", description: "Путешествие по звездному небу", category: "Наука", location: "Городской планетарий", date: "2026-12-15", age_group: "3-7 класс" },
-  { id: "8", title: "Новогодний бал", description: "Праздничный концерт и дискотека", category: "Праздник", location: "Школьный актовый зал", date: "2026-12-22", age_group: "1-11 класс" },
-];
+const docs = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "data", "events.json"), "utf8"));
 
 async function main() {
   try {

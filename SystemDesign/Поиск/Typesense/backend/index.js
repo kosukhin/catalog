@@ -30,6 +30,7 @@ app.get("/search", async (req, res) => {
       q,
       query_by: "title,description,category,location",
       per_page: 20,
+      sort_by: "date:asc",
     });
     res.json(results);
   } catch (err) {
