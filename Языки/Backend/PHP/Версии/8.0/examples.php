@@ -43,6 +43,10 @@ $message = match ($code) {
 };
 echo "Match: $code → $message\n";
 
+// Важно: match вычисляется один раз и не «связан» с переменной
+$code = 200; // меняем исходную переменную
+echo "Match не пересчитывается: \$code=200, но \$message всё ещё «{$message}»\n";
+
 // 5. Nullsafe-оператор
 $repository = null;
 $userName = $repository?->getUser()?->getName() ?? 'гость';
