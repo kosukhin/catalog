@@ -43,9 +43,17 @@ async function main() {
   }
   await client.collections().create(schema);
   const docs = [];
+  let processed = 0;
+  const start = Date.now();
+  const timer = setInterval(() => {
+    console.log(`Indexed ${processed}/${rawDocs.length} (elapsed ${Math.round((Date.now()-start)/1000)}s)`);
+  }, 5000);
   for (const d of rawDocs) {
     docs.push({ ...d, embedding: await embed(`${d.title} ${d.description} ${d.category}`) });
+    processed++;
   }
+  clearInterval(timer);
+  console.log(`Embedded ${docs.length}/${rawDocs.length}`);
   await client.collections(COLLECTION).documents().import(docs, { action: "create" });
   console.log("Indexed", docs.length, "documents into", COLLECTION);
 }
