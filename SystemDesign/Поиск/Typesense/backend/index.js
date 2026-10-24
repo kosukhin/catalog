@@ -27,7 +27,7 @@ app.get("/health", (_req, res) => res.json({ ok: true }));
 app.get("/search", async (req, res) => {
   try {
     const q = req.query.q || "";
-    const params = { query_by: "title,description,category,location", per_page: 20, sort_by: "date:asc", exclude_fields: "embedding" };
+    const params = { query_by: "title,description,category,location", per_page: 20, sort_by: "date:asc", exclude_fields: "embedding", highlight_fields: "none" };
     params.q = q && q !== "*" ? q : "*";
     const results = await client.collections(COLLECTION).documents().search(params);
     res.json(results);
@@ -46,6 +46,7 @@ app.get("/similar/:id", async (req, res) => {
       sort_by: "date:asc",
       per_page: 10,
       exclude_fields: "embedding",
+      highlight_fields: "none",
     });
     res.json(results);
   } catch (err) {
@@ -63,6 +64,7 @@ app.post("/similar-text", async (req, res) => {
       sort_by: "date:asc",
       per_page: 10,
       exclude_fields: "embedding",
+      highlight_fields: "none",
     });
     res.json(results);
   } catch (err) {
