@@ -7,12 +7,12 @@
 - **Fibers** — легковесные конкурентные примитивы.
 - **Pure intersection types** — пересечения типов (`A&B`).
 - **First-class callable syntax** — `strlen(...)`.
-- **`never` return type**, `new` в initializers, `array_is_list()`.
+- __`never` return type__, `new` в initializers, `array_is_list()`.
 - Улучшения производительности: JIT для opcache, наследование констант, `readonly`.
 
 ## Запуск
 
-```bash
+```bash {"terminalRows":"21"}
 docker build -t php81-demo .
 docker run --rm php81-demo
 ```
