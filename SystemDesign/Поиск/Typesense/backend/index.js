@@ -43,6 +43,7 @@ app.get("/similar/:id", async (req, res) => {
     const results = await client.collections(COLLECTION).documents().search({
       q: "*",
       vector_query: `embedding:([${vec.join(",")}], k:10)`,
+      sort_by: "date:asc",
       per_page: 10,
     });
     res.json(results);
@@ -58,6 +59,7 @@ app.post("/similar-text", async (req, res) => {
     const results = await client.collections(COLLECTION).documents().search({
       q: "*",
       vector_query: `embedding:([${vec.join(",")}], k:10)`,
+      sort_by: "date:asc",
       per_page: 10,
     });
     res.json(results);
