@@ -12,11 +12,11 @@
 - **Nullsafe-оператор** `?->`.
 - **Строгие сравнения строк и чисел** (`"0" == false` теперь false).
 - **Стрелочные функции-сортировка с spaceship** и др.
-- **static return type**, `::class` на объектах, `str_contains()`, `str_starts_with()`, `str_ends_with()`, JIT-компилятор.
+- __static return type__, `::class` на объектах, `str_contains()`, `str_starts_with()`, `str_ends_with()`, JIT-компилятор.
 
 ## Запуск
 
-```bash
+```bash {"terminalRows":"26"}
 docker build -t php80-demo .
 docker run --rm php80-demo
 ```
