@@ -86,4 +86,26 @@ app.post("/similar-text", async (req, res) => {
     }
 });
 
+app.get("/hybrid", async (req, res) => {
+  try {
+    const q = req.query.q || "";
+    const alpha = parseFloat(req.query.alpha || "0.5");
+    const vec = embed(q || "");
+    const results = await client.collections(COLLECTION).documents().search({
+      q: q || "*",
+      query_by: "title,description,category,location",
+      vector_query: `embedding:([${vec.join(",")}], alpha:${alpha})`,
+      sort_by: "_text_match:desc,_vector_distance:asc",
+      per_page: 20,
+      exclude_fields: "embedding",
+      highlight_fields: "none",
+    });
+    if (results.hits) results.hits = results.hits.map(({ highlight, highlights, ...r }) => r);
+    res.json(results);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 app.listen(3000, () => console.log("Backend listening on 3000"));
