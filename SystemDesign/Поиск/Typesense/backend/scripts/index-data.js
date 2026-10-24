@@ -2,7 +2,7 @@ require("dotenv").config();
 const fs = require("fs");
 const path = require("path");
 const Typesense = require("typesense");
-const { embed } = require(path.join(__dirname, "..", "lib", "embed.js"));
+const { embed, init } = require(path.join(__dirname, "..", "lib", "embed.js"));
 
 const client = new Typesense.Client({
   nodes: [
@@ -17,6 +17,7 @@ const client = new Typesense.Client({
 });
 
 const COLLECTION = "school_events";
+const BATCH_SIZE = 25;
 
 const schema = {
   name: COLLECTION,
@@ -36,29 +37,54 @@ const schema = {
 const rawDocs = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "data", "events.json"), "utf8"));
 
 async function main() {
-  try {
-    await client.collections(COLLECTION).delete();
-  } catch (e) {
-    // ignore if not exists
-  }
-  await client.collections().create(schema);
-  const docs = [];
-  let processed = 0;
   const start = Date.now();
+  let stage = "starting";
+  let embedded = 0;
+  let imported = 0;
   const timer = setInterval(() => {
-    console.log(`Indexed ${processed}/${rawDocs.length} (elapsed ${Math.round((Date.now()-start)/1000)}s)`);
+    const elapsed = Math.round((Date.now() - start) / 1000);
+    console.log(`[index] ${stage}; embedded ${embedded}/${rawDocs.length}; imported ${imported}/${rawDocs.length}; elapsed ${elapsed}s`);
   }, 5000);
-  for (const d of rawDocs) {
-    docs.push({ ...d, embedding: await embed(`${d.title} ${d.description} ${d.category}`) });
-    processed++;
+
+  try {
+    console.log(`[index] Starting indexing of ${rawDocs.length} documents`);
+    stage = "loading embedding model";
+    await init();
+
+    stage = "preparing collection";
+    console.log(`[index] Preparing collection ${COLLECTION}`);
+    try {
+      await client.collections(COLLECTION).delete();
+    } catch (e) {
+      // Ignore if the collection does not exist.
+    }
+    await client.collections().create(schema);
+
+    stage = "embedding and importing";
+    for (let offset = 0; offset < rawDocs.length; offset += BATCH_SIZE) {
+      const docs = [];
+      const end = Math.min(offset + BATCH_SIZE, rawDocs.length);
+      for (let i = offset; i < end; i++) {
+        const d = rawDocs[i];
+        docs.push({ ...d, embedding: await embed(`${d.title} ${d.description} ${d.category}`) });
+        embedded++;
+      }
+      const results = await client.collections(COLLECTION).documents().import(docs, { action: "create" });
+      const failed = results.filter((result) => !result.success);
+      if (failed.length) {
+        throw new Error(`Typesense import failed: ${JSON.stringify(failed.slice(0, 3))}`);
+      }
+      imported += docs.length;
+      console.log(`[index] Imported ${imported}/${rawDocs.length}`);
+    }
+    stage = "done";
+    console.log(`[index] Successfully indexed ${imported} documents into ${COLLECTION}`);
+  } finally {
+    clearInterval(timer);
   }
-  clearInterval(timer);
-  console.log(`Embedded ${docs.length}/${rawDocs.length}`);
-  await client.collections(COLLECTION).documents().import(docs, { action: "create" });
-  console.log("Indexed", docs.length, "documents into", COLLECTION);
 }
 
 main().catch((e) => {
-  console.error(e);
-  process.exit(1);
+  console.error("[index] Failed", e);
+  process.exitCode = 1;
 });

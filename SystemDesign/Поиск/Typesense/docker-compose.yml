@@ -23,6 +23,9 @@ services:
       - TYPESENSE_API_KEY=${TYPESENSE_API_KEY:-xyz}
     depends_on:
       - typesense
+    volumes:
+      - model_cache:/root/.cache
 
 volumes:
   typesense_data:
+  model_cache:
