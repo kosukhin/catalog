@@ -23,6 +23,15 @@ app.use(express.static("public"));
 
 const COLLECTION = "school_events";
 
+async function searchViaPost(params) {
+    const response = await client.multiSearch.perform({
+        searches: [{ collection: COLLECTION, ...params }],
+    });
+    const result = response.results[0];
+    if (result.error) throw new Error(result.error);
+    return result;
+}
+
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
 app.get("/search", async (req, res) => {
@@ -57,7 +66,7 @@ app.get("/similar/:id", async (req, res) => {
     try {
         const doc = await client.collections(COLLECTION).documents(req.params.id).retrieve();
         const vec = doc.embedding;
-        const results = await client.collections(COLLECTION).documents().search({
+        const results = await searchViaPost({
             q: "*",
             vector_query: `embedding:([${vec.join(",")}], k:10)`,
             sort_by: "date:asc",
@@ -76,7 +85,7 @@ app.post("/similar-text", async (req, res) => {
     try {
         const text = req.body.text || "";
         const vec = await embed(text);
-        const results = await client.collections(COLLECTION).documents().search({
+        const results = await searchViaPost({
             q: "*",
             vector_query: `embedding:([${vec.join(",")}], k:10)`,
             sort_by: "date:asc",
@@ -105,7 +114,7 @@ app.get("/hybrid", async (req, res) => {
       exclude_fields: "embedding",
       highlight_fields: "none",
     });
-    const vecRes = await client.collections(COLLECTION).documents().search({
+    const vecRes = await searchViaPost({
       q: "*",
       vector_query: `embedding:([${vec.join(",")}], k:1000)`,
       per_page: 250,
