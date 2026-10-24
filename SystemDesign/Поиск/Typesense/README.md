@@ -15,7 +15,7 @@ docker compose exec backend npm run index
 ## Search
 
 ```bash {"terminalRows":"18"}
-curl "http://localhost:3000/search?q=%D0%BA%D0%B8%D0%BD%D0%BE" | jq
+curl -G "http://localhost:3000/search" --data-urlencode "q=кино" | jq
 ```
 
 ## Health
