@@ -1,30 +1,17 @@
-// Simple deterministic hashing-based embedding (bag-of-words).
-// Production: replace with a real embedding model (OpenAI/Cohere/local transformers).
-const DIM = 64;
+let extractor = null;
 
-function hashToken(token) {
-  let h = 0;
-  for (let i = 0; i < token.length; i++) {
-    h = (h * 31 + token.charCodeAt(i)) >>> 0;
+async function getExtractor() {
+  if (!extractor) {
+    const { pipeline } = await import("@xenova/transformers");
+    extractor = await pipeline("feature-extraction", "Xenova/paraphrase-multilingual-MiniLM-L12-v2");
   }
-  return h % DIM;
+  return extractor;
 }
 
-function embed(text) {
-  const vec = new Array(DIM).fill(0);
-  const tokens = String(text || "")
-    .toLowerCase()
-    .replace(/[^a-zа-я0-9\s]/gi, " ")
-    .split(/\s+/)
-    .filter(Boolean);
-  for (const t of tokens) {
-    vec[hashToken(t)] += 1;
-  }
-  // L2 normalize
-  let norm = 0;
-  for (const v of vec) norm += v * v;
-  norm = Math.sqrt(norm) || 1;
-  return vec.map((v) => v / norm);
+async function embed(text) {
+  const ext = await getExtractor();
+  const output = await ext(text || "", { pooling: "mean", normalize: true });
+  return Array.from(output.data);
 }
 
-module.exports = { embed, DIM };
+module.exports = { embed };

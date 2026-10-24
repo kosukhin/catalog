@@ -75,7 +75,7 @@ app.get("/similar/:id", async (req, res) => {
 app.post("/similar-text", async (req, res) => {
     try {
         const text = req.body.text || "";
-        const vec = embed(text);
+        const vec = await embed(text);
         const results = await client.collections(COLLECTION).documents().search({
             q: "*",
             vector_query: `embedding:([${vec.join(",")}], k:10)`,
@@ -96,7 +96,7 @@ app.get("/hybrid", async (req, res) => {
     const q = req.query.q || "";
     const page = parseInt(req.query.page || "1", 10);
     const perPage = parseInt(req.query.per_page || "20", 10);
-    const vec = embed(q || "");
+    const vec = await embed(q || "");
     const textRes = await client.collections(COLLECTION).documents().search({
       q: q || "*",
       query_by: "title,description,category,location",

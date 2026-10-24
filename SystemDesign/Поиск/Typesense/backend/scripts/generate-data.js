@@ -18,9 +18,10 @@ for (let i = 1; i <= 1000; i++) {
   const subj = pick(subjects, i, 2);
   const title = `${adj.charAt(0).toUpperCase() + adj.slice(1)} ${cat.toLowerCase()} по ${subj} #${i}`;
   const description = `Школьное событие: ${cat.toLowerCase()} для ${pick(ageGroups, i)}. Тема: ${subj}. Место: ${pick(locations, i)}.`;
-  const day = String((i * 7 % 28) + 1).padStart(2, "0");
-  const month = String((i * 3 % 12) + 1).padStart(2, "0");
-  const date = `2026-${month}-${day}`;
+  const base = new Date("2026-01-01");
+  const d = new Date(base.getTime() + (i - 1) * 24 * 60 * 60 * 1000);
+  const date = d.toISOString().slice(0, 10);
+
   docs.push({
     id: String(i),
     title,

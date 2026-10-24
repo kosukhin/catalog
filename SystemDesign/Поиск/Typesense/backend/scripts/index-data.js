@@ -28,13 +28,12 @@ const schema = {
     { name: "location", type: "string" },
     { name: "date", type: "string", sort: true },
     { name: "age_group", type: "string", facet: true },
-    { name: "embedding", type: "float[]", num_dim: 64 },
+    { name: "embedding", type: "float[]", num_dim: 384 },
   ],
   default_sorting_field: "date",
 };
 
 const rawDocs = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "data", "events.json"), "utf8"));
-const docs = rawDocs.map((d) => ({ ...d, embedding: embed(`${d.title} ${d.description} ${d.category}`) }));
 
 async function main() {
   try {
@@ -43,6 +42,10 @@ async function main() {
     // ignore if not exists
   }
   await client.collections().create(schema);
+  const docs = [];
+  for (const d of rawDocs) {
+    docs.push({ ...d, embedding: await embed(`${d.title} ${d.description} ${d.category}`) });
+  }
   await client.collections(COLLECTION).documents().import(docs, { action: "create" });
   console.log("Indexed", docs.length, "documents into", COLLECTION);
 }
