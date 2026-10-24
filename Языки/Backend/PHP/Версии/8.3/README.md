@@ -5,8 +5,8 @@
 - **Typed class constants** — типизированные константы классов.
 - **`#[\Override]`-атрибут** — явная проверка переопределения родительского метода.
 - **Динамическое получение константы класса** `$class::{$name}`.
-- **`json_validate()`** — быстрая валидация JSON без декодирования.
-- **`random_bytes`-улучшения, `mb_str_pad()`**, deep-copy-on-write для IteratorAggregate.
+- __`json_validate()`__ — быстрая валидация JSON без декодирования.
+- __`random_bytes`-улучшения, `mb_str_pad()`__, deep-copy-on-write для IteratorAggregate.
 - Чтение только при чтении (readonly) клонирование, улучшения anonymous classes и ошибок PHP.
 
 ## Запуск
