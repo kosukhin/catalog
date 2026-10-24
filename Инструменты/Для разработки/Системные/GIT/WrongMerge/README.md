@@ -158,6 +158,6 @@ git push --force-with-lease origin main
 
 # Тестовые случаи
 
-```bash
+```bash {"terminalRows":"20"}
 ./wrong_merge_revert_test.sh
 ```
