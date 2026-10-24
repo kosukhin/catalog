@@ -12,6 +12,7 @@ async function getExtractor() {
         "Xenova/paraphrase-multilingual-MiniLM-L12-v2",
         {
           quantized: true,
+          cache_dir: "/root/.cache/transformers",
           progress_callback: (progress) => {
             const file = progress.file || "model";
             if (progress.status === "progress") {
