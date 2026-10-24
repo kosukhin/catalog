@@ -2,6 +2,7 @@ require("dotenv").config();
 const fs = require("fs");
 const path = require("path");
 const Typesense = require("typesense");
+const { embed } = require(path.join(__dirname, "..", "lib", "embed.js"));
 
 const client = new Typesense.Client({
   nodes: [
@@ -27,11 +28,13 @@ const schema = {
     { name: "location", type: "string" },
     { name: "date", type: "string", sort: true },
     { name: "age_group", type: "string", facet: true },
+    { name: "embedding", type: "float[]", num_dim: 64 },
   ],
   default_sorting_field: "date",
 };
 
-const docs = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "data", "events.json"), "utf8"));
+const rawDocs = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "data", "events.json"), "utf8"));
+const docs = rawDocs.map((d) => ({ ...d, embedding: embed(`${d.title} ${d.description} ${d.category}`) }));
 
 async function main() {
   try {
