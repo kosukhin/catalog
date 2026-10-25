@@ -1,0 +1,19 @@
+{
+  "name": "redis-pubsub-chat",
+  "version": "1.0.0",
+  "description": "Демонстрация Redis Pub/Sub на примере чата (Node.js + Express + WebSocket + ioredis)",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "client": "node src/client.js",
+    "test": "jest --runInBand --forceExit"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "ioredis": "^5.4.1",
+    "ws": "^8.17.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
