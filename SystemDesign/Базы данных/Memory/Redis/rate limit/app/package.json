@@ -1,0 +1,18 @@
+{
+  "name": "redis-rate-limiter-demo",
+  "version": "1.0.0",
+  "description": "Демонстрация Redis как rate limiter (Node.js + Express + ioredis)",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "test": "jest --runInBand --forceExit"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "ioredis": "^5.4.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0"
+  }
+}
