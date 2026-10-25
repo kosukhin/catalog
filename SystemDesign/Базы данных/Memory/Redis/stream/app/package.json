@@ -2,9 +2,9 @@
   "name": "redis-streams-demo",
   "version": "1.0.0",
   "description": "Демонстрация Redis Streams (Node.js + Express + ioredis)",
-  "main": "src/app.js",
+  "main": "src/server.js",
   "scripts": {
-    "start": "node src/app.js",
+    "start": "node src/server.js",
     "test": "jest --runInBand --forceExit"
   },
   "dependencies": {
