@@ -16,4 +16,6 @@
 
 - [William Fiset](https://github.com/williamfiset/algorithms)
 - [Js ALGS](https://github.com/trekhleb/javascript-algorithms)
-- 
+- [DrBartosz](https://www.youtube.com/@DrBartosz)
+- [Hello Interview](https://www.youtube.com/@hello_interview)
+- [ByteByteGo](https://www.youtube.com/@ByteByteGo)
