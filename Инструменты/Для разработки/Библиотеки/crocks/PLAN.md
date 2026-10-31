@@ -16,6 +16,13 @@
 
 ## Этап 0. Подготовка 🟢
 
+### Урок 0 — Термины ФП: функтор, аппликатив, монада
+- Контейнер и `of`: завернуть значение в минимальный контекст
+- Функтор: `map` + два закона (`Maybe`, `Either`, `Pair`, `Tuple`)
+- Аппликатив: `of` + `ap`, `liftA2`; независимые вычисления и накопление ошибок
+- Монада: `of` + `chain`; зависимые шаги, три закона
+- Иерархия интерфейсов и предикаты `isFunctor` / `isApply` / `isApplicative` / `isChain` / `isMonad`
+
 ### Урок 0.1 — Фундамент ФП, необходимый для crocks
 - Что такое алгебраические типы данных (ADT) и зачем они в JS
 - Чистые функции, иммутабельность
@@ -163,7 +170,7 @@ crocks/
 5. [Monoids](https://crocks.dev/docs/crocks/monoids/) → Functions (Combinators, Logic, Point-free, Transformations)
 6. [State](https://crocks.dev/docs/crocks/State.html) → [Reader](https://crocks.dev/docs/crocks/Reader.html) → [Arrow](https://crocks.dev/docs/crocks/Arrow.html)
 
-> Готов начинать урок 0.1 — просто попроси: «Урок 0.1» 🙂
+> Готов начинать урок 0 — просто попроси: «Урок 0» 🙂
 
 - `get`, `set`, `pick`, `omit`, `path`, `prop`, `props`
 - `merge`, `concat`, `bimap` и др.
