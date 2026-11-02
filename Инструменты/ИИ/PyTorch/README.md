@@ -30,10 +30,27 @@ docker compose run --rm pytorch python check_env.py
 
 ## Как проверять примеры
 
+Готовые примеры в папке `examples/` (от простого к сложному):
+
+| Файл | Что показывает |
+| --- | --- |
+| `examples/01_tensors.py` | тензоры, операции, автоград, ручной градиентный спуск |
+| `examples/02_linear_regression.py` | `nn.Linear` + `MSELoss` + `SGD`, график обучения в `runs/` |
+| `examples/03_cartpole_random.py` | CartPole со случайной политикой: цикл «наблюдение → действие → награда» |
+| `examples/04_cartpole_reinforce.py` | policy gradient (REINFORCE): агент реально учится |
+
 ```bash
 # запустить пример из книги
-docker compose run --rm pytorch python example.py
+docker compose run --rm pytorch python examples/01_tensors.py
 
+# пример с обучением (останавливается при достижении средней награды)
+docker compose run --rm pytorch python examples/04_cartpole_reinforce.py --episodes 500
+
+# свой файл: положите его в эту папку и передайте путь
+docker compose run --rm pytorch python my_script.py
+```
+
+```bash
 # интерактивная оболочка
 docker compose run --rm pytorch bash
 
@@ -71,7 +88,7 @@ docker compose up tensorboard
 Параметры в `.env`:
 
 - `UID` / `GID` — владелец файлов внутри контейнера; должны совпадать с `id -u` / `id -g`
-  на хосте, чтобы созданные в контейнере файлы были вашими;
+   на хосте, чтобы созданные в контейнере файлы были вашими;
 - `JUPYTER_TOKEN` — токен доступа к Jupyter Lab.
 
 ## GPU
