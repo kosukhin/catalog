@@ -1,0 +1,34 @@
+# conda-окружение для проверки примеров из книги.
+# Используется только канал conda-forge (nodefaults), чтобы не зависеть от
+# лицензии канала defaults от Anaconda.
+name: rl
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python=3.12
+  - pip
+  # базовый стек для примеров
+  - numpy
+  - pandas
+  - scipy
+  - matplotlib
+  - seaborn
+  - scikit-learn
+  - sympy
+  - tqdm
+  - pyyaml
+  - requests
+  - pillow
+  - h5py
+  # ноутбуки
+  - jupyterlab
+  - notebook
+  - ipykernel
+  - ipywidgets
+  # визуализация и утилиты
+  - graphviz
+  - python-graphviz
+  - opencv
+  - ffmpeg
+  - pytest

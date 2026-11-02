@@ -1,0 +1,57 @@
+services:
+  # Интерактивная оболочка: docker compose run --rm pytorch bash
+  pytorch:
+    build:
+      context: .
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    image: pytorch-book:latest
+    restart: no
+    working_dir: /workspace
+    shm_size: "2gb"
+    stdin_open: true
+    tty: true
+    volumes:
+      - .:/workspace
+    environment:
+      - JUPYTER_TOKEN=${JUPYTER_TOKEN:-pytorch}
+    command: bash
+
+  # Ноутбуки: http://localhost:8888/lab?token=pytorch
+  jupyter:
+    build:
+      context: .
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    image: pytorch-book:latest
+    restart: no
+    working_dir: /workspace
+    shm_size: "2gb"
+    ports:
+      - "8888:8888"
+    volumes:
+      - .:/workspace
+    environment:
+      - JUPYTER_TOKEN=${JUPYTER_TOKEN:-pytorch}
+    command: >
+      jupyter lab --ip=0.0.0.0 --port=8888 --no-browser
+      --ServerApp.root_dir=/workspace
+      --ServerApp.token=${JUPYTER_TOKEN:-pytorch}
+
+  # Кривые обучения: http://localhost:6006
+  tensorboard:
+    build:
+      context: .
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    image: pytorch-book:latest
+    restart: no
+    working_dir: /workspace
+    ports:
+      - "6006:6006"
+    volumes:
+      - .:/workspace
+    command: tensorboard --logdir=/workspace/runs --host=0.0.0.0 --port=6006

@@ -1,0 +1,7 @@
+# pip-пакеты, которых нет в conda-окружении (ставится после PyTorch).
+# Сюда удобно добавлять библиотеки, нужные конкретной главе книги.
+gymnasium[classic-control]>=1.2
+tensorboard
+tensorboardX
+moviepy
+imageio[ffmpeg]
