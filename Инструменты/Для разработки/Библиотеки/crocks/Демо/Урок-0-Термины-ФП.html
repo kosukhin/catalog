@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Демо · Урок 0 — Термины ФП · crocks</title>
+  <link rel="stylesheet" href="assets/demo.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar__inner">
+      <div class="topbar__crumbs">
+        <a href="index.html">Демо</a> · <a href="../README.md">курс</a> · урок 0
+      </div>
+      <span class="engine" data-engine>
+        <span class="engine__dot"></span>
+        <span data-engine-text>загружаю crocks…</span>
+      </span>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <span class="hero__kicker">демо · урок 0</span>
+      <h1>Термины ФП: функтор, аппликатив, монада</h1>
+      <p>
+        <span data-scene-total>8</span> сцен по разделам урока: контейнер
+        и <code>of</code>, функтор, законы, аппликатив, монада, иерархия интерфейсов,
+        вариативность и три операции на одной форме. Крути контролы и смотри, что
+        меняется — форма коробки, ошибки, пропущенные шаги.
+      </p>
+      <div class="hero__meta">
+        <span>разделы 1–6 урока</span>
+        <span>значения сверяет <code>npm run check:demo</code></span>
+        <a href="../Урок-0-Термины-ФП.md">конспект урока</a>
+        <a href="../Практика/Урок-0-Термины-ФП.html">практика</a>
+        <a href="../Теория/Урок-0-Термины-ФП.md">теория</a>
+      </div>
+      <p class="note">
+        <strong>Как смотреть.</strong> Сверху контролы, внизу — «лента операций».
+        Значение в ленте считает настоящий <strong>crocks 0.12.4</strong> прямо
+        в браузере, а рядом стоит эталон из файла сцены: <em>✓</em> — совпало,
+        <em>⚠</em> — демо расходится с библиотекой (так вы увидите ошибку в самой
+        сцене, а не «красивый, но неправильный» ответ).
+      </p>
+      <p class="note note--warn hidden" data-engine-warning>
+        <strong>crocks не загрузился.</strong> Визуализации работают, но значения
+        не считаются. Выполни <code>npm install</code> в корне курса (тогда
+        подхватится <code>node_modules/crocks/dist/crocks.min.js</code>) или открой
+        страницу с доступом в интернет — сработает запасной CDN.
+      </p>
+      <nav class="scenenav" data-scene-nav aria-label="Сцены урока"></nav>
+    </section>
+
+    <div data-scenes></div>
+
+    <section class="summary">
+      <h2>Что здесь можно увидеть своими глазами</h2>
+      <ul>
+        <li><code>of</code> не проверяет значение: <code>Maybe.of(null)</code> — это
+          <code>Just null</code>, пустоту делают <code>Nothing</code>/<code>safe</code>.</li>
+        <li><code>map</code> сохраняет форму: <code>Nothing</code> и <code>Left</code>
+          остаются собой, а функция к ним не применяется.</li>
+        <li>Законы — это равенство двух записей: сцена показывает обе дорожки и
+          сверяет их через <code>equals</code>.</li>
+        <li><code>Result</code> копит ошибки независимых полей, <code>Either</code>
+          останавливается на первой.</li>
+        <li><code>chain</code> снимает слой и коротко замыкает цепочку на ошибке;
+          <code>map</code> вместо него даёт <code>Just Just 4</code>.</li>
+        <li>Интерфейс — это набор операций, а не название типа: <code>Pair</code>
+          умеет <code>ap</code>/<code>chain</code>, но без <code>of</code> не
+          аппликатив по предикату.</li>
+      </ul>
+      <p>
+        Дальше — <a href="../Практика/Урок-0-Термины-ФП.html">19 заданий практики</a>
+        (проверка своими руками) и <a href="../Урок-0-Термины-ФП.md">конспект</a>
+        (формулировки законов).
+      </p>
+    </section>
+
+    <noscript>
+      <p class="note note--warn">
+        Сцены и проверка значений собираются скриптом — включи JavaScript.
+      </p>
+    </noscript>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <nav>
+        <a href="index.html">Все демо</a>
+        <a href="../Урок-0-Термины-ФП.md">Конспект урока 0</a>
+        <a href="../Практика/Урок-0-Термины-ФП.html">Практика к уроку 0</a>
+        <a href="../Теория/Урок-0-Термины-ФП.md">Теория к уроку 0</a>
+        <a href="../ШПАРГАЛКА.md">Шпаргалка</a>
+      </nav>
+      <div>
+        crocks 0.12.4 · сцены считаются в браузере · эталоны сверяет
+        <code>npm run check:demo</code>
+      </div>
+    </div>
+  </footer>
+
+  <script src="assets/demo.js"></script>
+  <script src="assets/scenes-0.js"></script>
+</body>
+</html>

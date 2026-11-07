@@ -1,0 +1,960 @@
+/* ==========================================================================
+   Демо курса crocks — светлая тема и стиль интерактивных сцен.
+   --------------------------------------------------------------------------
+   Файл самодостаточный: палитра, каркас страницы (шапка, hero, карточки,
+   таблицы, футер) и компоненты визуализаций. Практика и теория остаются
+   в тёмной теме, демо — в светлой: схемы лучше читаются на «бумаге», а при
+   печати страница выглядит так же, как на экране.
+
+   Вся палитра — в :root. Компоненты ниже используют только переменные,
+   поэтому тёмный вариант темы — это замена блока токенов.
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  --bg: #f5f7fc;
+  --bg-soft: #eef2f9;
+  --card: #ffffff;
+  --card-soft: #f8fafd;
+  --line: #d5dce8;
+  --line-soft: #e6ebf3;
+
+  --text: #16202e;
+  --muted: #4d5b6e;
+  --dim: #5f6c80;
+
+  --accent: #2563eb;
+  --accent-soft: rgba(37, 99, 235, 0.09);
+  --ok: #10714a;
+  --ok-soft: rgba(16, 113, 74, 0.1);
+  --fail: #b91f35;
+  --fail-soft: rgba(185, 31, 53, 0.09);
+  --warn: #9a5b00;
+  --warn-soft: rgba(154, 91, 0, 0.1);
+
+  --code-bg: #f1f5fb;
+  --radius: 14px;
+  --radius-sm: 9px;
+  --shadow: 0 1px 2px rgba(22, 32, 46, 0.06),
+    0 10px 26px -18px rgba(22, 32, 46, 0.35);
+
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px 600px at 15% -10%, rgba(37, 99, 235, 0.07), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, rgba(14, 165, 233, 0.06), transparent 55%),
+    var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+a {
+  color: var(--accent);
+  text-decoration-color: rgba(37, 99, 235, 0.35);
+  text-underline-offset: 3px;
+}
+
+a:hover {
+  text-decoration-color: currentColor;
+}
+
+code {
+  font-family: var(--mono);
+  font-size: 0.9em;
+  color: var(--text);
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid var(--line-soft);
+  border-radius: 6px;
+  padding: 0.08em 0.36em;
+}
+
+/* ---------- каркас страницы ---------- */
+
+.wrap {
+  width: min(920px, 100% - 2.5rem);
+  margin-inline: auto;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.88);
+  border-bottom: 1px solid var(--line-soft);
+  backdrop-filter: blur(10px);
+}
+
+.topbar__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1.25rem;
+  padding: 0.7rem 0;
+}
+
+.topbar__crumbs {
+  margin-right: auto;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.topbar__crumbs a {
+  color: var(--muted);
+}
+
+.topbar__crumbs a:hover {
+  color: var(--text);
+}
+
+/* ---------- шапка страницы ---------- */
+
+.hero {
+  padding: 2.4rem 0 0.4rem;
+}
+
+.hero__kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.42rem 0.75rem;
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font: 600 0.75rem/1 var(--sans);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  margin: 1rem 0 0.6rem;
+  font-size: clamp(1.6rem, 4vw, 2.15rem);
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+}
+
+.hero p {
+  margin: 0 0 0.9rem;
+  max-width: 68ch;
+  color: var(--muted);
+}
+
+.hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  margin-bottom: 1.4rem;
+  font-size: 0.86rem;
+  color: var(--dim);
+}
+
+.note {
+  margin: 1.2rem 0 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: var(--card-soft);
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.note strong {
+  color: var(--text);
+}
+
+.note--warn {
+  border-left-color: var(--warn);
+  background: var(--warn-soft);
+}
+
+/* ---------- секции и таблицы ---------- */
+
+.section {
+  margin-top: 2.2rem;
+}
+
+.section__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem 0.9rem;
+  margin-bottom: 0.8rem;
+}
+
+.section__head h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.section__head span {
+  font-size: 0.82rem;
+  color: var(--dim);
+}
+
+.matrix {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.matrix th,
+.matrix td {
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--line-soft);
+  text-align: left;
+  vertical-align: top;
+}
+
+.matrix thead th {
+  background: var(--bg-soft);
+  color: var(--dim);
+  font: 600 0.78rem/1.3 var(--sans);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.matrix tbody tr:nth-child(even) {
+  background: var(--card-soft);
+}
+
+.matrix td:first-child {
+  color: var(--muted);
+  font: 600 0.86rem/1.4 var(--mono);
+  white-space: nowrap;
+}
+
+/* ---------- итог и футер ---------- */
+
+.summary {
+  margin-top: 2.6rem;
+  padding: 1.2rem 1.3rem 1.3rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+
+.summary h2 {
+  margin: 0 0 0.4rem;
+  font-size: 1.05rem;
+}
+
+.summary p {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.summary ul {
+  margin: 0.7rem 0 0;
+  padding-left: 1.1rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.summary li {
+  margin: 0.25rem 0;
+}
+
+.footer {
+  margin-top: 2.4rem;
+  padding: 1.4rem 0 2.2rem;
+  border-top: 1px solid var(--line-soft);
+  color: var(--dim);
+  font-size: 0.84rem;
+}
+
+.footer nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+/* ---------- служебное ---------- */
+
+.hidden {
+  display: none !important;
+}
+
+/* ---------- карточка сцены ---------- */
+
+.scene {
+  margin: 1.5rem 0;
+  padding: 1.15rem 1.25rem 1.3rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  box-shadow: var(--shadow);
+  scroll-margin-top: 84px;
+}
+
+.scene__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.7rem;
+}
+
+.scene__num {
+  color: var(--accent);
+  font: 700 0.78rem/1 var(--mono);
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.scene__title {
+  margin: 0;
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
+}
+
+.scene__idea {
+  margin: 0.55rem 0 0;
+  max-width: 72ch;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.scene__idea strong {
+  color: var(--text);
+}
+
+.scene__hint {
+  margin-top: 0.7rem;
+  color: var(--dim);
+  font-size: 0.82rem;
+}
+
+.scene__hint code {
+  font-size: 0.88em;
+}
+
+/* ---------- контролы сцены ---------- */
+
+.scene__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.65rem 1.1rem;
+  margin-top: 0.95rem;
+}
+
+.ctrl {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 152px;
+}
+
+.ctrl__label {
+  color: var(--dim);
+  font: 600 0.7rem/1 var(--sans);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ctrl select,
+.ctrl input[type='text'] {
+  width: 100%;
+  font: 600 0.86rem/1.2 var(--mono);
+  color: var(--text);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 0.42rem 0.55rem;
+}
+
+.ctrl select:hover,
+.ctrl input[type='text']:hover {
+  border-color: rgba(37, 99, 235, 0.45);
+}
+
+.ctrl select:focus,
+.ctrl input[type='text']:focus,
+.ctrl input[type='range']:focus-visible {
+  outline: 2px solid rgba(37, 99, 235, 0.4);
+  outline-offset: 1px;
+}
+
+.ctrl input[type='range'] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.ctrl--wide {
+  min-width: 240px;
+}
+
+.ctrl__value {
+  color: var(--accent);
+  font: 700 0.86rem/1 var(--mono);
+}
+
+/* чипы-переключатели */
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.chip {
+  padding: 0.45rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--muted);
+  font: 600 0.79rem/1 var(--mono);
+  cursor: pointer;
+}
+
+.chip:hover {
+  border-color: rgba(37, 99, 235, 0.55);
+  color: var(--text);
+}
+
+.chip[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+.chip:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------- сцена (визуализация) ---------- */
+
+.stage {
+  margin-top: 1rem;
+  padding: 1rem 1rem 0.95rem;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--code-bg);
+  overflow-x: auto;
+}
+
+.stage__caption {
+  margin: 0 0 0.75rem;
+  color: var(--dim);
+  font: 600 0.68rem/1 var(--sans);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.vflow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.vflow--top {
+  align-items: flex-start;
+}
+
+.vstack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* коробка-контейнер */
+
+.vbox {
+  position: relative;
+  min-width: 108px;
+  padding: 0.5rem 0.7rem 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--card);
+}
+
+.vbox__label {
+  display: block;
+  color: var(--dim);
+  font: 600 0.68rem/1 var(--mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.vbox__value {
+  display: block;
+  margin-top: 0.3rem;
+  color: var(--text);
+  font: 600 0.95rem/1.35 var(--mono);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.vbox__sub {
+  display: block;
+  margin-top: 0.3rem;
+  color: var(--dim);
+  font-size: 0.74rem;
+  line-height: 1.35;
+}
+
+.vbox--ok {
+  border-color: rgba(16, 113, 74, 0.4);
+  background: linear-gradient(180deg, var(--ok-soft), transparent 85%);
+}
+
+.vbox--fail {
+  border-color: rgba(185, 31, 53, 0.4);
+  background: linear-gradient(180deg, var(--fail-soft), transparent 85%);
+}
+
+.vbox--warn {
+  border-color: rgba(154, 91, 0, 0.4);
+  background: linear-gradient(180deg, var(--warn-soft), transparent 85%);
+}
+
+.vbox--accent {
+  border-color: rgba(37, 99, 235, 0.45);
+  background: linear-gradient(180deg, var(--accent-soft), transparent 85%);
+}
+
+.vbox--ghost {
+  border-style: dashed;
+  opacity: 0.55;
+}
+
+.vbox--ghost .vbox__value {
+  text-decoration: line-through;
+}
+
+/* метка-код в коробке: без капса */
+
+.vbox--code .vbox__label {
+  font-size: 0.74rem;
+  line-height: 1.35;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--muted);
+}
+
+/* вложенная коробка: визуал `Just Just 6` */
+
+.vbox--nest {
+  padding: 0.4rem 0.45rem 0.45rem;
+  background: var(--card-soft);
+}
+
+.vbox--nest > .vbox {
+  margin-top: 0.3rem;
+  background: var(--card);
+}
+
+.vbox--pop {
+  animation: demo-pop 0.3s ease both;
+}
+
+@keyframes demo-pop {
+  from {
+    transform: translateY(2px);
+    opacity: 0.6;
+  }
+
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+/* стрелка между этапами */
+
+.varrow {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 78px;
+}
+
+.varrow__label {
+  color: var(--muted);
+  font: 0.74rem/1.25 var(--mono);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.varrow__line {
+  position: relative;
+  width: 100%;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--line), rgba(37, 99, 235, 0.85));
+}
+
+.varrow__line::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: -1px;
+  transform: translateY(-50%);
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 7px solid rgba(37, 99, 235, 0.95);
+}
+
+/* контравариантное направление — стрелка назад */
+
+.varrow--back .varrow__line {
+  background: linear-gradient(270deg, var(--line), rgba(154, 91, 0, 0.85));
+}
+
+.varrow--back .varrow__line::after {
+  right: auto;
+  left: -1px;
+  border-left: 0;
+  border-right: 7px solid rgba(154, 91, 0, 0.95);
+}
+
+/* знак равенства между двумя дорожками */
+
+.veq {
+  align-self: center;
+  padding: 0 0.15rem;
+  color: var(--ok);
+  font: 700 1.2rem/1 var(--mono);
+}
+
+/* пояснение внутри сцены */
+
+.vmsg {
+  margin-top: 0.75rem;
+  padding: 0.15rem 0 0.15rem 0.6rem;
+  border-left: 2px solid var(--line);
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.vmsg code {
+  font-size: 0.88em;
+  background: rgba(37, 99, 235, 0.07);
+}
+
+.vmsg strong {
+  color: var(--text);
+}
+
+.vmsg--ok {
+  border-left-color: var(--ok);
+  color: #12543a;
+}
+
+.vmsg--warn {
+  border-left-color: var(--warn);
+  color: #6f4200;
+}
+
+.vmsg--fail {
+  border-left-color: var(--fail);
+  color: #8d1526;
+}
+
+/* ---------- лента операций: что говорит crocks ---------- */
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-top: 0.95rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--line-soft);
+}
+
+.steps__caption {
+  margin: 0 0 0.15rem;
+  color: var(--dim);
+  font: 600 0.68rem/1 var(--sans);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.step {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) auto minmax(0, 1fr) auto;
+  gap: 0.25rem 0.55rem;
+  align-items: baseline;
+  font: 0.82rem/1.45 var(--mono);
+}
+
+.step__code {
+  justify-self: start;
+  max-width: 100%;
+  padding: 0.1rem 0.4rem;
+  border: 1px solid var(--line-soft);
+  border-radius: 6px;
+  background: var(--code-bg);
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.step__arrow {
+  color: var(--dim);
+}
+
+.step__value {
+  color: var(--text);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.step__badge {
+  padding: 0.2rem 0.45rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card-soft);
+  color: var(--dim);
+  font: 600 0.68rem/1 var(--sans);
+  white-space: nowrap;
+}
+
+.step__badge--ok {
+  border-color: rgba(16, 113, 74, 0.3);
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+
+.step__badge--fail {
+  border-color: rgba(185, 31, 53, 0.35);
+  background: var(--fail-soft);
+  color: var(--fail);
+}
+
+.step__note {
+  grid-column: 1 / -1;
+  color: var(--dim);
+  font: 0.78rem/1.45 var(--sans);
+}
+
+/* ---------- иерархия интерфейсов ---------- */
+
+.levels {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.level {
+  padding: 0.5rem 0.7rem 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--card-soft);
+  opacity: 0.6;
+}
+
+.level--on {
+  border-color: rgba(37, 99, 235, 0.45);
+  background: linear-gradient(90deg, var(--accent-soft), transparent 72%);
+  opacity: 1;
+}
+
+.level__head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+}
+
+.level__name {
+  color: var(--text);
+  font: 700 0.82rem/1.2 var(--mono);
+}
+
+.level__ops {
+  color: var(--muted);
+  font: 0.76rem/1.4 var(--mono);
+}
+
+.level__mark {
+  margin-left: auto;
+  color: var(--dim);
+  font: 700 0.8rem/1 var(--mono);
+}
+
+.level--on .level__mark {
+  color: var(--ok);
+}
+
+/* таблица операций: map / of / ap / chain */
+
+.flags {
+  border-collapse: collapse;
+  font: 0.82rem/1.4 var(--mono);
+}
+
+.flags th,
+.flags td {
+  padding: 0.28rem 0.65rem;
+  border: 1px solid var(--line-soft);
+  color: var(--muted);
+  text-align: center;
+}
+
+.flags thead th {
+  background: var(--bg-soft);
+  color: var(--dim);
+  font-weight: 600;
+}
+
+.flags th:first-child,
+.flags td:first-child {
+  color: var(--text);
+  text-align: left;
+}
+
+.flags .on {
+  color: var(--ok);
+  font-weight: 700;
+}
+
+.flags .off {
+  color: var(--dim);
+}
+
+/* ---------- навигация по сценам ---------- */
+
+.scenenav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 1.4rem 0 0;
+}
+
+.scenenav a {
+  padding: 0.4rem 0.65rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--muted);
+  font: 600 0.76rem/1 var(--mono);
+  text-decoration: none;
+}
+
+.scenenav a:hover {
+  border-color: rgba(37, 99, 235, 0.55);
+  color: var(--text);
+}
+
+/* ---------- статус библиотеки ---------- */
+
+.engine {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--muted);
+  font: 600 0.76rem/1 var(--mono);
+}
+
+.engine__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--dim);
+}
+
+.engine--on .engine__dot {
+  background: var(--ok);
+  box-shadow: 0 0 0 3px var(--ok-soft);
+}
+
+.engine--off .engine__dot {
+  background: var(--warn);
+  box-shadow: 0 0 0 3px var(--warn-soft);
+}
+
+/* ---------- адаптивность и печать ---------- */
+
+@media (max-width: 640px) {
+  .wrap {
+    width: min(920px, 100% - 1.5rem);
+  }
+
+  .scene {
+    padding: 1rem 0.95rem 1.05rem;
+  }
+
+  .step {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .step__arrow {
+    display: none;
+  }
+
+  .step__badge {
+    justify-self: start;
+  }
+
+  .ctrl,
+  .ctrl--wide {
+    min-width: 0;
+    flex: 1 1 100%;
+  }
+
+  .matrix thead {
+    display: none;
+  }
+
+  .matrix tr {
+    display: block;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  .matrix td {
+    display: block;
+    border: 0;
+    padding: 0.2rem 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vbox--pop {
+    animation: none;
+  }
+
+  * {
+    transition: none !important;
+  }
+}
+
+@media print {
+  .topbar,
+  .scenenav,
+  .footer {
+    display: none;
+  }
+
+  .scene,
+  .summary {
+    break-inside: avoid;
+  }
+}

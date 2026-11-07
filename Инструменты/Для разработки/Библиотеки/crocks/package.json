@@ -7,7 +7,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "check": "node scripts/check-examples.mjs",
-    "check:practice": "node scripts/check-practice.mjs"
+    "check:practice": "node scripts/check-practice.mjs",
+    "check:demo": "node scripts/check-demo.mjs && node scripts/check-demo-render.mjs"
   },
   "author": "",
   "license": "ISC",
