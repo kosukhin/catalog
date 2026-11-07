@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Демо · Доставка дроном: диспетчер на crocks</title>
+  <link rel="stylesheet" href="assets/demo.css">
+  <link rel="stylesheet" href="assets/scene3d.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar__inner">
+      <div class="topbar__crumbs">
+        <a href="index.html">Демо</a> · <a href="../README.md">курс</a> · доставка дроном
+      </div>
+      <span class="engine" data-engine>
+        <span class="engine__dot"></span>
+        <span data-engine-text>загружаю crocks…</span>
+      </span>
+      <span class="engine" data-drone-status>загружаю three.js…</span>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <span class="hero__kicker">демо · реальная система</span>
+      <h1>Доставка дроном: диспетчер на crocks</h1>
+      <p>
+        Служба доставки получает заявку: <strong>вес посылки, ветер, заряд, адрес</strong>.
+        Диспетчер решает, полетит дрон или нет, и если нет — говорит причину
+        человеческим языком: перегруз, сильный ветер, мало заряда, адрес вне зоны.
+        Это не игрушечный пример: именно так выглядят реальные предполётные проверки.
+      </p>
+      <div class="hero__meta">
+        <span>модель: <code>Maybe</code> + <code>Reader</code> + <code>Either</code> + <code>State</code></span>
+        <span>проверка: <code>npm run check:drone</code></span>
+        <a href="../Урок-0-Термины-ФП.md">конспект урока 0</a>
+        <a href="Урок-0-Термины-ФП.html">демо урока 0</a>
+      </div>
+      <p class="note">
+        <strong>Первый запуск.</strong> Нужны <code>crocks</code> и
+        <code>three@0.149.0</code>: один раз <code>npm install</code> в корне курса —
+        и страница возьмёт локальные сборки, без интернета. Без них она попробует CDN.
+        three.js взят <strong>r149</strong> — последняя версия с UMD-сборкой,
+        поэтому всё работает двойным кликом по файлу, без сборщика и сервера.
+      </p>
+    </section>
+
+    <section class="section viewport-app">
+      <div class="section__head">
+        <h2>Рейс</h2>
+        <span>крути условия — диспетчер решает заново</span>
+      </div>
+
+      <div class="scene__controls" data-drone-controls></div>
+
+      <div class="viewport-actions">
+        <button class="chip" type="button" data-drone-pause aria-pressed="false">❚❚ пауза</button>
+        <span class="viewport-actions__hint">
+          отказ — это нормальный ответ <code>Left</code>: дрон остаётся на базе,
+          а причина видна над площадкой
+        </span>
+      </div>
+
+      <div class="viewport-board">
+        <div class="viewport-board__stage" data-drone-stage></div>
+        <div class="viewport-board__legend">
+          <span>дрон — состояние полёта</span>
+          <span>коробка — груз</span>
+          <span>штрихи — ветер</span>
+          <span>пунктир — маршрут</span>
+        </div>
+        <div class="viewport-board__hud" data-drone-hud>инициализация…</div>
+      </div>
+
+      <div class="steps" data-drone-steps></div>
+    </section>
+
+    <section class="section">
+      <div class="section__head">
+        <h2>Кто что решает</h2>
+        <span>четыре типа — четыре реальные задачи</span>
+      </div>
+
+      <div class="story-notes">
+        <div class="story-note">
+          <h3><code>Maybe</code> — адрес в базе</h3>
+          <p>
+            «Лесная 7» есть в базе площадок → <code>Just "P-07"</code>.
+            «Порт 12» нет → <code>Nothing</code>, и диспетчеру не нужен
+            «нулевой адрес»: отсутствие адреса — это значение.
+            Тот же <code>Maybe</code> отвечает и за груз: после сброса его
+            на борту больше нет.
+          </p>
+        </div>
+        <div class="story-note">
+          <h3><code>Reader</code> — расход под условия</h3>
+          <p>
+            Одна функция расхода заряда, а окружение подставляется:
+            ветер, вес, дистанция. Меняешь ветер — та же программа считает
+            другое число. Это и есть <code>Reader</code>: логика отдельно,
+            условия отдельно.
+          </p>
+        </div>
+        <div class="story-note">
+          <h3><code>Either</code> — решение с причиной</h3>
+          <p>
+            Проверки возвращают <code>Right</code> или <code>Left</code>
+            с причиной: «груз 3.4 кг тяжелее лимита 2.4 кг». Первый отказ
+            останавливает цепочку — остальные проверки уже не выполняются.
+          </p>
+        </div>
+        <div class="story-note">
+          <h3><code>State</code> — сам полёт</h3>
+          <p>
+            Взлёт, курс, сброс, возврат, посадка — это <code>State</code>:
+            вычисление тянет за собой заряд и координаты, а кадр просто
+            читает, где дрон сейчас и сколько у него осталось.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section__head">
+        <h2>Что попробовать</h2>
+        <span>сценарии из жизни</span>
+      </div>
+
+      <div class="story-notes">
+        <div class="story-note">
+          <h3>Обычный заказ</h3>
+          <p>
+            Лесная 7 · 0.8 кг · штиль · 100 %: дрон летит, сбрасывает посылку,
+            возвращается и садится. В конце заряд ровно на посчитанный расход.
+          </p>
+        </div>
+        <div class="story-note">
+          <h3>Перегруз</h3>
+          <p>
+            Поставь 3.4 кг: <code>Either</code> вернёт <code>Left</code>,
+            и дрон даже не оторвётся от площадки — моторы покрутятся и заглохнут.
+          </p>
+        </div>
+        <div class="story-note">
+          <h3>Ветер и заряд</h3>
+          <p>
+            12 м/с — отказ по ветру. 55 % при тяжёлой посылке — отказ по заряду
+            с точным расчётом: сколько нужно и какой резерв остаётся.
+          </p>
+        </div>
+        <div class="story-note">
+          <h3>Адрес вне зоны</h3>
+          <p>
+            «Порт 12» → <code>Nothing</code> в базе площадок. Маршрут даже не
+            рисуется, а на месте клиента стоит «?».
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <nav>
+        <a href="index.html">Демо</a>
+        <a href="../README.md">Курс crocks</a>
+        <a href="../PLAN.md">План</a>
+        <a href="README.md">Как добавить сцену</a>
+      </nav>
+      <div>crocks 0.12.4 · three.js r149 · HTML без сборщика, работает из файла</div>
+    </div>
+  </footer>
+
+  <script src="assets/demo.js"></script>
+  <script src="assets/drone-model.js"></script>
+  <script src="assets/drone-stage.js"></script>
+</body>
+</html>

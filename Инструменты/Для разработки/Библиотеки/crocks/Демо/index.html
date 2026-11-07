@@ -122,6 +122,34 @@
       </table>
     </section>
 
+    <section class="section">
+      <div class="section__head">
+        <h2>Отдельные сцены</h2>
+        <span>не привязаны к уроку</span>
+      </div>
+
+      <table class="matrix">
+        <thead>
+          <tr>
+            <th>Сцена</th>
+            <th>Что показывает</th>
+            <th>Стек и проверка</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><a href="Доставка-дроном.html">Доставка дроном</a></td>
+            <td>
+              реальная предполётная проверка: адрес в <code>Maybe</code>, расход
+              заряда в <code>Reader</code>, решение с причиной в <code>Either</code>,
+              сам полёт в <code>State</code>
+            </td>
+            <td>three.js r149 · <code>npm run check:drone</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
     <section class="summary">
       <h2>Как устроено</h2>
       <ul>
@@ -135,6 +163,11 @@
           <code>scripts/check-demo.mjs</code>, а отрисовку и реакцию на контролы —
           <code>scripts/check-demo-render.mjs</code>. Обе проверки входят в
           <code>npm run check:demo</code>.</li>
+        <li>3D-сцена — отдельный слой: семантика в
+          <code>assets/drone-model.js</code> (без DOM и без three.js), рисование —
+          <code>assets/drone-stage.js</code>. Модель и кадры сверяет
+          <code>npm run check:drone</code>, поэтому визуал не может «подогнать»
+          поведение crocks.</li>
       </ul>
       <p>
         Правила курса и порядок уроков — в <a href="../PLAN.md">PLAN.md</a>,

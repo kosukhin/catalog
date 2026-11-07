@@ -447,6 +447,12 @@
   root.Demo = {
     version: CROCKS_VERSION,
     page: page,
-    kit: kit
+    kit: kit,
+    // переиспользуется 3D-страницей (assets/three-stage.js): те же контролы,
+    // та же лента операций и тот же статус библиотеки
+    controls: controlNode,
+    defaults: defaults,
+    steps: renderSteps,
+    status: setStatus
   }
 })(typeof window !== 'undefined' ? window : globalThis)
