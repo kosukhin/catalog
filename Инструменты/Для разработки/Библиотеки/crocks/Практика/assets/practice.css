@@ -1,0 +1,784 @@
+/* ==========================================================================
+   Практика курса crocks — общий стиль страниц.
+   Один файл на все уроки: assets/practice.css
+   ========================================================================== */
+
+:root {
+  color-scheme: dark;
+
+  --bg: #10131a;
+  --bg-soft: #151a23;
+  --card: #1a2029;
+  --card-soft: #161b24;
+  --line: #2a3342;
+  --line-soft: #222a37;
+
+  --text: #e7ebf3;
+  --muted: #98a3b8;
+  --dim: #6f7a8f;
+
+  --accent: #7aa2f7;
+  --accent-soft: rgba(122, 162, 247, 0.12);
+  --ok: #4cc38a;
+  --ok-soft: rgba(76, 195, 138, 0.12);
+  --fail: #ff757f;
+  --fail-soft: rgba(255, 117, 127, 0.12);
+  --warn: #e0af68;
+  --warn-soft: rgba(224, 175, 104, 0.12);
+
+  --code-bg: #0c0f14;
+  --radius: 14px;
+  --radius-sm: 9px;
+
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(1200px 600px at 15% -10%, rgba(122, 162, 247, 0.09), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, rgba(42, 195, 222, 0.06), transparent 55%),
+    var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+a {
+  color: var(--accent);
+  text-decoration-color: rgba(122, 162, 247, 0.4);
+  text-underline-offset: 3px;
+}
+
+a:hover {
+  text-decoration-color: currentColor;
+}
+
+code {
+  font-family: var(--mono);
+  font-size: 0.9em;
+  background: rgba(122, 162, 247, 0.1);
+  border: 1px solid var(--line-soft);
+  border-radius: 6px;
+  padding: 0.08em 0.36em;
+}
+
+/* ---------- каркас страницы ---------- */
+
+.wrap {
+  width: min(920px, 100% - 2.5rem);
+  margin-inline: auto;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(10px);
+  background: rgba(16, 19, 26, 0.86);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.topbar__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.25rem;
+  padding: 0.7rem 0;
+}
+
+.topbar__crumbs {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-right: auto;
+}
+
+.topbar__crumbs a {
+  color: var(--muted);
+}
+
+.topbar__crumbs a:hover {
+  color: var(--text);
+}
+
+.topbar__counter {
+  font: 600 0.9rem/1 var(--mono);
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.topbar__bar {
+  width: 140px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+.topbar__bar > span {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent), var(--ok));
+  transition: width 0.25s ease;
+}
+
+.topbar__actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+/* ---------- шапка урока ---------- */
+
+.hero {
+  padding: 2.4rem 0 0.4rem;
+}
+
+.hero__kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font: 600 0.75rem/1 var(--sans);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid rgba(122, 162, 247, 0.25);
+  border-radius: 999px;
+  padding: 0.42rem 0.75rem;
+}
+
+.hero h1 {
+  font-size: clamp(1.6rem, 4vw, 2.15rem);
+  line-height: 1.2;
+  margin: 1rem 0 0.6rem;
+  letter-spacing: -0.015em;
+}
+
+.hero p {
+  color: var(--muted);
+  margin: 0 0 0.9rem;
+  max-width: 66ch;
+}
+
+.hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  font-size: 0.86rem;
+  color: var(--dim);
+  margin-bottom: 1.4rem;
+}
+
+.note {
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  background: var(--card-soft);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+  margin: 1.2rem 0 0;
+}
+
+.note strong {
+  color: var(--text);
+}
+
+.note--warn {
+  border-left-color: var(--warn);
+  background: var(--warn-soft);
+}
+
+/* ---------- секции и задания ---------- */
+
+main {
+  padding-bottom: 4rem;
+}
+
+.section {
+  margin-top: 2.6rem;
+}
+
+.section__head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.section__head h2 {
+  font-size: 1.12rem;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.section__head span {
+  font-size: 0.82rem;
+  color: var(--dim);
+}
+
+.task {
+  position: relative;
+  margin-top: 1rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.2rem 1.2rem;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.task:focus-within {
+  border-color: rgba(122, 162, 247, 0.45);
+}
+
+.task--ok {
+  border-color: rgba(76, 195, 138, 0.5);
+  box-shadow: 0 0 0 1px rgba(76, 195, 138, 0.18) inset;
+}
+
+.task--fail {
+  border-color: rgba(255, 117, 127, 0.45);
+}
+
+.task__head {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.5rem;
+}
+
+.task__num {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  border: 1px solid rgba(122, 162, 247, 0.28);
+  color: var(--accent);
+  font: 700 0.8rem/1 var(--mono);
+}
+
+.task__title {
+  font-size: 1rem;
+  font-weight: 650;
+  margin: 0;
+  margin-right: auto;
+}
+
+.badge {
+  flex: none;
+  font: 600 0.68rem/1 var(--sans);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 0.32rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--dim);
+  background: var(--card-soft);
+}
+
+.badge--input {
+  color: #8ab4ff;
+  border-color: rgba(122, 162, 247, 0.3);
+}
+
+.badge--choice {
+  color: #c3a6ff;
+  border-color: rgba(195, 166, 255, 0.3);
+}
+
+.badge--code {
+  color: var(--warn);
+  border-color: rgba(224, 175, 104, 0.32);
+}
+
+.badge--matrix {
+  color: #6fd6c9;
+  border-color: rgba(111, 214, 201, 0.3);
+}
+
+.task__ask {
+  margin: 0 0 0.8rem;
+  color: var(--muted);
+  font-size: 0.94rem;
+}
+
+.task__ask code {
+  color: var(--text);
+}
+
+/* ---------- код ---------- */
+
+.code {
+  margin: 0 0 0.9rem;
+  padding: 0.85rem 1rem;
+  background: var(--code-bg);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+  font: 0.86rem/1.65 var(--mono);
+  color: #cfd7e6;
+  tab-size: 2;
+}
+
+.code code {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  white-space: pre;
+}
+
+.code .c-comment {
+  color: var(--dim);
+}
+
+/* ---------- контролы ответа ---------- */
+
+.answer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.answer__label {
+  font-size: 0.85rem;
+  color: var(--dim);
+  white-space: nowrap;
+}
+
+.input,
+.textarea,
+.select {
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  color: var(--text);
+  background: var(--code-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.7rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.input {
+  flex: 1 1 16rem;
+  min-width: 0;
+}
+
+.textarea {
+  display: block;
+  width: 100%;
+  min-height: 4.6rem;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.select {
+  width: 100%;
+  padding: 0.45rem 0.55rem;
+  font-size: 0.84rem;
+}
+
+.input:focus,
+.textarea:focus,
+.select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: #55607a;
+}
+
+.choices {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--card-soft);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.choice:hover {
+  border-color: rgba(122, 162, 247, 0.4);
+}
+
+.choice:has(input:checked) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.choice input {
+  margin: 0.25rem 0 0;
+  accent-color: var(--accent);
+  flex: none;
+}
+
+.choice code {
+  white-space: normal;
+}
+
+/* ---------- таблица интерфейсов ---------- */
+
+.matrix {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+}
+
+.matrix th,
+.matrix td {
+  padding: 0.45rem 0.55rem;
+  border-bottom: 1px solid var(--line-soft);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.matrix thead th {
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dim);
+  font-weight: 600;
+}
+
+.matrix tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.matrix td:first-child {
+  white-space: nowrap;
+  font-family: var(--mono);
+  color: var(--text);
+}
+
+.matrix__cell--ok select {
+  border-color: rgba(76, 195, 138, 0.55);
+}
+
+.matrix__cell--fail select {
+  border-color: rgba(255, 117, 127, 0.55);
+}
+
+/* ---------- кнопки ---------- */
+
+.btn {
+  font: 600 0.84rem/1 var(--sans);
+  color: var(--text);
+  background: var(--card-soft);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.5rem 0.9rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease,
+    transform 0.05s ease;
+}
+
+.btn:hover {
+  border-color: rgba(122, 162, 247, 0.45);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.btn--primary {
+  color: #0e1219;
+  background: linear-gradient(180deg, #9dbcff, var(--accent));
+  border-color: transparent;
+}
+
+.btn--primary:hover {
+  border-color: transparent;
+  filter: brightness(1.06);
+}
+
+.btn--ghost {
+  color: var(--muted);
+  background: transparent;
+}
+
+.btn--sm {
+  padding: 0.38rem 0.7rem;
+  font-size: 0.78rem;
+}
+
+.btn[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.task__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+}
+
+.task__status {
+  margin-left: auto;
+  font: 600 0.76rem/1 var(--sans);
+  color: var(--dim);
+}
+
+.task__status--ok {
+  color: var(--ok);
+}
+
+.task__status--fail {
+  color: var(--fail);
+}
+
+/* ---------- подсказки и обратная связь ---------- */
+
+.task__extra {
+  margin-top: 0.75rem;
+  padding: 0.7rem 0.85rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  color: var(--muted);
+  background: var(--bg-soft);
+  border: 1px dashed var(--line);
+}
+
+.task__extra strong {
+  color: var(--text);
+}
+
+.task__extra .code {
+  margin: 0.5rem 0 0;
+}
+
+.feedback {
+  margin-top: 0.75rem;
+  padding: 0.7rem 0.85rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.89rem;
+  border: 1px solid var(--line);
+  background: var(--bg-soft);
+  color: var(--muted);
+}
+
+.feedback:empty {
+  display: none;
+}
+
+.feedback--ok {
+  border-color: rgba(76, 195, 138, 0.4);
+  background: var(--ok-soft);
+  color: #b8f0d2;
+}
+
+.feedback--fail {
+  border-color: rgba(255, 117, 127, 0.4);
+  background: var(--fail-soft);
+  color: #ffc9cc;
+}
+
+.feedback--info {
+  border-color: rgba(224, 175, 104, 0.35);
+  background: var(--warn-soft);
+  color: #f3ddb6;
+}
+
+.feedback code {
+  background: rgba(0, 0, 0, 0.28);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+/* ---------- итог ---------- */
+
+.summary {
+  margin-top: 2.6rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.2rem 1.3rem 1.3rem;
+}
+
+.summary h2 {
+  margin: 0 0 0.4rem;
+  font-size: 1.05rem;
+}
+
+.summary__score {
+  font: 700 2rem/1.1 var(--mono);
+  color: var(--text);
+  margin: 0.4rem 0 0.1rem;
+}
+
+.summary__score small {
+  font: 500 0.9rem/1 var(--sans);
+  color: var(--dim);
+}
+
+.summary p {
+  color: var(--muted);
+  font-size: 0.92rem;
+  margin: 0.35rem 0 0;
+}
+
+.summary ul {
+  margin: 0.7rem 0 0;
+  padding-left: 1.1rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.summary li {
+  margin: 0.2rem 0;
+}
+
+.summary__done {
+  color: var(--ok);
+}
+
+/* ---------- футер ---------- */
+
+.footer {
+  border-top: 1px solid var(--line-soft);
+  padding: 1.4rem 0 2.2rem;
+  font-size: 0.84rem;
+  color: var(--dim);
+}
+
+.footer nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+/* ---------- служебное ---------- */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.hidden {
+  display: none !important;
+}
+
+kbd {
+  font: 600 0.75rem/1 var(--mono);
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  padding: 0.15rem 0.35rem;
+  color: var(--muted);
+  background: var(--card-soft);
+}
+
+/* ---------- адаптивность ---------- */
+
+@media (max-width: 640px) {
+  .wrap {
+    width: min(920px, 100% - 1.5rem);
+  }
+
+  .topbar__bar {
+    display: none;
+  }
+
+  .task {
+    padding: 1rem 0.95rem 1.05rem;
+  }
+
+  .task__status {
+    margin-left: 0;
+    flex-basis: 100%;
+  }
+
+  .matrix thead {
+    display: none;
+  }
+
+  .matrix tr {
+    display: block;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  .matrix td {
+    display: block;
+    border: 0;
+    padding: 0.2rem 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
+
+@media print {
+  body {
+    background: #fff;
+    color: #000;
+  }
+
+  .topbar,
+  .btn,
+  .footer {
+    display: none;
+  }
+
+  .task,
+  .summary {
+    break-inside: avoid;
+    border-color: #bbb;
+  }
+}

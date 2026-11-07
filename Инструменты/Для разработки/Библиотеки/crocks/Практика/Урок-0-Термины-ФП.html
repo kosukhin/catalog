@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Практика · Урок 0 — Термины ФП · crocks</title>
+  <link rel="stylesheet" href="assets/practice.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar__inner">
+      <div class="topbar__crumbs">
+        <a href="index.html">Практика</a> · <a href="../README.md">курс</a> · урок 0
+      </div>
+      <span class="topbar__counter" data-progress-text>0 / 0</span>
+      <div class="topbar__bar"><span data-progress-bar></span></div>
+      <div class="topbar__actions">
+        <button class="btn btn--sm" type="button" data-act="check-all">Проверить всё</button>
+        <button class="btn btn--sm btn--ghost" type="button" data-act="reset">Сбросить</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <span class="hero__kicker">практика · урок 0</span>
+      <h1>Термины ФП: функтор, аппликатив, монада</h1>
+      <p>
+        Задания по разделам урока: предсказать вывод консоли, выбрать нужную
+        операцию, собрать выражение и разложить типы по интерфейсам. Каждый
+        ответ проверяется на настоящем <strong>crocks 0.12.4</strong> —
+        библиотека выполняется прямо в браузере.
+      </p>
+      <div class="hero__meta">
+        <span data-progress-label>0 из 0 заданий решено</span>
+        <span>прогресс сохраняется в браузере</span>
+        <a href="../Урок-0-Термины-ФП.md">конспект урока</a>
+      </div>
+      <p class="note">
+        <strong>Как отвечать.</strong> Там, где нужно ввести вывод, пиши строку
+        так, как её печатает <code>console.log</code> — регистр, лишние пробелы
+        и кавычки не важны. В заданиях «код» пиши <em>одно выражение</em>,
+        например <code>Just(3).map(x => x * 2)</code>: доступны типы и хелперы
+        crocks (<code>Maybe</code>, <code>Either</code>, <code>Result</code>,
+        <code>Pair</code>, <code>Const</code>, <code>liftA2</code>,
+        <code>curry</code> и другие). Запуск — кнопкой «Проверить» или
+        <kbd>Ctrl</kbd>+<kbd>Enter</kbd>.
+      </p>
+      <p class="note note--warn hidden" data-crocks-status></p>
+    </section>
+
+    <div id="tasks"></div>
+
+    <section class="summary" id="summary"></section>
+
+    <noscript>
+      <p class="note note--warn">
+        Задания и проверка ответов собираются скриптом —
+        включи JavaScript, чтобы практиковаться.
+      </p>
+    </noscript>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <nav>
+        <a href="index.html">Все уроки практики</a>
+        <a href="../Урок-0-Термины-ФП.md">Конспект урока 0</a>
+        <a href="../Теория/Урок-0-Термины-ФП.md">Теория к уроку 0</a>
+        <a href="../ШПАРГАЛКА.md">Шпаргалка</a>
+      </nav>
+      <div>
+        crocks 0.12.4 · ожидаемые ответы сверены с реальным выводом библиотеки
+      </div>
+    </div>
+  </footer>
+
+  <script src="assets/practice.js"></script>
+  <script src="assets/lesson-0.js"></script>
+</body>
+</html>

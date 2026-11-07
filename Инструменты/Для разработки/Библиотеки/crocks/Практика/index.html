@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Практика по crocks — задания с проверкой</title>
+  <link rel="stylesheet" href="assets/practice.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar__inner">
+      <div class="topbar__crumbs">
+        <a href="../README.md">курс crocks</a> · практика
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <span class="hero__kicker">практика</span>
+      <h1>Задания с проверкой по урокам</h1>
+      <p>
+        Каждая страница — набор заданий к одному уроку: предсказать вывод
+        консоли, выбрать операцию, написать выражение. Ответы проверяются
+        в браузере на настоящем <strong>crocks 0.12.4</strong>, прогресс
+        сохраняется локально.
+      </p>
+      <p class="note">
+        <strong>Первый запуск.</strong> Задания «что напечатает код» и «выбор»
+        работают сразу. Для заданий «напиши код» нужна библиотека: выполни
+        <code>npm install</code> в корне курса (тогда подхватится локальная
+        сборка <code>node_modules/crocks/dist/crocks.min.js</code>) — либо
+        открой страницу с доступом в интернет, сработает запасной CDN.
+      </p>
+    </section>
+
+    <section class="section">
+      <div class="section__head">
+        <h2>Уроки</h2>
+        <span>статус — по мере написания</span>
+      </div>
+
+      <table class="matrix">
+        <thead>
+          <tr>
+            <th>Урок</th>
+            <th>Тема</th>
+            <th>Практика</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>0</td>
+            <td>Термины ФП: функтор, аппликатив, монада</td>
+            <td><a href="Урок-0-Термины-ФП.html">19 заданий</a></td>
+          </tr>
+          <tr>
+            <td>0.1</td>
+            <td>Фундамент ФП: чистые функции, каррирование, композиция</td>
+            <td>— в планах</td>
+          </tr>
+          <tr>
+            <td>1.1</td>
+            <td><code>Maybe</code>: обработка отсутствия значения</td>
+            <td>— в планах</td>
+          </tr>
+          <tr>
+            <td>1.2</td>
+            <td><code>Either</code> / <code>Result</code>: ошибки как значения</td>
+            <td>— в планах</td>
+          </tr>
+          <tr>
+            <td>1.3</td>
+            <td><code>Identity</code>: простейший контейнер</td>
+            <td>— в планах</td>
+          </tr>
+          <tr>
+            <td>1.4</td>
+            <td>Ключевые методы: <code>map</code>, <code>chain</code>, <code>ap</code></td>
+            <td>— в планах</td>
+          </tr>
+          <tr>
+            <td>2.1</td>
+            <td><code>Pair</code>: пара значений</td>
+            <td>— в планах</td>
+          </tr>
+          <tr>
+            <td>2.2</td>
+            <td><code>Tuple</code>: типизированный кортеж</td>
+            <td>— в планах</td>
+          </tr>
+          <tr>
+            <td>3.1</td>
+            <td><code>State</code>: вычисления с состоянием</td>
+            <td>— в планах</td>
+          </tr>
+          <tr>
+            <td>3.2</td>
+            <td><code>Reader</code>: зависимость от окружения</td>
+            <td>— в планах</td>
+          </tr>
+          <tr>
+            <td>3.3</td>
+            <td><code>ReaderT</code>: трансформер над другой монадой</td>
+            <td>— в планах</td>
+          </tr>
+          <tr>
+            <td>3.4</td>
+            <td><code>Const</code>: константный функтор</td>
+            <td>— в планах</td>
+          </tr>
+          <tr>
+            <td>3.5</td>
+            <td><code>Arrow</code>: композиция функций как ADT</td>
+            <td>— в планах</td>
+          </tr>
+          <tr>
+            <td>4.1</td>
+            <td><code>Async</code>: асинхронные вычисления</td>
+            <td>— в планах</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="summary">
+      <h2>Как устроено</h2>
+      <ul>
+        <li>Данные заданий лежит в <code>assets/lesson-N.js</code>, движок — в
+          <code>assets/practice.js</code>, стиль — в <code>assets/practice.css</code>.</li>
+        <li>Ожидаемые ответы сверены с реальным выводом crocks 0.12.4 скриптом
+          <code>scripts/check-practice.mjs</code> (запуск: <code>npm run check:practice</code>).</li>
+        <li>Прогресс хранится в <code>localStorage</code> по ключу
+          <code>crocks-practice-v1:&lt;урок&gt;</code>, кнопка «Сбросить» его очищает.</li>
+      </ul>
+      <p>Правила курса и порядок уроков — в <a href="../PLAN.md">PLAN.md</a>,
+        точка возврата после паузы — в <a href="../PROGRESS.md">PROGRESS.md</a>.</p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <nav>
+        <a href="../README.md">Курс crocks</a>
+        <a href="../PLAN.md">План</a>
+        <a href="../ШПАРГАЛКА.md">Шпаргалка</a>
+        <a href="README.md">Практика: как добавить урок</a>
+      </nav>
+      <div>crocks 0.12.4 · HTML без сборщика, работает из файла</div>
+    </div>
+  </footer>
+</body>
+</html>
