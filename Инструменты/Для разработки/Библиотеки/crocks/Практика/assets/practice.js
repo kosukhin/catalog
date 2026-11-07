@@ -373,7 +373,7 @@
     var textarea = el('textarea', 'textarea')
     textarea.spellcheck = false
     textarea.rows = 3
-    textarea.placeholder = task.placeholder || 'Just(3).map(x => x * 2)'
+    textarea.placeholder = task.placeholder || 'одно выражение'
     body.appendChild(textarea)
 
     return {

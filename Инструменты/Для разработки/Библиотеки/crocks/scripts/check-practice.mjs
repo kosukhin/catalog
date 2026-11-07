@@ -65,6 +65,31 @@ function levelOf(value) {
   return 'none'
 }
 
+// Грубое сравнение текста: без пробелов, кавычек, регистра и ё/е.
+function normalize(text) {
+  return String(text == null ? '' : text)
+    .toLowerCase()
+    .replace(/ё/g, 'е')
+    .replace(/[«»"'`\s]/g, '')
+}
+
+/*
+  Подсказка и плейсхолдер не должны выдавать ответ: иначе «Проверить» теряет
+  смысл, а «Показать ответ» перестаёт быть отдельным шагом.
+*/
+function checkNoLeak(name, task, secret) {
+  if (!secret) return
+
+  for (const field of ['placeholder', 'hint']) {
+    const text = task[field]
+    if (!text) continue
+
+    if (normalize(text).includes(normalize(secret))) {
+      fail(name, task.id, `поле "${field}" содержит ответ`)
+    }
+  }
+}
+
 function checkLesson(name, lesson) {
   const seen = new Set()
   const sectionIds = new Set(lesson.sections.map((section) => section.id))
@@ -87,6 +112,7 @@ function checkLesson(name, lesson) {
     if (!task.title) fail(name, task.id, 'нет заголовка')
 
     if (task.type === 'input') {
+      checkNoLeak(name, task, task.expected)
       let got
       try {
         got = String(evaluate(task.setup, task.expr))
@@ -105,6 +131,7 @@ function checkLesson(name, lesson) {
         fail(name, task.id, 'нет target.value / target.solution')
         continue
       }
+      checkNoLeak(name, task, target.solution)
       let got
       try {
         got = String(evaluate(task.prelude, target.solution))
@@ -144,6 +171,8 @@ function checkLesson(name, lesson) {
       if (task.options.some((option) => !option.label)) {
         fail(name, task.id, 'у варианта нет label')
       }
+      const right = task.options.find((option) => option.id === task.answer)
+      if (right) checkNoLeak(name, task, right.short || right.label)
     }
   }
 
