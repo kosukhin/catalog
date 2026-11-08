@@ -14,7 +14,7 @@ describe('server config', () => {
 
     it('состав мира: по одному DayAgent и каталогу плюс люди', () => {
         const config = createServerConfig({ HUMANS: '7' });
-        const counts = [...config.population.values()];
+        const counts = [...config.population.values()].map((entry) => (typeof entry === 'number' ? entry : entry.count));
         const types = [...config.population.keys()].map((plugin) => plugin.type);
 
         assert.deepEqual(types, ['DayAgent', 'HumanCatalogAgent', 'HumanAgent']);

@@ -94,7 +94,7 @@ describe('stats', () => {
         const configured = createPlugin('DayAgent');
 
         const assignments = normalizePopulation(
-            new Map([
+            new Map<AgentPlugin, number | PopulationEntry>([
                 [plain, 1],
                 [configured, { count: 1, options: { timeScale: 5 } }],
             ]),
