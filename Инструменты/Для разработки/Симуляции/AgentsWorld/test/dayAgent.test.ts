@@ -27,6 +27,16 @@ function createContext(id = DAY_AGENT_ID): Fixture {
     return { context, log, sent };
 }
 
+/** Часы, которые при каждом обращении уходят вперёд на шаг. */
+function advancingClock(start: Date, stepMs: number): () => Date {
+    let current = start.getTime();
+    return () => {
+        const moment = new Date(current);
+        current += stepMs;
+        return moment;
+    };
+}
+
 /** Часы, показывающие заданный час. */
 function clockAt(hours: number, minutes = 30): () => Date {
     return () => new Date(2026, 10, 8, hours, minutes);
@@ -97,7 +107,7 @@ describe('DayAgent', () => {
         assert.match(log[0] ?? '', /не знаю, что делать с сообщением «что-то»/);
     });
 
-    it('предупреждает, если создан не по своему адресу', () => {
+    it('сообщает темп времени и предупреждает, если создан не по своему адресу', () => {
         const agent = new DayAgent({ now: clockAt(14) });
         const correct = createContext();
         const wrong = createContext('DayAgent-2');
@@ -105,13 +115,45 @@ describe('DayAgent', () => {
         agent.start(correct.context);
         agent.start(wrong.context);
 
-        assert.deepEqual(correct.log, []);
-        assert.match(wrong.log[0] ?? '', /ищут меня по адресу DayAgent-1/);
+        assert.equal(correct.log.length, 1);
+        assert.match(correct.log[0] ?? '', /время идёт в 10× быстрее реального/);
+        assert.match(wrong.log[1] ?? '', /ищут меня по адресу DayAgent-1/);
     });
 
     it('проверяет настройки', () => {
         assert.throws(() => new DayAgent({ now: 'часы' }), /now должен быть функцией/);
         assert.throws(() => new DayAgent({ dayStartHour: 25 }), /dayStartHour должен быть целым часом/);
         assert.throws(() => new DayAgent({ dayStartHour: 22, nightStartHour: 6 }), /больше dayStartHour/);
+    });
+
+    it('по умолчанию идёт в 10 раз быстрее реального времени', () => {
+        const agent = new DayAgent({ now: advancingClock(new Date(2026, 10, 8, 14, 0), 6 * 60_000) });
+
+        assert.equal(agent.timeScale, 10);
+        assert.equal(agent.report().hours, 15, '6 реальных минут = 1 виртуальный час');
+    });
+
+    it('темп времени настраивается', () => {
+        const fast = new DayAgent({ now: advancingClock(new Date(2026, 10, 8, 14, 0), 60_000), timeScale: 60 });
+        const slow = new DayAgent({ now: advancingClock(new Date(2026, 10, 8, 14, 0), 30 * 60_000), timeScale: 2 });
+
+        assert.equal(fast.timeScale, 60);
+        assert.equal(fast.report().hours, 15, '1 реальная минута = 1 виртуальный час');
+        assert.equal(slow.timeScale, 2);
+        assert.equal(slow.report().hours, 15, '30 реальных минут = 1 виртуальный час');
+    });
+
+    it('время не прыгает: два отчёта идут друг за другом', () => {
+        const agent = new DayAgent({ now: advancingClock(new Date(2026, 10, 8, 14, 0), 60_000), timeScale: 60 });
+
+        assert.equal(agent.report().hours, 15);
+        assert.equal(agent.report().hours, 16);
+    });
+
+    it('проверяет темп времени', () => {
+        assert.throws(() => new DayAgent({ timeScale: 0 }), /timeScale должен быть положительным числом/);
+        assert.throws(() => new DayAgent({ timeScale: -5 }), /timeScale должен быть положительным числом/);
+        assert.throws(() => new DayAgent({ timeScale: Number.POSITIVE_INFINITY }), /timeScale должен быть положительным числом/);
+        assert.throws(() => new DayAgent({ timeScale: 'быстро' }), /timeScale должен быть положительным числом/);
     });
 });

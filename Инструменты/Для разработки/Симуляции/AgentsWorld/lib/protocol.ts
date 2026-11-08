@@ -45,6 +45,25 @@ export type WorkerCommand =
     | { readonly kind: 'deliver'; readonly from: ActorId; readonly to: ActorId; readonly message: Message }
     | { readonly kind: 'stop' };
 
+/** Адрес самого мира: сообщение на него не идёт актору, а попадает в мир. */
+export const WORLD_ID = 'мир';
+
+/** Запрос состояния актора: полезная нагрузка — `{ replyTo }`. */
+export const STATUS_REQUEST = 'status-request';
+
+/** Ответ на запрос состояния: полезная нагрузка — `StatusReport`. */
+export const STATUS_REPORT = 'status-report';
+
+/** Что актор рассказывает о себе на запрос состояния. */
+export interface StatusReport {
+    /** Адрес актора, который ответил. */
+    readonly id: ActorId;
+    /** Тип агента. */
+    readonly type: string;
+    /** Подробности: их даёт сам агент, мир в них не заглядывает. */
+    readonly details: Readonly<Record<string, unknown>>;
+}
+
 /** События, которые воркер отправляет главному потоку. */
 export type WorkerEvent =
     | { readonly kind: 'ready'; readonly actorIds: readonly ActorId[] }

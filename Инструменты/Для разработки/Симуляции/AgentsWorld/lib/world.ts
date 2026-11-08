@@ -24,7 +24,7 @@
  * и общаются только через почтовые ящики.
  */
 
-import type { ActorAssignment, ActorId, Message, WorkerEvent } from './protocol.ts';
+import { WORLD_ID, type ActorAssignment, type ActorId, type Message, type WorkerEvent } from './protocol.ts';
 import { normalizePopulation, summarizePopulation, type Population } from './stats.ts';
 import { ThreadPool } from './threadPool.ts';
 
@@ -48,6 +48,8 @@ export class World {
     #doneWaiter: (() => void) | null = null;
     #pool: ThreadPool | null = null;
     #running = false;
+    /** Ожидающие ответа на `ask`: адрес агента → как разбудить вызывающего. */
+    readonly #pending = new Map<ActorId, { resolve: (message: Message) => void; reject: (error: Error) => void; timer: ReturnType<typeof setTimeout> }>();
 
     /**
      * @param population состав мира: `Map` «модуль агента → количество»
@@ -135,6 +137,7 @@ export class World {
         await pool.terminate();
         this.#pool = null;
         this.#running = false;
+        this.#dropPending(new Error('мир остановлен'));
     }
 
     /** Отправляет сообщение агенту по адресу — единственный внешний вход в мир. */
@@ -145,6 +148,50 @@ export class World {
             return;
         }
         this.#pool?.post(threadIndex, { kind: 'deliver', from, to, message });
+    }
+
+    /**
+     * Спрашивает агента и ждёт ответа.
+     *
+     * Сообщение уходит от имени мира (`WORLD_ID`), ответ приходит в мир, а не
+     * актору. Так дашборд может опросить любой агент, не зная его типа.
+     *
+     * @throws если агента нет или он не ответил за `timeoutMs`
+     */
+    ask(to: ActorId, message: Message, timeoutMs = 1000): Promise<Message> {
+        if (!this.#routes.has(to)) {
+            return Promise.reject(new Error(`нет агента с идентификатором ${to}`));
+        }
+        return new Promise<Message>((resolve, reject) => {
+            const timer = setTimeout(() => {
+                this.#pending.delete(to);
+                reject(new Error(`агент ${to} не ответил за ${timeoutMs} мс`));
+            }, timeoutMs);
+            timer.unref?.();
+            this.#pending.set(to, { resolve, reject, timer });
+            this.send(WORLD_ID, to, message);
+        });
+    }
+
+    /** Принимает сообщение, адресованное самому миру. */
+    #accept(from: ActorId, message: Message): void {
+        const waiter = this.#pending.get(from);
+        if (waiter) {
+            this.#pending.delete(from);
+            clearTimeout(waiter.timer);
+            waiter.resolve(message);
+            return;
+        }
+        this.#print(`[мир] сообщение от ${from}: ${message.type}`);
+    }
+
+    /** Отклоняет все незавершённые ожидания ответа. */
+    #dropPending(error: Error): void {
+        for (const waiter of this.#pending.values()) {
+            clearTimeout(waiter.timer);
+            waiter.reject(error);
+        }
+        this.#pending.clear();
     }
 
     /** Разбирает события, приходящие из потоков. */
@@ -160,6 +207,10 @@ export class World {
             return;
         }
         if (event.kind === 'deliver') {
+            if (event.to === WORLD_ID) {
+                this.#accept(event.from, event.message);
+                return;
+            }
             this.send(event.from, event.to, event.message);
             return;
         }

@@ -9,7 +9,7 @@
 | `ActorContext` | то, что рантайм даёт актору: `id`, `send(to, message)`, `log(text)` |
 | `Actor` | интерфейс: `type`, `start?`, `receive`, `stop?` |
 | `ActorFactory` | `(id, options) => Actor` — фабрика для реестра |
-| `AbstractActor` | база: реализует `receive`, наследник пишет только `handle` |
+| `AbstractActor` | база: реализует `receive` и ответ на `status-request`, наследник пишет только `handle` и `describe` |
 
 ## Почему так
 
@@ -24,6 +24,29 @@
   остановке, не нужно писать пустые методы.
 - **`log` — телеметрия, а не сообщение.** Строка уходит в мир, а не другому актору.
 
+## Состояние агента: `status-request`
+
+`AbstractActor` сам отвечает на общий запрос состояния — наследнику для этого
+ничего писать не нужно:
+
+```
+status-request { replyTo }  →  status-report { id, type, details }
+                                details = this.describe()
+```
+
+```ts
+class MyAgent extends AbstractActor {
+    protected override describe() {
+        return { mood: 'бодрый' };   // попадёт в дашборд
+    }
+}
+```
+
+`describe()` возвращает `{}` по умолчанию. Благодаря этому протоколу мир может
+опросить любой агент, не зная его типа: именно так дашборд узнаёт состояния
+(`server/snapshot.ts`). `status-request` не доходит до `handle`, поэтому не
+смешивается с бизнес-логикой агента.
+
 ## Инварианты
 
 - `type` — ключ реестра, по нему создаётся актор.
@@ -35,4 +58,5 @@
 ## Тест
 
 `test/actor.test.ts` — `AbstractActor` передаёт сообщение в `handle` вместе с
-контекстом; контекст отдаёт id и канал лога.
+контекстом; контекст отдаёт id и канал лога; ответ на `status-request` с
+собственным `describe()` и без обратного адреса.

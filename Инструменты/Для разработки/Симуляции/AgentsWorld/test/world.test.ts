@@ -86,4 +86,42 @@ describe('World', () => {
 
         await world.stop();
     });
+
+    it('ask получает ответ агента через почтовый ящик', async () => {
+        const world = new World(new Map([[echoAgent, 1]]), { print: () => {}, threadPoolSize: 1 });
+        await world.run();
+
+        const reply = await world.ask('EchoAgent-1', { type: 'status-request', payload: { replyTo: 'мир' } });
+
+        assert.equal(reply.type, 'status-report');
+        assert.deepEqual((reply.payload as { details?: unknown } | undefined)?.details, { greetings: 2 });
+        await world.stop();
+    });
+
+    it('ask сразу отвергает запрос к несуществующему агенту', async () => {
+        const world = new World(new Map([[echoAgent, 1]]), { print: () => {}, threadPoolSize: 1 });
+        await world.run();
+
+        await assert.rejects(
+            world.ask('Никто-1', { type: 'status-request', payload: { replyTo: 'мир' } }),
+            /нет агента с идентификатором Никто-1/,
+        );
+        await world.stop();
+    });
+
+    it('ask отвергает запрос, если агент не поднялся', async () => {
+        const broken = {
+            type: 'Тихий',
+            moduleUrl: new URL('../lib/actor.ts', import.meta.url).href,
+            createAgent: () => ({ type: 'Тихий', receive: () => {} }),
+        };
+        const world = new World(new Map([[broken, 1]]), { print: () => {}, threadPoolSize: 1 });
+        await world.run();
+
+        await assert.rejects(
+            world.ask('Тихий-1', { type: 'status-request', payload: { replyTo: 'мир' } }, 150),
+            /не ответил за 150 мс/,
+        );
+        await world.stop();
+    });
 });

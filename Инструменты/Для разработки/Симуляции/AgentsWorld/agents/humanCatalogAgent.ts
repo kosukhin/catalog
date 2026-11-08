@@ -92,6 +92,11 @@ export class HumanCatalogAgent extends AbstractActor {
         context.log(`не знаю, что делать с сообщением «${message.type}»`);
     }
 
+    /** Что показывать в дашборде: сколько людей каталог уже знает. */
+    protected override describe(): Readonly<Record<string, unknown>> {
+        return { known: this.#humans.size };
+    }
+
     /** Ищет людей по свойствам; пустые условия возвращают всех. */
     search(criteria: SearchCriteria): HumanRecord[] {
         return [...this.#humans.values()].filter(

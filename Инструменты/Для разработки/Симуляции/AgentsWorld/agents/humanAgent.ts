@@ -141,6 +141,11 @@ export class HumanAgent extends AbstractActor {
         context.log(`не знаю, что делать с сообщением «${message.type}»`);
     }
 
+    /** Что показывать в дашборде: имя, пол, профессия и текущее состояние. */
+    protected override describe(): Readonly<Record<string, unknown>> {
+        return { name: this.#name, gender: this.#gender, profession: this.#profession, phase: this.#phase, state: this.#state };
+    }
+
     /** Применяет ответ о времени: ночью спит, днём выбирает занятие. */
     #applyTime(payload: unknown): void {
         const report = payload as { phase?: unknown; weekday?: unknown; hours?: unknown; minutes?: unknown } | undefined;

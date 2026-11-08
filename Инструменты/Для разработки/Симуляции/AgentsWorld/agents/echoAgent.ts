@@ -59,6 +59,11 @@ export class EchoAgent extends AbstractActor {
         }
     }
 
+    /** Что показывать в дашборде: сколько сообщений агент печатает сам себе. */
+    protected override describe(): Readonly<Record<string, unknown>> {
+        return { greetings: this.#greetings };
+    }
+
     /** Печатает текст входящего сообщения `echo`. */
     protected override handle(message: Message, context: ActorContext): void {
         if (message.type !== 'echo') {

@@ -30,6 +30,16 @@
 | `agents/humanAgent.ts` | [humanAgent.md](humanAgent.md) | `test/humanAgent.test.ts` | 4 |
 | `agents/humanCatalogAgent.ts` | [humanCatalogAgent.md](humanCatalogAgent.md) | `test/humanCatalogAgent.test.ts` | 2 |
 
+## Сервер и дашборд (`server/`)
+
+| Модуль | Документация | Тест | Импортов |
+|---|---|---|---|
+| `server/config.ts` | [server-config.md](server-config.md) | `test/server-config.test.ts` | 4 |
+| `server/snapshot.ts` | [server-snapshot.md](server-snapshot.md) | `test/server-snapshot.test.ts` | 2 |
+| `server/app.ts` | [server-app.md](server-app.md) | `test/server-app.test.ts` | 4 |
+| `server/index.ts` | [server-index.md](server-index.md) | `test/server-index.test.ts` | 4 |
+| `server/public/index.html` | [server-app.md](server-app.md) (раздел «Дашборд») | — (статика) | — |
+
 ## Скрипты
 
 | Файл | Документация | Тест | Импортов |

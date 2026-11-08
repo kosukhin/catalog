@@ -62,6 +62,8 @@ export interface TimeReport {
 export interface DayAgentOptions {
     /** Часы агента; по умолчанию — системные. Подменяются в тестах. */
     readonly now: () => Date;
+    /** Во сколько раз время агента быстрее реального (по умолчанию 10). */
+    readonly timeScale: number;
     /** Час, с которого начинается день (по умолчанию 6). */
     readonly dayStartHour: number;
     /** Час, с которого начинается ночь (по умолчанию 22). */
@@ -74,6 +76,9 @@ const WEEKDAYS = ['воскресенье', 'понедельник', 'втор�
 /** Месяцы по-русски в порядке `Date.getMonth()`. */
 const MONTHS = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
 
+/** Во сколько раз время агента быстрее реального по умолчанию. */
+const DEFAULT_TIME_SCALE = 10;
+
 const DEFAULT_DAY_START_HOUR = 6;
 const DEFAULT_NIGHT_START_HOUR = 22;
 
@@ -82,10 +87,15 @@ export class DayAgent extends AbstractActor {
     readonly #now: () => Date;
     readonly #dayStartHour: number;
     readonly #nightStartHour: number;
+    readonly #timeScale: number;
+    /** Момент запуска виртуальных часов: от него считается ускорение. */
+    readonly #origin: number;
 
     constructor(options: Readonly<Record<string, unknown>> = {}) {
         super();
         this.#now = readClock(options.now);
+        this.#timeScale = readTimeScale(options.timeScale);
+        this.#origin = this.#now().getTime();
         this.#dayStartHour = readHour(options.dayStartHour, DEFAULT_DAY_START_HOUR, 'dayStartHour');
         this.#nightStartHour = readHour(options.nightStartHour, DEFAULT_NIGHT_START_HOUR, 'nightStartHour');
         if (this.#nightStartHour <= this.#dayStartHour) {
@@ -93,8 +103,14 @@ export class DayAgent extends AbstractActor {
         }
     }
 
-    /** Предупреждает, если агент создан не по «своему» адресу. */
+    /** Сколько виртуальных миллисекунд проходит за одну реальную. */
+    get timeScale(): number {
+        return this.#timeScale;
+    }
+
+    /** Сообщает темп времени и предупреждает, если агент создан не по своему адресу. */
     start(context: ActorContext): void {
+        context.log(`время идёт в ${this.#timeScale}× быстрее реального`);
         if (context.id !== DAY_AGENT_ID) {
             context.log(`меня создали как ${context.id}, но остальные ищут меня по адресу ${DAY_AGENT_ID}`);
         }
@@ -116,7 +132,7 @@ export class DayAgent extends AbstractActor {
 
     /** Собирает отчёт о текущем времени. */
     report(): TimeReport {
-        const moment = this.#now();
+        const moment = this.#virtualNow();
         const hours = moment.getHours();
         return {
             iso: moment.toISOString(),
@@ -129,6 +145,23 @@ export class DayAgent extends AbstractActor {
             minutes: moment.getMinutes(),
             phase: this.#phaseOf(hours),
         };
+    }
+
+    /** Что показывать в дашборде: темп времени и текущее виртуальное время. */
+    protected override describe(): Readonly<Record<string, unknown>> {
+        const report = this.report();
+        return { timeScale: this.#timeScale, weekday: report.weekday, hours: report.hours, minutes: report.minutes, phase: report.phase };
+    }
+
+    /**
+     * Виртуальное «сейчас»: реальное время, умноженное на `timeScale`.
+     *
+     * Точка отсчёта — момент создания агента, поэтому мир живёт ускоренно, но не
+     * «прыгает» при каждом вопросе: два вопроса подряд покажут разное время.
+     */
+    #virtualNow(): Date {
+        const elapsed = this.#now().getTime() - this.#origin;
+        return new Date(this.#origin + elapsed * this.#timeScale);
     }
 
     /** Определяет время суток по часу. */
@@ -157,6 +190,17 @@ function readClock(value: unknown): () => Date {
         throw new Error('now должен быть функцией, возвращающей Date');
     }
     return value as () => Date;
+}
+
+/** Читает темп времени: положительное конечное число. */
+function readTimeScale(value: unknown): number {
+    if (value === undefined) {
+        return DEFAULT_TIME_SCALE;
+    }
+    if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) {
+        throw new Error('timeScale должен быть положительным числом');
+    }
+    return value;
 }
 
 /** Читает час настройки, проверяя диапазон 0–23. */

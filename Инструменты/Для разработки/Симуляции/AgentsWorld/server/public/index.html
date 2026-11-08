@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AgentsWorld — дашборд</title>
+    <style>
+        :root { color-scheme: light; }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            padding: 24px;
+            font: 14px/1.5 -apple-system, Segoe UI, Roboto, Ubuntu, sans-serif;
+            background: #f5f6f8;
+            color: #1b1f24;
+        }
+        h1 { margin: 0 0 4px; font-size: 20px; }
+        .muted { color: #6b7280; font-size: 12px; }
+        .cards { display: flex; flex-wrap: wrap; gap: 12px; margin: 16px 0; }
+        .card {
+            min-width: 150px;
+            padding: 12px 16px;
+            background: #fff;
+            border: 1px solid #e4e6eb;
+            border-radius: 10px;
+        }
+        .card b { display: block; font-size: 22px; line-height: 1.2; }
+        .card span { color: #6b7280; font-size: 12px; }
+        .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
+        input, select, button {
+            font: inherit;
+            padding: 6px 10px;
+            border: 1px solid #d3d7de;
+            border-radius: 8px;
+            background: #fff;
+        }
+        button { cursor: pointer; }
+        button:disabled { opacity: .45; cursor: default; }
+        input { min-width: 280px; }
+        table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #e4e6eb; border-radius: 10px; overflow: hidden; }
+        th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #eef0f3; vertical-align: top; }
+        th { background: #fafbfc; font-size: 12px; text-transform: uppercase; letter-spacing: .03em; color: #6b7280; }
+        tr:last-child td { border-bottom: none; }
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+        .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+        .ok { background: #22c55e; }
+        .dead { background: #ef4444; }
+        .state { display: inline-block; padding: 1px 8px; border-radius: 999px; background: #eef2ff; color: #3730a3; font-size: 12px; }
+        .empty { padding: 24px; text-align: center; color: #6b7280; }
+    </style>
+</head>
+<body>
+    <h1>AgentsWorld</h1>
+    <div class="muted" id="status">загружаю…</div>
+
+    <div class="cards" id="cards"></div>
+
+    <div class="toolbar">
+        <input id="search" type="search" placeholder="поиск по id, типу и состоянию (например: Иван или врач)" />
+        <select id="pageSize">
+            <option value="10">10 на странице</option>
+            <option value="20" selected>20 на странице</option>
+            <option value="50">50 на странице</option>
+            <option value="100">100 на странице</option>
+        </select>
+        <button id="prev" type="button">← назад</button>
+        <button id="next" type="button">вперёд →</button>
+        <span class="muted" id="pageInfo"></span>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>агент</th>
+                <th>тип</th>
+                <th>состояние</th>
+            </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+    </table>
+    <script>
+        const state = { page: 1, pageSize: 20, search: '', pages: 1, loading: false };
+
+        const statusEl = document.getElementById('status');
+        const cardsEl = document.getElementById('cards');
+        const rowsEl = document.getElementById('rows');
+        const pageInfoEl = document.getElementById('pageInfo');
+        const searchEl = document.getElementById('search');
+        const pageSizeEl = document.getElementById('pageSize');
+        const prevEl = document.getElementById('prev');
+        const nextEl = document.getElementById('next');
+
+        const text = (value) => (value === null || value === undefined ? '—' : String(value));
+
+        function renderWorld(world) {
+            const parts = [
+                world.running ? 'мир работает' : 'мир остановлен',
+                `агентов: ${world.total}`,
+                `потоков: ${world.threadCount}`,
+            ];
+            if (world.clock) {
+                const hours = String(world.clock.hours).padStart(2, '0');
+                const minutes = String(world.clock.minutes).padStart(2, '0');
+                parts.push(`время мира: ${world.clock.weekday}, ${world.clock.dayOfMonth} ${world.clock.monthName}, ${hours}:${minutes} (${world.clock.phase})`);
+            }
+            statusEl.textContent = parts.join(' · ');
+
+            cardsEl.innerHTML = Object.entries(world.byType)
+                .map(([type, count]) => `<div class="card"><b>${count}</b><span>${type}</span></div>`)
+                .join('');
+        }
+
+        function renderAgents(payload) {
+            state.pages = payload.pages;
+            pageInfoEl.textContent = `страница ${payload.page} из ${payload.pages} · найдено ${payload.total}`;
+            prevEl.disabled = payload.page <= 1;
+            nextEl.disabled = payload.page >= payload.pages;
+
+            if (payload.items.length === 0) {
+                rowsEl.innerHTML = '<tr><td colspan="3" class="empty">никого не нашли</td></tr>';
+                return;
+            }
+            rowsEl.innerHTML = payload.items
+                .map((agent) => {
+                    const dot = agent.alive ? 'ok' : 'dead';
+                    const details = Object.entries(agent.details)
+                        .filter(([, value]) => value !== null && value !== undefined)
+                        .map(([key, value]) => `${key}: ${text(value)}`)
+                        .join(' · ');
+                    return `<tr>
+                        <td><span class="dot ${dot}" title="${agent.alive ? 'ответил' : 'не ответил'}"></span><code>${agent.id}</code></td>
+                        <td>${agent.type}</td>
+                        <td>${details === '' ? '—' : `<span class="state">${details}</span>`}</td>
+                    </tr>`;
+                })
+                .join('');
+        }
+
+        async function getJson(url) {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            return response.json();
+        }
+
+        async function refresh() {
+            if (state.loading) {
+                return;
+            }
+            state.loading = true;
+            try {
+                const params = new URLSearchParams({ page: String(state.page), pageSize: String(state.pageSize) });
+                if (state.search !== '') {
+                    params.set('search', state.search);
+                }
+                const [world, agents] = await Promise.all([getJson('/api/world'), getJson(`/api/agents?${params.toString()}`)]);
+                renderWorld(world);
+                renderAgents(agents);
+            } catch (error) {
+                statusEl.textContent = `ошибка: ${error.message}`;
+            } finally {
+                state.loading = false;
+            }
+        }
+
+        let searchTimer = null;
+        searchEl.addEventListener('input', () => {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(() => {
+                state.search = searchEl.value.trim();
+                state.page = 1;
+                void refresh();
+            }, 250);
+        });
+
+        pageSizeEl.addEventListener('change', () => {
+            state.pageSize = Number(pageSizeEl.value);
+            state.page = 1;
+            void refresh();
+        });
+
+        prevEl.addEventListener('click', () => {
+            if (state.page > 1) {
+                state.page -= 1;
+                void refresh();
+            }
+        });
+
+        nextEl.addEventListener('click', () => {
+            if (state.page < state.pages) {
+                state.page += 1;
+                void refresh();
+            }
+        });
+
+        void refresh();
+        setInterval(() => void refresh(), 2000);
+    </script>
+
+</body>
+</html>

@@ -13,6 +13,9 @@
 | `ActorAssignment` | задание на создание актора: `{ id, type, moduleUrl, options }` |
 | `WorkerCommand` | `start` / `deliver` / `stop` — команды воркеру |
 | `WorkerEvent` | `ready` / `deliver` / `log` / `error` / `done` — события из воркера |
+| `WORLD_ID` | адрес самого мира: сообщение на него попадает в мир, а не актору |
+| `STATUS_REQUEST`, `STATUS_REPORT` | запрос и ответ состояния любого агента |
+| `StatusReport` | `{ id, type, details }` — что агент рассказал о себе |
 | `createMessage` | создаёт сообщение и проверяет тип |
 | `isMessage` | проверяет, что значение похоже на сообщение |
 
