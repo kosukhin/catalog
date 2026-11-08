@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "agents-world": "file:Инструменты/Для разработки/Симуляции/AgentsWorld",
     "binary-tree-printer": "^0.0.3",
     "crocks": "^0.12.4",
     "determinism": "file:База/Алгоритмы/Детерменизм/Хэш функции"
