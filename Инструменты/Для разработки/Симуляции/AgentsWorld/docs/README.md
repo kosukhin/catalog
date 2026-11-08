@@ -1,7 +1,9 @@
 # Документация AgentsWorld
 
-Один модуль — один файл документации. Файлы названы так же, как модули в `lib/`.
+Один модуль — один файл документации. Файлы названы так же, как модули.
 Тесты лежат в `test/` и названы `<модуль>.test.ts`.
+
+## Ядро (`lib/`) — ничего не знает об агентах
 
 | Модуль | Документация | Тест | Импортов |
 |---|---|---|---|
@@ -10,13 +12,25 @@
 | `lib/actor.ts` | [actor.md](actor.md) | `test/actor.test.ts` | 1 |
 | `lib/actorRuntime.ts` | [actorRuntime.md](actorRuntime.md) | `test/actorRuntime.test.ts` | 3 |
 | `lib/stats.ts` | [stats.md](stats.md) | `test/stats.test.ts` | 1 |
-| `lib/registry.ts` | [registry.md](registry.md) | `test/registry.test.ts` | 2 |
-| `agents/echoAgent.ts` | [echoAgent.md](echoAgent.md) | `test/echoAgent.test.ts` | 2 |
+| `lib/agentPlugin.ts` | [agentPlugin.md](agentPlugin.md) | `test/agentPlugin.test.ts` | 1 |
+| `lib/agentLoader.ts` | [agentLoader.md](agentLoader.md) | `test/agentLoader.test.ts` | 1 |
 | `lib/threadPool.ts` | [threadPool.md](threadPool.md) | `test/threadPool.test.ts` | 3 |
 | `lib/workerEntry.ts` | [workerEntry.md](workerEntry.md) | `test/workerEntry.test.ts` | 4 |
 | `lib/world.ts` | [world.md](world.md) | `test/world.test.ts` | 4 |
 | `lib/index.ts` | [index.md](index.md) | `test/index.test.ts` | 3 |
-| `scripts/demo.ts` | [demo.md](demo.md) | — (запускается вручную) | 1 |
+
+## Агенты (`agents/`) — подключаются снаружи
+
+| Модуль | Документация | Тест | Импортов |
+|---|---|---|---|
+| `agents/echoAgent.ts` | [echoAgent.md](echoAgent.md) | `test/echoAgent.test.ts` | 2 |
+
+## Скрипты
+
+| Файл | Документация | Тест | Импортов |
+|---|---|---|---|
+| `scripts/demo.ts` | [demo.md](demo.md) | — (запускается вручную) | 2 |
 
 Правило «не больше четырёх импортов на модуль» соблюдено во всех файлах: предел
-виден в последнем столбце, поэтому разбиение на подмодули пока не требуется.
+виден в последнем столбце. Направление зависимостей — только `agents/ → lib/`:
+в `lib/` нет ни одного упоминания агентов.

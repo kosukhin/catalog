@@ -4,10 +4,15 @@
  * Жизненный цикл:
  *
  * ```js
- * const world = new World({ EchoAgent: 4 });
+ * // собирается в приложении, а не в lib:
+ * const world = new World({ МойАгент: 4 }, { agents: [myAgent] });
  * await world.run();   // потоки подняты, агенты работают параллельно
  * await world.stop();  // агенты остановлены, потоки погашены
  * ```
+ *
+ * Мир не знает ни одного конкретного агента: модули агентов передаёт тот, кто
+ * собирает мир (`options.agents`). Миру от них нужны только имя типа и адрес
+ * модуля — адрес уезжает в поток, и поток загружает код сам.
  *
  * Распределение по потокам — по кругу (`agentIndex % workerCount`): при 4 потоках
  * и 4 агентах каждый живёт в своём потоке, при 100 агентах нагрузка размазывается
@@ -22,21 +27,20 @@
 import type { ActorAssignment, ActorId, Message, WorkerEvent } from './protocol.ts';
 import { normalizePopulation, summarizePopulation, type PopulationStats } from './stats.ts';
 import { ThreadPool } from './threadPool.ts';
-import { createDefaultRegistry, type AgentRegistry } from './registry.ts';
+import { assertAgentPlugin, toModuleMap, type AgentPlugin } from './agentPlugin.ts';
 
 /** Настройки мира. */
 export interface WorldOptions {
     /** Сколько потоков использовать; по умолчанию — число доступных ядер. */
     readonly threadPoolSize?: number;
-    /** Реестр агентов; по умолчанию — все агенты проекта. */
-    readonly registry?: AgentRegistry;
+    /** Подключённые модули агентов: `[echoAgent, myAgent, …]`. */
+    readonly agents?: readonly AgentPlugin[];
     /** Куда печатать строки мира; по умолчанию `console.log`. */
     readonly print?: (line: string) => void;
 }
 
 export class World {
     readonly #assignments: ActorAssignment[];
-    readonly #registry: AgentRegistry;
     readonly #print: (line: string) => void;
     readonly #threadPoolSize: number | undefined;
     /** Адрес каждого агента: id → индекс потока. */
@@ -50,18 +54,20 @@ export class World {
 
     /**
      * @param population статистика: сколько агентов каждого типа должно быть
-     * @throws если статистика некорректна или тип агента неизвестен реестру
+     * @param options подключённые модули агентов и настройки мира
+     * @throws если статистика некорректна или тип агента не подключён
      */
     constructor(population: PopulationStats, options: WorldOptions = {}) {
-        this.#assignments = normalizePopulation(population);
-        this.#registry = options.registry ?? createDefaultRegistry();
+        const modules = toModuleMap((options.agents ?? []).map((plugin) => assertAgentPlugin(plugin)));
+        this.#assignments = normalizePopulation(population).map((draft) => {
+            const moduleUrl = modules.get(draft.type);
+            if (moduleUrl === undefined) {
+                throw new Error(`тип агента «${draft.type}» не подключён: передайте его модуль в options.agents; подключены: ${[...modules.keys()].join(', ') || '—'}`);
+            }
+            return { ...draft, moduleUrl };
+        });
         this.#print = options.print ?? ((line: string): void => console.log(line));
         this.#threadPoolSize = options.threadPoolSize;
-        for (const assignment of this.#assignments) {
-            if (!this.#registry.has(assignment.type)) {
-                throw new Error(`неизвестный тип агента «${assignment.type}»; известны: ${this.#registry.types().join(', ')}`);
-            }
-        }
     }
 
     /** Состав мира: кого именно создадут при запуске. */

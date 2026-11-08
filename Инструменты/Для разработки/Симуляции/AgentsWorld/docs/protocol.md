@@ -10,7 +10,7 @@
 |---|---|
 | `ActorId` | строковый идентификатор актора |
 | `Message` | сообщение: `{ type, payload? }` |
-| `ActorAssignment` | наряд на создание актора: `{ id, type, options }` |
+| `ActorAssignment` | задание на создание актора: `{ id, type, moduleUrl, options }` |
 | `WorkerCommand` | `start` / `deliver` / `stop` — команды воркеру |
 | `WorkerEvent` | `ready` / `deliver` / `log` / `error` / `done` — события из воркера |
 | `createMessage` | создаёт сообщение и проверяет тип |
@@ -29,7 +29,8 @@
 - `payload` необязателен: если его не передали, ключа в объекте нет
   (`'payload' in message === false`).
 - Нагрузка должна переживать structured clone: воркеры передают её копированием,
-  поэтому функции, классы и `Symbol` использовать нельзя.
+  поэтому функции, классы и `Symbol` использовать нельзя. По той же причине в
+  `ActorAssignment` едет `moduleUrl` (строка), а не фабрика агента.
 
 ## Тест
 

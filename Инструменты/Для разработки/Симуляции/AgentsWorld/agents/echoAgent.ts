@@ -14,8 +14,23 @@
 import { AbstractActor, type ActorContext } from '../lib/actor.ts';
 import { createMessage, type Message } from '../lib/protocol.ts';
 
-/** Ключ, под которым агент регистрируется в реестре. */
-export const ECHO_AGENT_TYPE = 'EchoAgent';
+/** Имя типа: под ним агент указывается в статистике мира. */
+const AGENT_TYPE = 'EchoAgent';
+
+/**
+ * Экспорт `type` — часть контракта модуля агента (см. `lib/agentPlugin.ts`).
+ *
+ * Мир получает это имя как строку и ничего не знает о классе.
+ */
+export const type = AGENT_TYPE;
+
+/**
+ * Экспорт `moduleUrl` — тоже часть контракта.
+ *
+ * Адрес своего модуля: его получает поток и загружает по нему код агента, потому
+ * что передать класс в другой поток нельзя.
+ */
+export const moduleUrl = import.meta.url;
 
 /** Настройки агента. */
 export interface EchoAgentOptions {
@@ -27,7 +42,7 @@ export interface EchoAgentOptions {
 const DEFAULT_GREETINGS = 2;
 
 export class EchoAgent extends AbstractActor {
-    readonly type = ECHO_AGENT_TYPE;
+    readonly type = AGENT_TYPE;
     /** Сколько сообщений агент отправит себе при старте. */
     readonly #greetings: number;
 
@@ -54,6 +69,16 @@ export class EchoAgent extends AbstractActor {
         const text = typeof payload?.text === 'string' ? payload.text : '(без текста)';
         context.log(`эхо: ${text}`);
     }
+}
+
+/**
+ * Экспорт `createAgent` — третья часть контракта модуля агента.
+ *
+ * Именно эту функцию вызывает поток, загрузив модуль по `moduleUrl`. Идентификатор
+ * агенту не нужен: он приходит в `context.id` при первом же сообщении.
+ */
+export function createAgent(_id: string, options: Readonly<Record<string, unknown>> = {}): EchoAgent {
+    return new EchoAgent(options);
 }
 
 /** Читает настройку `greetings`, отсекая мусор на входе. */

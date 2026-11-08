@@ -1,12 +1,12 @@
-# `lib/index.ts` — публичный API
+# `lib/index.ts` — публичный API ядра
 
-Единая точка входа: то, что видят снаружи.
+Единая точка входа в ядро мира.
 
 ```js
 import { World } from './lib/index.ts';
-import { ECHO_AGENT_TYPE } from '../agents/echoAgent.ts';
+import * as myAgent from './путь/к/агенту.ts';
 
-const world = new World({ [ECHO_AGENT_TYPE]: 4 });
+const world = new World({ [myAgent.type]: 4 }, { agents: [myAgent] });
 await world.run();
 await world.stop();
 ```
@@ -16,30 +16,26 @@ await world.stop();
 | Из модуля | Что |
 |---|---|
 | `world.ts` | `World`, `WorldOptions` |
-| `registry.ts` | `AgentRegistry`, `createDefaultRegistry` |
 | `protocol.ts` | `createMessage`, `isMessage`, типы `ActorId`, `ActorAssignment`, `Message` |
+| `agentPlugin.ts` | тип `AgentPlugin` |
 
-Границы модуля заданы требованием «директория с агентами живёт отдельно от кода
-`lib`», поэтому:
+## Чего здесь нет и почему
 
-- **агенты не реэкспортируются** — `EchoAgent` и `ECHO_AGENT_TYPE` подключаются
-  из `agents/echoAgent.ts` напрямую;
-- **реестр агентов при этом остаётся в `lib`** (`registry.ts`), потому что мир
-  создаёт агентов по строковому типу, а не по ссылке на класс;
-- **типы акторов** (`Actor`, `ActorContext`, `AbstractActor`) лежат в
+- **Агентов нет.** Ядро не знает ни одного конкретного агента: модуль агента
+  подключает приложение и передаёт его в `options.agents`.
+- **Реестра нет.** Он был бы знанием ядра о конкретных типах. Вместо него — контракт
+  модуля (`type` + `moduleUrl` + `createAgent`) и загрузка по адресу в потоке.
+- **Типов акторов нет.** `Actor`, `ActorContext`, `AbstractActor` лежат в
   `lib/actor.ts`: нужны только тем, кто пишет своего агента.
-
 
 ## Зачем отдельный файл
 
 - **Один вход в ядро.** Пользователю мира не нужно знать, из каких файлов он собран.
-- **Проверка контракта.** Тест `test/index.test.ts` падает и если из API пропал
-  нужный экспорт, и если в `lib` случайно просочился агент из `agents/`: граница
-  «ядро / агенты» держится тестом, а не договорённостью.
+- **Проверка границы.** Тест `test/index.test.ts` падает и если из API пропал нужный
+  экспорт, и если в публичное API ядра просочился агент или реестр.
 
 ## Тест
 
-`test/index.test.ts` — `World`/`createDefaultRegistry`/`createMessage`/`isMessage`
-на месте, `EchoAgent` и `ECHO_AGENT_TYPE` из публичного API отсутствуют, реестр
-знает агента из `agents/`, мир из одного агента запускается и останавливается.
-
+`test/index.test.ts` — `World`/`createMessage`/`isMessage` на месте, `EchoAgent`,
+`AgentRegistry` и `createDefaultRegistry` в публичном API отсутствуют, модуль агента
+сам сообщает тип и адрес, мир из одного агента запускается и останавливается.

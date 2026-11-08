@@ -4,17 +4,19 @@
  * Поток не знает общего состояния мира — у него только собственный набор
  * рантаймов акторов и канал сообщений `parentPort`. Отсюда три правила:
  *
- * 1. Сообщение актору из своего потока кладётся в его ящик напрямую.
- * 2. Сообщение актору из чужого потока уходит наверх (`deliver`), а адресата
- *    ищет мир: у потока нет доступа к чужим ящикам, и это правильно — иначе
- *    акторы получили бы общую память и перестали быть изолированными.
- * 3. Всё, что актор хочет напечатать, уходит наверх событием `log`, потому что
- *    печать из нескольких потоков в stdout перемешалась бы и её нельзя проверить.
+ * 1. **Код агента грузится по адресу.** В наряде приходит `moduleUrl`; поток
+ *    вызывает `import(moduleUrl)` и берёт из модуля `createAgent`. Мир при этом
+ *    не знает ни одного класса агента.
+ * 2. **Сообщение актору из своего потока** кладётся в его ящик напрямую, а из
+ *    чужого — уходит наверх (`deliver`), где мир ищет адресата. У потока нет
+ *    доступа к чужим ящикам, иначе акторы получили бы общую память.
+ * 3. **Всё, что актор печатает**, уходит наверх событием `log`, потому что печать
+ *    из нескольких потоков в stdout перемешалась бы и её нельзя проверить.
  */
 
 import { parentPort, threadId, type MessagePort } from 'node:worker_threads';
 import { ActorRuntime } from './actorRuntime.ts';
-import { createDefaultRegistry, type AgentRegistry } from './registry.ts';
+import { loadAgentFactory } from './agentLoader.ts';
 import type { ActorAssignment, ActorId, Message, WorkerCommand, WorkerEvent } from './protocol.ts';
 
 /** Канал связи с главным потоком. Явная аннотация нужна, чтобы тип был non-null. */
@@ -28,8 +30,6 @@ function requirePort(): MessagePort {
     return parentPort;
 }
 
-/** Реестр типов: строковый тип из наряда → экземпляр актора. */
-const registry: AgentRegistry = createDefaultRegistry();
 /** Акторы, живущие в этом потоке. */
 const runtimes = new Map<ActorId, ActorRuntime>();
 
@@ -66,15 +66,17 @@ function createPorts(selfId: ActorId): {
 async function startActors(actors: readonly ActorAssignment[]): Promise<ActorId[]> {
     const started: ActorId[] = [];
     for (const assignment of actors) {
-        if (!registry.has(assignment.type)) {
-            emit({ kind: 'error', actorId: assignment.id, text: `неизвестный тип агента «${assignment.type}»` });
-            continue;
+        try {
+            const createAgent = await loadAgentFactory(assignment.moduleUrl);
+            const actor = createAgent(assignment.id, assignment.options);
+            const runtime = new ActorRuntime({ id: assignment.id, actor, ports: createPorts(assignment.id) });
+            runtimes.set(assignment.id, runtime);
+            await runtime.start();
+            started.push(assignment.id);
+        } catch (error) {
+            runtimes.delete(assignment.id);
+            emit({ kind: 'error', actorId: assignment.id, text: error instanceof Error ? error.message : String(error) });
         }
-        const actor = registry.create(assignment.type, assignment.id, assignment.options);
-        const runtime = new ActorRuntime({ id: assignment.id, actor, ports: createPorts(assignment.id) });
-        runtimes.set(assignment.id, runtime);
-        await runtime.start();
-        started.push(assignment.id);
     }
     return started;
 }

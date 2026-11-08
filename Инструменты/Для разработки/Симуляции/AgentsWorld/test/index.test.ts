@@ -1,28 +1,28 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import * as api from '../lib/index.ts';
-import { ECHO_AGENT_TYPE, EchoAgent } from '../agents/echoAgent.ts';
+import * as echoAgent from '../agents/echoAgent.ts';
 
 describe('index', () => {
-    it('публичный API отдаёт мир, реестр и протокол', () => {
+    it('публичный API отдаёт мир и протокол', () => {
         assert.equal(typeof api.World, 'function');
-        assert.equal(typeof api.createDefaultRegistry, 'function');
         assert.equal(api.isMessage(api.createMessage('ping')), true);
     });
 
-    it('агенты не реэкспортируются из lib: они живут в agents/', () => {
+    it('ядро не знает ни об одном агенте', () => {
         assert.equal('EchoAgent' in api, false, 'EchoAgent не должен быть в публичном API lib');
-        assert.equal('ECHO_AGENT_TYPE' in api, false, 'ECHO_AGENT_TYPE не должен быть в публичном API lib');
-        assert.equal(ECHO_AGENT_TYPE, 'EchoAgent');
-        assert.equal(new EchoAgent().type, ECHO_AGENT_TYPE);
+        assert.equal('createDefaultRegistry' in api, false, 'реестра в lib больше нет');
+        assert.equal('AgentRegistry' in api, false, 'реестра в lib больше нет');
     });
 
-    it('реестр из lib знает агента из agents/', () => {
-        assert.equal(api.createDefaultRegistry().has(ECHO_AGENT_TYPE), true);
+    it('модуль агента сам сообщает тип и адрес, по которому его грузить', () => {
+        assert.equal(echoAgent.type, 'EchoAgent');
+        assert.match(echoAgent.moduleUrl, /agents\/echoAgent\.ts$/);
+        assert.equal(typeof echoAgent.createAgent, 'function');
     });
 
     it('мир из одного агента запускается и останавливается через публичный API', async () => {
-        const world = new api.World({ [ECHO_AGENT_TYPE]: 1 }, { print: () => {}, threadPoolSize: 1 });
+        const world = new api.World({ [echoAgent.type]: 1 }, { print: () => {}, threadPoolSize: 1, agents: [echoAgent] });
 
         await world.run();
         assert.equal(world.running, true);
@@ -31,3 +31,4 @@ describe('index', () => {
         assert.equal(world.running, false);
     });
 });
+

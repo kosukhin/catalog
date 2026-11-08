@@ -3,15 +3,18 @@
  *
  * Запуск: `npm start` (или `node scripts/demo.ts`).
  *
+ * Здесь видно, как собирается мир: скрипт импортирует модуль агента и передаёт его
+ * в `World`. Сам `World` про агентов ничего не знает — ему дают модуль, из которого
+ * он берёт имя типа и адрес кода.
+ *
  * В логе видно главное — агенты живут в разных потоках: у каждой строки указан
  * `threadId`, и этих идентификаторов столько же, сколько потоков поднял мир.
  */
 
-import { ECHO_AGENT_TYPE } from '../agents/echoAgent.ts';
+import * as echoAgent from '../agents/echoAgent.ts';
 import { World } from '../lib/index.ts';
 
-const agents = 6;
-const world = new World({ [ECHO_AGENT_TYPE]: agents });
+const world = new World({ [echoAgent.type]: 6 }, { agents: [echoAgent] });
 
 console.log(`мир: ${world.actors.length} агентов`);
 await world.run();

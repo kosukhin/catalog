@@ -24,10 +24,17 @@ export interface Message {
 
 /** Наряд на создание одного актора. */
 export interface ActorAssignment {
-    /** Уникальный идентификатор актора, например `EchoAgent-1`. */
+    /** Уникальный идентификатор актора, например `МойАгент-1`. */
     readonly id: ActorId;
-    /** Тип агента: ключ в реестре агентов. */
+    /** Тип агента: имя, под которым агент указан в статистике мира. */
     readonly type: string;
+    /**
+     * Адрес модуля агента (`import.meta.url`).
+     *
+     * Класс и фабрику нельзя передать в другой поток, поэтому поток получает
+     * строку-адрес и загружает код сам — см. `lib/agentLoader.ts`.
+     */
+    readonly moduleUrl: string;
     /** Настройки конкретного экземпляра. */
     readonly options: Readonly<Record<string, unknown>>;
 }

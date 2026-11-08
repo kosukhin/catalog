@@ -1,8 +1,10 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { ECHO_AGENT_TYPE, EchoAgent } from '../agents/echoAgent.ts';
+import * as echoAgent from '../agents/echoAgent.ts';
 import type { ActorContext } from '../lib/actor.ts';
 import { createMessage, type Message } from '../lib/protocol.ts';
+
+const { EchoAgent } = echoAgent;
 
 interface ContextFixture {
     readonly context: ActorContext;
@@ -27,8 +29,18 @@ function createContext(): ContextFixture {
 
 describe('EchoAgent', () => {
     it('регистрируется под своим типом', () => {
-        assert.equal(new EchoAgent().type, ECHO_AGENT_TYPE);
-        assert.equal(ECHO_AGENT_TYPE, 'EchoAgent');
+        assert.equal(new EchoAgent().type, echoAgent.type);
+        assert.equal(echoAgent.type, 'EchoAgent');
+    });
+
+    it('модуль сообщает свой адрес и умеет создавать агента', () => {
+        assert.match(echoAgent.moduleUrl, /agents\/echoAgent\.ts$/);
+        assert.equal(typeof echoAgent.createAgent, 'function');
+
+        const created = echoAgent.createAgent('EchoAgent-7', { greetings: 1 });
+        assert.equal(created instanceof EchoAgent, true);
+        assert.equal(created.type, echoAgent.type);
+        assert.throws(() => echoAgent.createAgent('EchoAgent-8', { greetings: 'много' }), /greetings/);
     });
 
     it('при старте пишет приветствие и отправляет себе сообщения', () => {
