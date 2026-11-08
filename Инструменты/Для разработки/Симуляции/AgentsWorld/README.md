@@ -37,6 +37,8 @@ import * as echoAgent from '../agents/echoAgent.ts';
 import { World } from './lib/index.ts';
 
 const world = new World(new Map([[echoAgent, 4]]));
+// настройки для типа: { count, options }
+const configured = new World(new Map([[dayAgent, { count: 1, options: { timeScale: 60 } }]]));
 console.log(`агентов: ${world.actors.length}, потоков: ${world.threadCount}`);
 await world.run();
 await world.stop();
@@ -93,10 +95,10 @@ test/                 модульные тесты: один файл на мо
 | `GET /api/agents?page=&pageSize=&search=` | страница агентов с состояниями |
 
 Настройки через окружение: `PORT` (по умолчанию 3000), `HUMANS` (12),
-`PAGE_SIZE` (20).
+`PAGE_SIZE` (20), `TIME_SCALE` (10 — во сколько раз время мира быстрее реального).
 
 ```bash
-PORT=8080 HUMANS=50 npm start
+PORT=8080 HUMANS=50 TIME_SCALE=60 npm start
 ```
 
 ## Мир из моделей
