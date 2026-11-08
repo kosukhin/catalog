@@ -21,9 +21,14 @@
 
 ## Агенты (`agents/`) — подключаются снаружи
 
+Модели описаны в [models/](models/), реализация — в `agents/`.
+
 | Модуль | Документация | Тест | Импортов |
 |---|---|---|---|
 | `agents/echoAgent.ts` | [echoAgent.md](echoAgent.md) | `test/echoAgent.test.ts` | 2 |
+| `agents/dayAgent.ts` | [dayAgent.md](dayAgent.md) | `test/dayAgent.test.ts` | 2 |
+| `agents/humanAgent.ts` | [humanAgent.md](humanAgent.md) | `test/humanAgent.test.ts` | 4 |
+| `agents/humanCatalogAgent.ts` | [humanCatalogAgent.md](humanCatalogAgent.md) | `test/humanCatalogAgent.test.ts` | 2 |
 
 ## Скрипты
 
