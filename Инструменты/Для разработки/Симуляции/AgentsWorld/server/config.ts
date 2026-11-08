@@ -48,7 +48,7 @@ export function createServerConfig(env: Readonly<Record<string, string | undefin
     const port = readInteger(env.PORT, 3000, 0, 65535, 'PORT');
     const humans = readInteger(env.HUMANS, 12, 1, 5000, 'HUMANS');
     const pageSize = readInteger(env.PAGE_SIZE, 20, 1, 200, 'PAGE_SIZE');
-    const timeScale = readTimeScale(env.TIME_SCALE, 300);
+    const timeScale = readTimeScale(env.TIME_SCALE, 800);
     const tickMs = readInteger(env.TICK_MS, 1000, 10, 600_000, 'TICK_MS');
     const recipients = Array.from({ length: humans }, (_value, index) => `${agents.humanAgent.type}-${index + 1}`);
     return {
