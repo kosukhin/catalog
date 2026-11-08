@@ -36,6 +36,28 @@ describe('server config', () => {
         assert.equal(config.humans, 12);
     });
 
+    it('передаёт темп времени настройками агента', () => {
+        const config = createServerConfig({ TIME_SCALE: '60' });
+        const clockEntry = [...config.population.entries()].find(([plugin]) => plugin.type === 'DayAgent')?.[1];
+
+        assert.equal(config.timeScale, 60);
+        assert.deepEqual(clockEntry, { count: 1, options: { timeScale: 60 } });
+    });
+
+    it('по умолчанию время идёт в 10 раз быстрее', () => {
+        const config = createServerConfig({});
+        const clockEntry = [...config.population.entries()].find(([plugin]) => plugin.type === 'DayAgent')?.[1];
+
+        assert.equal(config.timeScale, 10);
+        assert.deepEqual(clockEntry, { count: 1, options: { timeScale: 10 } });
+    });
+
+    it('отвергает некорректный темп времени', () => {
+        assert.throws(() => createServerConfig({ TIME_SCALE: '0' }), /TIME_SCALE должен быть положительным числом/);
+        assert.throws(() => createServerConfig({ TIME_SCALE: '-3' }), /TIME_SCALE должен быть положительным числом/);
+        assert.throws(() => createServerConfig({ TIME_SCALE: 'быстро' }), /TIME_SCALE должен быть положительным числом/);
+    });
+
     it('отвергает некорректные значения', () => {
         assert.throws(() => createServerConfig({ PORT: 'сто' }), /PORT должен быть целым числом от 0 до 65535/);
         assert.throws(() => createServerConfig({ PORT: '70000' }), /PORT должен быть целым числом/);

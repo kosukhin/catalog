@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizePopulation, summarizePopulation } from '../lib/stats.ts';
+import { normalizePopulation, summarizePopulation, type PopulationEntry } from '../lib/stats.ts';
 import type { AgentPlugin } from '../lib/agentPlugin.ts';
 
 /** Заглушка модуля агента: контракт соблюдён, настоящий агент не нужен. */
@@ -76,6 +76,51 @@ describe('stats', () => {
         const broken = { type: 'Битый' } as AgentPlugin;
 
         assert.throws(() => normalizePopulation(new Map([[broken, 1]])), /нет строкового экспорта moduleUrl/);
+    });
+
+    it('принимает количество с настройками и передаёт их каждому агенту', () => {
+        const clock = createPlugin('DayAgent');
+
+        const assignments = normalizePopulation(new Map([[clock, { count: 2, options: { timeScale: 60 } }]]));
+
+        assert.equal(assignments.length, 2);
+        assert.deepEqual(assignments[0]?.options, { timeScale: 60 });
+        assert.deepEqual(assignments[1]?.options, { timeScale: 60 });
+        assert.notEqual(assignments[0]?.options, assignments[1]?.options, 'у каждого агента свой объект настроек');
+    });
+
+    it('число и объект с настройками можно смешивать', () => {
+        const plain = createPlugin('EchoAgent');
+        const configured = createPlugin('DayAgent');
+
+        const assignments = normalizePopulation(
+            new Map([
+                [plain, 1],
+                [configured, { count: 1, options: { timeScale: 5 } }],
+            ]),
+        );
+
+        assert.deepEqual(
+            assignments.map((assignment) => assignment.options),
+            [{}, { timeScale: 5 }],
+        );
+    });
+
+    it('проверяет настройки в составе мира', () => {
+        const plugin = createPlugin('DayAgent');
+
+        assert.throws(
+            () => normalizePopulation(new Map([[plugin, { count: 1, options: [] } as unknown as PopulationEntry]])),
+            /options для типа «DayAgent» должен быть объектом/,
+        );
+        assert.throws(
+            () => normalizePopulation(new Map([[plugin, { count: 'два' } as unknown as PopulationEntry]])),
+            /целым неотрицательным/,
+        );
+        assert.throws(
+            () => normalizePopulation(new Map([[plugin, { count: 1, options: { now: () => new Date() } } as unknown as PopulationEntry]])),
+            /переживать structured clone/,
+        );
     });
 
     it('summarizePopulation считает агентов по типам', () => {

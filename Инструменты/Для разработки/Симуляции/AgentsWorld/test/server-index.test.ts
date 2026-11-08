@@ -43,4 +43,17 @@ describe('server index', () => {
             await running.stop();
         }
     });
+
+    it('темп времени приходит агенту из настроек мира', async () => {
+        const running = await startServer(createServerConfig({ PORT: '0', HUMANS: '1', TIME_SCALE: '60' }));
+
+        try {
+            const agents = await (await fetch(`${running.url}/api/agents?pageSize=10`)).json();
+            const clock = agents.items.find((agent: { type: string }) => agent.type === 'DayAgent');
+
+            assert.equal(clock.details.timeScale, 60, 'агент получил настройки из состава мира');
+        } finally {
+            await running.stop();
+        }
+    });
 });
