@@ -26,7 +26,7 @@ npm run typecheck  # проверка типов (нужны typescript и @type
 ```
 
 ```js
-import { World, ECHO_AGENT_TYPE } from './src/index.ts';
+import { World, ECHO_AGENT_TYPE } from './lib/index.ts';
 
 const world = new World({ [ECHO_AGENT_TYPE]: 4 });
 await world.run();
@@ -37,18 +37,19 @@ await world.stop();
 ## Структура
 
 ```
-src/
+lib/
 ├── protocol.ts       типы сообщений и команд потоков
 ├── mailbox.ts        почтовый ящик актора
 ├── actor.ts          контракт актора и AbstractActor
 ├── actorRuntime.ts   почтовый цикл актора
 ├── stats.ts          статистика мира → наряды на создание агентов
 ├── registry.ts       реестр «тип агента → фабрика»
-├── agents/echoAgent.ts  простейший печатающий агент
 ├── threadPool.ts     пул потоков worker_threads
 ├── workerEntry.ts    код, исполняемый внутри потока
 ├── world.ts          мир: запуск, распределение, маршрутизация сообщений
 └── index.ts          публичный API
+agents/
+└── echoAgent.ts      простейший печатающий агент
 scripts/demo.ts       демонстрация запуска
 docs/                 документация: один файл на модуль
 test/                 модульные тесты: один файл на модуль
@@ -60,8 +61,8 @@ test/                 модульные тесты: один файл на мо
 ## Свой агент
 
 ```js
-// src/agents/myAgent.ts
-import { AbstractActor } from '../actor.ts';
+// agents/myAgent.ts
+import { AbstractActor } from '../lib/actor.ts';
 
 export class MyAgent extends AbstractActor {
     readonly type = 'MyAgent';
@@ -73,5 +74,5 @@ export class MyAgent extends AbstractActor {
 }
 ```
 
-Затем зарегистрировать его в `createDefaultRegistry()` (`src/registry.ts`) — после
+Затем зарегистрировать его в `createDefaultRegistry()` (`lib/registry.ts`) — после
 этого тип станет доступен и миру, и воркерам.

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Мир агентов-акторов: параллельная работа через пул потоков",
   "type": "module",
-  "main": "src/index.ts",
+  "main": "lib/index.ts",
   "scripts": {
     "start": "node scripts/demo.ts",
     "test": "node --test",

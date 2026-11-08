@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { createMessage, isMessage } from '../src/protocol.ts';
+import { createMessage, isMessage } from '../lib/protocol.ts';
 
 describe('protocol', () => {
     it('createMessage без нагрузки не добавляет ключ payload', () => {

@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { World } from '../src/world.ts';
-import { ECHO_AGENT_TYPE } from '../src/agents/echoAgent.ts';
+import { World } from '../lib/world.ts';
+import { ECHO_AGENT_TYPE } from '../agents/echoAgent.ts';
 
 /** Ждёт выполнения условия: мир работает асинхронно. */
 async function waitFor(predicate: () => boolean, timeoutMs = 5000): Promise<void> {

@@ -7,7 +7,7 @@ import {
     createDefaultRegistry,
     createMessage,
     isMessage,
-} from '../src/index.ts';
+} from '../lib/index.ts';
 
 describe('index', () => {
     it('публичный API отдаёт мир, реестр и агента', () => {

@@ -1,8 +1,8 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { ECHO_AGENT_TYPE, EchoAgent } from '../src/agents/echoAgent.ts';
-import type { ActorContext } from '../src/actor.ts';
-import { createMessage, type Message } from '../src/protocol.ts';
+import { ECHO_AGENT_TYPE, EchoAgent } from '../agents/echoAgent.ts';
+import type { ActorContext } from '../lib/actor.ts';
+import { createMessage, type Message } from '../lib/protocol.ts';
 
 interface ContextFixture {
     readonly context: ActorContext;

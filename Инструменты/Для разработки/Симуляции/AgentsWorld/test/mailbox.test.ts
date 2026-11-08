@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { Mailbox } from '../src/mailbox.ts';
-import { createMessage } from '../src/protocol.ts';
+import { Mailbox } from '../lib/mailbox.ts';
+import { createMessage } from '../lib/protocol.ts';
 
 describe('Mailbox', () => {
     it('выдаёт сообщения в порядке FIFO', async () => {

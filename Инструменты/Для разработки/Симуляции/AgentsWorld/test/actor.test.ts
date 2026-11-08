@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { AbstractActor, type ActorContext } from '../src/actor.ts';
-import { createMessage, type Message } from '../src/protocol.ts';
+import { AbstractActor, type ActorContext } from '../lib/actor.ts';
+import { createMessage, type Message } from '../lib/protocol.ts';
 
 /** Актор, который записывает всё, что до него дошло. */
 class Recorder extends AbstractActor {

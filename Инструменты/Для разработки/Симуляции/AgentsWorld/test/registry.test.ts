@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { AgentRegistry, createDefaultRegistry } from '../src/registry.ts';
-import { AbstractActor } from '../src/actor.ts';
+import { AgentRegistry, createDefaultRegistry } from '../lib/registry.ts';
+import { AbstractActor } from '../lib/actor.ts';
 
 /** Минимальный актор для проверки реестра. */
 class Stub extends AbstractActor {

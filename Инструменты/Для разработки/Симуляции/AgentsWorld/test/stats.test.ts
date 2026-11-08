@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizePopulation, summarizePopulation } from '../src/stats.ts';
+import { normalizePopulation, summarizePopulation } from '../lib/stats.ts';
 
 describe('stats', () => {
     it('разворачивает статистику в наряды с предсказуемыми id', () => {

@@ -1,8 +1,8 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { ActorRuntime, type ActorPorts } from '../src/actorRuntime.ts';
-import { AbstractActor } from '../src/actor.ts';
-import { createMessage, type Message } from '../src/protocol.ts';
+import { ActorRuntime, type ActorPorts } from '../lib/actorRuntime.ts';
+import { AbstractActor } from '../lib/actor.ts';
+import { createMessage, type Message } from '../lib/protocol.ts';
 
 /** Актор-испытатель: запоминает сообщения, умеет падать по команде. */
 class Collector extends AbstractActor {

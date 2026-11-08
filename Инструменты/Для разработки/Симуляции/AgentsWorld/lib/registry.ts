@@ -10,7 +10,7 @@
  */
 
 import type { Actor, ActorFactory } from './actor.ts';
-import { ECHO_AGENT_TYPE, EchoAgent } from './agents/echoAgent.ts';
+import { ECHO_AGENT_TYPE, EchoAgent } from '../agents/echoAgent.ts';
 
 export class AgentRegistry {
     /** Известные типы агентов. */

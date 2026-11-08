@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { Worker } from 'node:worker_threads';
-import type { WorkerEvent } from '../src/protocol.ts';
+import type { WorkerEvent } from '../lib/protocol.ts';
 
 /** Ждёт выполнения условия: поток отвечает асинхронно. */
 async function waitFor(predicate: () => boolean, timeoutMs = 5000): Promise<void> {
@@ -16,7 +16,7 @@ async function waitFor(predicate: () => boolean, timeoutMs = 5000): Promise<void
 
 /** Поднимает воркер напрямую, как это делает пул потоков. */
 function spawnWorker(): { worker: Worker; events: WorkerEvent[] } {
-    const worker = new Worker(new URL('../src/workerEntry.ts', import.meta.url));
+    const worker = new Worker(new URL('../lib/workerEntry.ts', import.meta.url));
     const events: WorkerEvent[] = [];
     worker.on('message', (event: WorkerEvent) => {
         events.push(event);

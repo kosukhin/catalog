@@ -11,8 +11,8 @@
  * и тесты не могли бы его проверить.
  */
 
-import { AbstractActor, type ActorContext } from '../actor.ts';
-import { createMessage, type Message } from '../protocol.ts';
+import { AbstractActor, type ActorContext } from '../lib/actor.ts';
+import { createMessage, type Message } from '../lib/protocol.ts';
 
 /** Ключ, под которым агент регистрируется в реестре. */
 export const ECHO_AGENT_TYPE = 'EchoAgent';

@@ -1,9 +1,9 @@
-# `src/index.ts` — публичный API
+# `lib/index.ts` — публичный API
 
 Единая точка входа: то, что видят снаружи.
 
 ```js
-import { World, ECHO_AGENT_TYPE } from './src/index.ts';
+import { World, ECHO_AGENT_TYPE } from './lib/index.ts';
 
 const world = new World({ [ECHO_AGENT_TYPE]: 4 });
 await world.run();
@@ -20,7 +20,7 @@ await world.stop();
 | `protocol.ts` | `createMessage`, `isMessage`, типы `ActorId`, `ActorAssignment`, `Message` |
 
 Типы самих акторов (`Actor`, `ActorContext`, `AbstractActor`) остаются в
-`src/actor.ts`: модуль держим в пределе четырёх импортов, а нужны эти типы только
+`lib/actor.ts`: модуль держим в пределе четырёх импортов, а нужны эти типы только
 тем, кто пишет своего агента.
 
 ## Зачем отдельный файл

@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { ThreadPool } from '../src/threadPool.ts';
-import type { WorkerEvent } from '../src/protocol.ts';
+import { ThreadPool } from '../lib/threadPool.ts';
+import type { WorkerEvent } from '../lib/protocol.ts';
 
 /** Ждёт выполнения условия: воркер отвечает асинхронно. */
 async function waitFor(predicate: () => boolean, timeoutMs = 5000): Promise<void> {
