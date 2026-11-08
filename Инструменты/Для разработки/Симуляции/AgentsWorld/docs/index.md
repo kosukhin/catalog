@@ -3,7 +3,8 @@
 Единая точка входа: то, что видят снаружи.
 
 ```js
-import { World, ECHO_AGENT_TYPE } from './lib/index.ts';
+import { World } from './lib/index.ts';
+import { ECHO_AGENT_TYPE } from '../agents/echoAgent.ts';
 
 const world = new World({ [ECHO_AGENT_TYPE]: 4 });
 await world.run();
@@ -16,20 +17,29 @@ await world.stop();
 |---|---|
 | `world.ts` | `World`, `WorldOptions` |
 | `registry.ts` | `AgentRegistry`, `createDefaultRegistry` |
-| `agents/echoAgent.ts` | `ECHO_AGENT_TYPE`, `EchoAgent`, `EchoAgentOptions` |
 | `protocol.ts` | `createMessage`, `isMessage`, типы `ActorId`, `ActorAssignment`, `Message` |
 
-Типы самих акторов (`Actor`, `ActorContext`, `AbstractActor`) остаются в
-`lib/actor.ts`: модуль держим в пределе четырёх импортов, а нужны эти типы только
-тем, кто пишет своего агента.
+Границы модуля заданы требованием «директория с агентами живёт отдельно от кода
+`lib`», поэтому:
+
+- **агенты не реэкспортируются** — `EchoAgent` и `ECHO_AGENT_TYPE` подключаются
+  из `agents/echoAgent.ts` напрямую;
+- **реестр агентов при этом остаётся в `lib`** (`registry.ts`), потому что мир
+  создаёт агентов по строковому типу, а не по ссылке на класс;
+- **типы акторов** (`Actor`, `ActorContext`, `AbstractActor`) лежат в
+  `lib/actor.ts`: нужны только тем, кто пишет своего агента.
+
 
 ## Зачем отдельный файл
 
-- **Один вход.** Пользователю мира не нужно знать, из каких файлов он собран.
-- **Проверка на здоровье.** Тест `test/index.test.ts` падает, если кто-то случайно
-  убрал экспорт: это дешёвая защита от «сломалось, но тесты зелёные».
+- **Один вход в ядро.** Пользователю мира не нужно знать, из каких файлов он собран.
+- **Проверка контракта.** Тест `test/index.test.ts` падает и если из API пропал
+  нужный экспорт, и если в `lib` случайно просочился агент из `agents/`: граница
+  «ядро / агенты» держится тестом, а не договорённостью.
 
 ## Тест
 
-`test/index.test.ts` — все экспорты на месте, `createMessage`/`isMessage` работают,
-мир из одного агента запускается и останавливается через публичный API.
+`test/index.test.ts` — `World`/`createDefaultRegistry`/`createMessage`/`isMessage`
+на месте, `EchoAgent` и `ECHO_AGENT_TYPE` из публичного API отсутствуют, реестр
+знает агента из `agents/`, мир из одного агента запускается и останавливается.
+

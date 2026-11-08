@@ -15,7 +15,7 @@
 | `lib/threadPool.ts` | [threadPool.md](threadPool.md) | `test/threadPool.test.ts` | 3 |
 | `lib/workerEntry.ts` | [workerEntry.md](workerEntry.md) | `test/workerEntry.test.ts` | 4 |
 | `lib/world.ts` | [world.md](world.md) | `test/world.test.ts` | 4 |
-| `lib/index.ts` | [index.md](index.md) | `test/index.test.ts` | 4 |
+| `lib/index.ts` | [index.md](index.md) | `test/index.test.ts` | 3 |
 | `scripts/demo.ts` | [demo.md](demo.md) | — (запускается вручную) | 1 |
 
 Правило «не больше четырёх импортов на модуль» соблюдено во всех файлах: предел

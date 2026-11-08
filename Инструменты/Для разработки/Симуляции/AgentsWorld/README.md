@@ -26,11 +26,12 @@ npm run typecheck  # проверка типов (нужны typescript и @type
 ```
 
 ```js
-import { World, ECHO_AGENT_TYPE } from './lib/index.ts';
+import { World } from './lib/index.ts';
+import { ECHO_AGENT_TYPE } from '../agents/echoAgent.ts';
 
 const world = new World({ [ECHO_AGENT_TYPE]: 4 });
-await world.run();
 console.log(`агентов: ${world.actors.length}, потоков: ${world.threadCount}`);
+await world.run();
 await world.stop();
 ```
 
