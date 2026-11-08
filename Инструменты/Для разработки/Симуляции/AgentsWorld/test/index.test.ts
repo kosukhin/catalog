@@ -22,7 +22,7 @@ describe('index', () => {
     });
 
     it('мир из одного агента запускается и останавливается через публичный API', async () => {
-        const world = new api.World({ [echoAgent.type]: 1 }, { print: () => {}, threadPoolSize: 1, agents: [echoAgent] });
+        const world = new api.World(new Map([[echoAgent, 1]]), { print: () => {}, threadPoolSize: 1 });
 
         await world.run();
         assert.equal(world.running, true);

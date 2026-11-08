@@ -6,7 +6,7 @@
 import { World } from './lib/index.ts';
 import * as myAgent from './путь/к/агенту.ts';
 
-const world = new World({ [myAgent.type]: 4 }, { agents: [myAgent] });
+const world = new World(new Map([[myAgent, 4]]));
 await world.run();
 await world.stop();
 ```
@@ -18,11 +18,12 @@ await world.stop();
 | `world.ts` | `World`, `WorldOptions` |
 | `protocol.ts` | `createMessage`, `isMessage`, типы `ActorId`, `ActorAssignment`, `Message` |
 | `agentPlugin.ts` | тип `AgentPlugin` |
+| `stats.ts` | тип `Population` — состав мира: `Map` «модуль → количество» |
 
 ## Чего здесь нет и почему
 
 - **Агентов нет.** Ядро не знает ни одного конкретного агента: модуль агента
-  подключает приложение и передаёт его в `options.agents`.
+  подключает приложение и передаёт его ключом в `Map` состава мира.
 - **Реестра нет.** Он был бы знанием ядра о конкретных типах. Вместо него — контракт
   модуля (`type` + `moduleUrl` + `createAgent`) и загрузка по адресу в потоке.
 - **Типов акторов нет.** `Actor`, `ActorContext`, `AbstractActor` лежат в

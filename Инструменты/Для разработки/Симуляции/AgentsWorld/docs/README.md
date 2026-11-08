@@ -11,13 +11,13 @@
 | `lib/mailbox.ts` | [mailbox.md](mailbox.md) | `test/mailbox.test.ts` | 1 |
 | `lib/actor.ts` | [actor.md](actor.md) | `test/actor.test.ts` | 1 |
 | `lib/actorRuntime.ts` | [actorRuntime.md](actorRuntime.md) | `test/actorRuntime.test.ts` | 3 |
-| `lib/stats.ts` | [stats.md](stats.md) | `test/stats.test.ts` | 1 |
+| `lib/stats.ts` | [stats.md](stats.md) | `test/stats.test.ts` | 2 |
 | `lib/agentPlugin.ts` | [agentPlugin.md](agentPlugin.md) | `test/agentPlugin.test.ts` | 1 |
 | `lib/agentLoader.ts` | [agentLoader.md](agentLoader.md) | `test/agentLoader.test.ts` | 1 |
 | `lib/threadPool.ts` | [threadPool.md](threadPool.md) | `test/threadPool.test.ts` | 3 |
 | `lib/workerEntry.ts` | [workerEntry.md](workerEntry.md) | `test/workerEntry.test.ts` | 4 |
-| `lib/world.ts` | [world.md](world.md) | `test/world.test.ts` | 4 |
-| `lib/index.ts` | [index.md](index.md) | `test/index.test.ts` | 3 |
+| `lib/world.ts` | [world.md](world.md) | `test/world.test.ts` | 3 |
+| `lib/index.ts` | [index.md](index.md) | `test/index.test.ts` | 4 |
 
 ## Агенты (`agents/`) — подключаются снаружи
 

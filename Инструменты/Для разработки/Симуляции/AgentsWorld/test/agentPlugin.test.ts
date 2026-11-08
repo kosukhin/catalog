@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { assertAgentPlugin, toModuleMap, type AgentPlugin } from '../lib/agentPlugin.ts';
+import { assertAgentPlugin, type AgentPlugin } from '../lib/agentPlugin.ts';
 
 /** Заглушка модуля агента: настоящие поля контракта, без реального агента. */
 function createPlugin(overrides: Partial<AgentPlugin> = {}): AgentPlugin {
@@ -30,19 +30,9 @@ describe('agentPlugin', () => {
         );
     });
 
-    it('строит карту «тип → адрес модуля»', () => {
-        const modules = toModuleMap([createPlugin(), createPlugin({ type: 'Второй', moduleUrl: 'file:///2.ts' })]);
+    it('принимает модуль любого типа: ядро не знает конкретных агентов', () => {
+        const plugin = createPlugin({ type: 'СовсемДругой', moduleUrl: 'file:///другой.ts' });
 
-        assert.equal(modules.get('Заглушка'), 'file:///заглушка.ts');
-        assert.equal(modules.get('Второй'), 'file:///2.ts');
-        assert.equal(modules.size, 2);
-    });
-
-    it('не даёт подключить один тип дважды', () => {
-        assert.throws(() => toModuleMap([createPlugin(), createPlugin()]), /«Заглушка» подключён дважды/);
-    });
-
-    it('пустой список модулей — пустая карта', () => {
-        assert.equal(toModuleMap([]).size, 0);
+        assert.equal(assertAgentPlugin(plugin).moduleUrl, 'file:///другой.ts');
     });
 });

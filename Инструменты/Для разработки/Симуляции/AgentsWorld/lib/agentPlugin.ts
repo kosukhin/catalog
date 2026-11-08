@@ -49,22 +49,3 @@ export function assertAgentPlugin(value: unknown): AgentPlugin {
     }
     return candidate as unknown as AgentPlugin;
 }
-
-/**
- * Строит соответствие «тип агента → адрес модуля».
- *
- * Именно эта карта позволяет проверить статистику мира до запуска потоков, ничего
- * не зная о самих агентах.
- *
- * @throws если один тип подключён дважды
- */
-export function toModuleMap(plugins: readonly AgentPlugin[]): Map<string, string> {
-    const modules = new Map<string, string>();
-    for (const plugin of plugins) {
-        if (modules.has(plugin.type)) {
-            throw new Error(`тип агента «${plugin.type}» подключён дважды`);
-        }
-        modules.set(plugin.type, plugin.moduleUrl);
-    }
-    return modules;
-}

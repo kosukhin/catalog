@@ -14,7 +14,7 @@
 import * as echoAgent from '../agents/echoAgent.ts';
 import { World } from '../lib/index.ts';
 
-const world = new World({ [echoAgent.type]: 6 }, { agents: [echoAgent] });
+const world = new World(new Map([[echoAgent, 6]]));
 
 console.log(`мир: ${world.actors.length} агентов`);
 await world.run();

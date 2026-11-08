@@ -5,14 +5,14 @@
  *
  * ```js
  * // собирается в приложении, а не в lib:
- * const world = new World({ МойАгент: 4 }, { agents: [myAgent] });
+ * const world = new World(new Map([[myAgent, 6]]));
  * await world.run();   // потоки подняты, агенты работают параллельно
  * await world.stop();  // агенты остановлены, потоки погашены
  * ```
  *
- * Мир не знает ни одного конкретного агента: модули агентов передаёт тот, кто
- * собирает мир (`options.agents`). Миру от них нужны только имя типа и адрес
- * модуля — адрес уезжает в поток, и поток загружает код сам.
+ * Мир не знает ни одного конкретного агента: снаружи приходит `Map`, где ключ —
+ * модуль агента, а значение — сколько таких агентов нужно. Из модуля берутся имя
+ * типа и адрес кода, поэтому дублировать эти сведения не приходится.
  *
  * Распределение по потокам — по кругу (`agentIndex % workerCount`): при 4 потоках
  * и 4 агентах каждый живёт в своём потоке, при 100 агентах нагрузка размазывается
@@ -25,16 +25,13 @@
  */
 
 import type { ActorAssignment, ActorId, Message, WorkerEvent } from './protocol.ts';
-import { normalizePopulation, summarizePopulation, type PopulationStats } from './stats.ts';
+import { normalizePopulation, summarizePopulation, type Population } from './stats.ts';
 import { ThreadPool } from './threadPool.ts';
-import { assertAgentPlugin, toModuleMap, type AgentPlugin } from './agentPlugin.ts';
 
-/** Настройки мира. */
+/** Настройки мира: всё, что не касается состава агентов. */
 export interface WorldOptions {
     /** Сколько потоков использовать; по умолчанию — число доступных ядер. */
     readonly threadPoolSize?: number;
-    /** Подключённые модули агентов: `[echoAgent, myAgent, …]`. */
-    readonly agents?: readonly AgentPlugin[];
     /** Куда печатать строки мира; по умолчанию `console.log`. */
     readonly print?: (line: string) => void;
 }
@@ -53,19 +50,12 @@ export class World {
     #running = false;
 
     /**
-     * @param population статистика: сколько агентов каждого типа должно быть
-     * @param options подключённые модули агентов и настройки мира
-     * @throws если статистика некорректна или тип агента не подключён
+     * @param population состав мира: `Map` «модуль агента → количество»
+     * @param options настройки мира (потоки, печать)
+     * @throws если статистика некорректна или модуль агента неправильной формы
      */
-    constructor(population: PopulationStats, options: WorldOptions = {}) {
-        const modules = toModuleMap((options.agents ?? []).map((plugin) => assertAgentPlugin(plugin)));
-        this.#assignments = normalizePopulation(population).map((draft) => {
-            const moduleUrl = modules.get(draft.type);
-            if (moduleUrl === undefined) {
-                throw new Error(`тип агента «${draft.type}» не подключён: передайте его модуль в options.agents; подключены: ${[...modules.keys()].join(', ') || '—'}`);
-            }
-            return { ...draft, moduleUrl };
-        });
+    constructor(population: Population, options: WorldOptions = {}) {
+        this.#assignments = normalizePopulation(population);
         this.#print = options.print ?? ((line: string): void => console.log(line));
         this.#threadPoolSize = options.threadPoolSize;
     }

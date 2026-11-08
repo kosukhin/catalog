@@ -5,7 +5,7 @@
  * import { World } from './lib/index.ts';
  * import * as myAgent from './путь/к/агенту.ts';
  *
- * const world = new World({ [myAgent.type]: 4 }, { agents: [myAgent] });
+ * const world = new World(new Map([[myAgent, 4]]));
  * await world.run();
  * await world.stop();
  * ```
@@ -21,4 +21,5 @@
 export { World, type WorldOptions } from './world.ts';
 export { createMessage, isMessage, type ActorAssignment, type ActorId, type Message } from './protocol.ts';
 export { type AgentPlugin } from './agentPlugin.ts';
+export { type Population } from './stats.ts';
 

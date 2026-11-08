@@ -8,7 +8,7 @@
 
 ```js
 import * as echoAgent from '../agents/echoAgent.ts';
-const world = new World({ [echoAgent.type]: 6 }, { agents: [echoAgent] });
+const world = new World(new Map([[echoAgent, 6]]));
 ```
 
 Дальше мир создаёт 6 агентов, запускает их, даёт 300 мс и останавливает. Отдельного
@@ -37,6 +37,6 @@ const world = new World({ [echoAgent.type]: 6 }, { agents: [echoAgent] });
 | Что | Как |
 |---|---|
 | больше/меньше агентов | изменить число в `new World({ … })` |
-| добавить своего агента | дописать его модуль в `agents: [echoAgent, myAgent]` |
-| больше потоков, чем ядер | `new World(stats, { agents, threadPoolSize: 8 })` |
-| один поток для сравнения | `new World(stats, { agents, threadPoolSize: 1 })` |
+| добавить своего агента | добавить пару в `Map`: `new Map([[echoAgent, 6], [myAgent, 3]])` |
+| больше потоков, чем ядер | `new World(population, { threadPoolSize: 8 })` |
+| один поток для сравнения | `new World(population, { threadPoolSize: 1 })` |

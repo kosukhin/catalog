@@ -6,9 +6,9 @@
 
 ## Как это устроено
 
-- **`World`** принимает статистику агентов (`{ 'МойАгент': 4 }`) и список модулей
-  агентов (`{ agents: [myAgent] }`), а методом `run()` запускает мир. `stop()`
-  останавливает.
+- **`World`** принимает один аргумент — состав мира: `Map`, где ключ это модуль
+  агента, а значение — сколько таких агентов нужно (`new Map([[echoAgent, 6]])`).
+  Метод `run()` запускает мир, `stop()` останавливает.
 - **Ядро не знает агентов.** В `lib/` нет ни одного упоминания конкретного агента и
   нет реестра. Ядру от модуля агента нужны только `type`, `moduleUrl` и
   `createAgent` — контракт `AgentPlugin`.
@@ -34,7 +34,7 @@ npm run typecheck  # проверка типов (нужны typescript и @type
 import * as echoAgent from '../agents/echoAgent.ts';
 import { World } from './lib/index.ts';
 
-const world = new World({ [echoAgent.type]: 4 }, { agents: [echoAgent] });
+const world = new World(new Map([[echoAgent, 4]]));
 console.log(`агентов: ${world.actors.length}, потоков: ${world.threadCount}`);
 await world.run();
 await world.stop();
@@ -48,7 +48,7 @@ lib/                  ядро мира — про агентов не знае�
 ├── mailbox.ts        почтовый ящик актора
 ├── actor.ts          контракт актора и AbstractActor
 ├── actorRuntime.ts   почтовый цикл актора
-├── stats.ts          статистика мира → заготовки акторов
+├── stats.ts          состав мира (Map «модуль → количество») → задания
 ├── agentPlugin.ts    контракт модуля агента (type, moduleUrl, createAgent)
 ├── agentLoader.ts    загрузка кода агента по адресу внутри потока
 ├── threadPool.ts     пул потоков worker_threads
@@ -97,7 +97,7 @@ export function createAgent(id, options) {      // как создать экз�
 ```js
 import * as myAgent from '../agents/myAgent.ts';
 
-const world = new World({ [myAgent.type]: 3 }, { agents: [echoAgent, myAgent] });
+const world = new World(new Map([[echoAgent, 6], [myAgent, 3]]));
 ```
 
 `lib` при этом не меняется: он не знает, какие агенты существуют, — ему их сообщают.
