@@ -19,9 +19,8 @@ import { threadId } from 'node:worker_threads';
 import { AbstractActor, type ActorContext } from 'agents-world/lib/actor.ts';
 import type { Message } from 'agents-world/lib/protocol.ts';
 import { FileBarrier } from '../src/barrier.ts';
-import { closePool, type IsolationLevel } from '../src/db.ts';
-import { DEFAULT_MAX_ATTEMPTS, transfer, type TransferResult } from '../src/transfer.ts';
-import type { StrategyName } from '../src/strategies.ts';
+import { closePool } from '../src/db.ts';
+import { transfer, type TransferResult } from '../src/transfer.ts';
 import {
     readOptions,
     type BankAgentOptions,

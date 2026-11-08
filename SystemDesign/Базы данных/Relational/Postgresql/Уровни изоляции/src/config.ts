@@ -35,7 +35,7 @@ const DEFAULT_BARRIER_TIMEOUT_MS = 10_000;
  */
 export function readConfig(env: Record<string, string | undefined> = process.env): SimulationConfig {
     return {
-        databaseUrl: readText(env.DATABASE_URL, DEFAULT_DATABASE_URL, 'DATABASE_URL'),
+        databaseUrl: readText(env.DATABASE_URL, DEFAULT_DATABASE_URL),
         accountId: readInteger(env.ACCOUNT_ID, 1, 'ACCOUNT_ID'),
         initialBalance: readInteger(env.INITIAL_BALANCE, DEFAULT_INITIAL_BALANCE, 'INITIAL_BALANCE'),
         barrierTimeoutMs: readInteger(env.BARRIER_TIMEOUT_MS, DEFAULT_BARRIER_TIMEOUT_MS, 'BARRIER_TIMEOUT_MS'),
@@ -43,7 +43,7 @@ export function readConfig(env: Record<string, string | undefined> = process.env
 }
 
 /** Читает непустую строку. */
-function readText(value: string | undefined, fallback: string, name: string): string {
+function readText(value: string | undefined, fallback: string): string {
     if (value === undefined || value.trim() === '') {
         return fallback;
     }
