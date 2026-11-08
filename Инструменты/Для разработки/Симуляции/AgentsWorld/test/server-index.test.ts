@@ -10,8 +10,8 @@ describe('server index', () => {
         try {
             const summary = await (await fetch(`${running.url}/api/world`)).json();
             assert.equal(summary.running, true);
-            assert.equal(summary.total, 4, 'два человека плюс время и каталог');
-            assert.deepEqual(summary.byType, { DayAgent: 1, HumanCatalogAgent: 1, HumanAgent: 2 });
+            assert.equal(summary.total, 5, 'два человека плюс время, каталог и тикер');
+            assert.deepEqual(summary.byType, { DayAgent: 1, HumanCatalogAgent: 1, HumanAgent: 2, TickAgent: 1 });
             const agents = await (await fetch(`${running.url}/api/agents?pageSize=10`)).json();
             const clock = agents.items.find((agent: { type: string }) => agent.type === 'DayAgent');
             assert.equal(clock.details.timeScale, 10, 'время идёт в 10 раз быстрее');

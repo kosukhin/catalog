@@ -17,8 +17,8 @@ describe('server config', () => {
         const counts = [...config.population.values()].map((entry) => (typeof entry === 'number' ? entry : entry.count));
         const types = [...config.population.keys()].map((plugin) => plugin.type);
 
-        assert.deepEqual(types, ['DayAgent', 'HumanCatalogAgent', 'HumanAgent']);
-        assert.deepEqual(counts, [1, 1, 7]);
+        assert.deepEqual(types, ['DayAgent', 'HumanCatalogAgent', 'HumanAgent', 'TickAgent']);
+        assert.deepEqual(counts, [1, 1, 7, 1]);
     });
 
     it('читает переменные окружения', () => {
@@ -63,5 +63,26 @@ describe('server config', () => {
         assert.throws(() => createServerConfig({ PORT: '70000' }), /PORT должен быть целым числом/);
         assert.throws(() => createServerConfig({ HUMANS: '0' }), /HUMANS должен быть целым числом от 1 до 5000/);
         assert.throws(() => createServerConfig({ PAGE_SIZE: '1.5' }), /PAGE_SIZE должен быть целым числом/);
+    });
+
+    it('настраивает тикер и список тех, кого он будит', () => {
+        const config = createServerConfig({ HUMANS: '3', TICK_MS: '250' });
+        const tickEntry = [...config.population.entries()].find(([plugin]) => plugin.type === 'TickAgent')?.[1];
+
+        assert.equal(config.tickMs, 250);
+        assert.deepEqual(config.recipients, ['HumanAgent-1', 'HumanAgent-2', 'HumanAgent-3']);
+        assert.deepEqual(tickEntry, { count: 1, options: { intervalMs: 250, recipients: config.recipients } });
+    });
+
+    it('по умолчанию будит людей раз в секунду', () => {
+        const config = createServerConfig({ HUMANS: '2' });
+
+        assert.equal(config.tickMs, 1000);
+        assert.deepEqual(config.recipients, ['HumanAgent-1', 'HumanAgent-2']);
+    });
+
+    it('отвергает некорректный период тика', () => {
+        assert.throws(() => createServerConfig({ TICK_MS: '0' }), /TICK_MS должен быть целым числом от 10 до 600000/);
+        assert.throws(() => createServerConfig({ TICK_MS: 'быстро' }), /TICK_MS должен быть целым числом/);
     });
 });

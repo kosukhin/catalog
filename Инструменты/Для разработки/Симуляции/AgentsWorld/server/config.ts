@@ -13,11 +13,10 @@
  * | `HUMANS` | 12 | сколько людей запустить в мире |
  * | `PAGE_SIZE` | 20 | размер страницы по умолчанию в API дашборда |
  * | `TIME_SCALE` | 10 | во сколько раз виртуальное время быстрее реального |
+ * | `TICK_MS` | 1000 | как часто тикер будит людей, мс |
  */
 
-import * as dayAgent from '../agents/dayAgent.ts';
-import * as humanAgent from '../agents/humanAgent.ts';
-import * as humanCatalogAgent from '../agents/humanCatalogAgent.ts';
+import * as agents from '../agents/index.ts';
 import type { AgentPlugin, PopulationEntry } from '../lib/index.ts';
 
 /** Всё, что нужно приложению для запуска. */
@@ -30,6 +29,10 @@ export interface ServerConfig {
     readonly pageSize: number;
     /** Во сколько раз виртуальное время быстрее реального. */
     readonly timeScale: number;
+    /** Как часто тикер рассылает импульсы, мс. */
+    readonly tickMs: number;
+    /** Кого будит тикер: адреса людей. */
+    readonly recipients: readonly string[];
     /** Адрес агента, у которого спрашивают время. */
     readonly clockId: string;
     /** Состав мира: модуль агента → количество (и настройки). */
@@ -46,16 +49,21 @@ export function createServerConfig(env: Readonly<Record<string, string | undefin
     const humans = readInteger(env.HUMANS, 12, 1, 5000, 'HUMANS');
     const pageSize = readInteger(env.PAGE_SIZE, 20, 1, 200, 'PAGE_SIZE');
     const timeScale = readTimeScale(env.TIME_SCALE, 10);
+    const tickMs = readInteger(env.TICK_MS, 1000, 10, 600_000, 'TICK_MS');
+    const recipients = Array.from({ length: humans }, (_value, index) => `${agents.humanAgent.type}-${index + 1}`);
     return {
         port,
         humans,
         pageSize,
         timeScale,
-        clockId: dayAgent.DAY_AGENT_ID,
+        tickMs,
+        recipients,
+        clockId: agents.dayAgent.DAY_AGENT_ID,
         population: new Map<AgentPlugin, number | PopulationEntry>([
-            [dayAgent, { count: 1, options: { timeScale } }],
-            [humanCatalogAgent, 1],
-            [humanAgent, humans],
+            [agents.dayAgent, { count: 1, options: { timeScale } }],
+            [agents.humanCatalogAgent, 1],
+            [agents.humanAgent, humans],
+            [agents.tickAgent, { count: 1, options: { intervalMs: tickMs, recipients } }],
         ]),
     };
 }

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import * as human from '../agents/humanAgent.ts';
 import { DAY_AGENT_ID, TIME_REPORT } from '../agents/dayAgent.ts';
 import { CATALOG_REGISTER, CATALOG_RESULT, CATALOG_SEARCH, HUMAN_CATALOG_AGENT_ID } from '../agents/humanCatalogAgent.ts';
-import { createMessage } from '../lib/protocol.ts';
+import { createMessage, TICK } from '../lib/protocol.ts';
 import type { ActorContext } from '../lib/actor.ts';
 
 const { HumanAgent } = human;
@@ -145,5 +145,45 @@ describe('HumanAgent', () => {
         assert.throws(() => new HumanAgent({ profession: '' }), /profession должен быть непустой строкой/);
         assert.throws(() => new HumanAgent({ random: 5 }), /random должен быть функцией/);
     });
-});
 
+    it('по импульсу заново спрашивает время', () => {
+        const agent = createHuman();
+        const { context, sent } = createContext('HumanAgent-5');
+
+        agent.receive(createMessage(TICK), context);
+
+        assert.deepEqual(sent, [{ to: DAY_AGENT_ID, type: 'time-request', payload: { replyTo: 'HumanAgent-5' } }]);
+    });
+
+    it('пересчитывает состояние по каждому импульсу', () => {
+        const rolls = [0.9, 0.05];
+        const agent = new HumanAgent({
+            name: 'Иван',
+            gender: 'мужчина',
+            profession: 'врач',
+            random: () => rolls.shift() ?? 0.9,
+        });
+        const { context } = createContext();
+        agent.receive(createMessage(TIME_REPORT, { phase: 'день', hours: 12 }), context);
+        assert.equal(agent.state, 'активен');
+
+        agent.receive(createMessage(TICK), context);
+        agent.receive(createMessage(TIME_REPORT, { phase: 'день', hours: 12 }), context);
+
+        assert.equal(agent.state, 'в туалете');
+    });
+
+    it('печатает только смену состояния', () => {
+        const agent = createHuman(0.9);
+        const { context, log } = createContext();
+
+        agent.receive(createMessage(TIME_REPORT, { phase: 'день', hours: 12 }), context);
+        agent.receive(createMessage(TIME_REPORT, { phase: 'день', hours: 13 }), context);
+        assert.equal(log.length, 1, 'одинаковое состояние повторно не печатается');
+
+        agent.receive(createMessage(TIME_REPORT, { phase: 'ночь', hours: 2 }), context);
+
+        assert.equal(log.length, 2);
+        assert.match(log[1] ?? '', /моё состояние: спит/);
+    });
+});

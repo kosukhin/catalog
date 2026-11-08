@@ -18,7 +18,7 @@
  */
 
 import { AbstractActor, type ActorContext } from '../lib/actor.ts';
-import { createMessage, type Message } from '../lib/protocol.ts';
+import { createMessage, TICK, type Message } from '../lib/protocol.ts';
 import { DAY_AGENT_ID, TIME_REQUEST, TIME_REPORT, type DayPhase } from './dayAgent.ts';
 import {
     CATALOG_REGISTER,
@@ -117,14 +117,26 @@ export class HumanAgent extends AbstractActor {
     start(context: ActorContext): void {
         context.log(`я ${this.#name}, ${this.#gender}, ${this.#profession}`);
         context.send(HUMAN_CATALOG_AGENT_ID, createMessage(CATALOG_REGISTER, this.record(context.id)));
+        this.#askTime(context);
+    }
+
+    /** Спрашивает у DayAgent, который сейчас час: ответ снова выставит состояние. */
+    #askTime(context: ActorContext): void {
         context.send(DAY_AGENT_ID, createMessage(TIME_REQUEST, { replyTo: context.id }));
     }
 
     /** Реагирует на время, поиск и его результат. */
     protected override handle(message: Message, context: ActorContext): void {
+        if (message.type === TICK) {
+            this.#askTime(context);
+            return;
+        }
         if (message.type === TIME_REPORT) {
+            const previous = this.#state;
             this.#applyTime(message.payload);
-            context.log(`сейчас ${this.#phase}, моё состояние: ${this.#state}`);
+            if (previous !== this.#state) {
+                context.log(`сейчас ${this.#phase}, моё состояние: ${this.#state}`);
+            }
             return;
         }
         if (message.type === CATALOG_SEARCH) {
