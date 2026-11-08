@@ -17,5 +17,4 @@
 
 export { World, type WorldOptions } from './world.ts';
 export { AgentRegistry, createDefaultRegistry } from './registry.ts';
-export { ECHO_AGENT_TYPE, EchoAgent, type EchoAgentOptions } from '../agents/echoAgent.ts';
 export { createMessage, isMessage, type ActorAssignment, type ActorId, type Message } from './protocol.ts';

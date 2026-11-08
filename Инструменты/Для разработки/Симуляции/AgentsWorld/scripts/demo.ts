@@ -7,7 +7,8 @@
  * `threadId`, и этих идентификаторов столько же, сколько потоков поднял мир.
  */
 
-import { ECHO_AGENT_TYPE, World } from '../lib/index.ts';
+import { ECHO_AGENT_TYPE } from '../agents/echoAgent.ts';
+import { World } from '../lib/index.ts';
 
 const agents = 6;
 const world = new World({ [ECHO_AGENT_TYPE]: agents });
