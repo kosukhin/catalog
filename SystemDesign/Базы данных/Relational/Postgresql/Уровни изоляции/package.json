@@ -1,0 +1,28 @@
+{
+  "name": "postgres-isolation-levels",
+  "version": "1.0.0",
+  "description": "Уровни изоляции в PostgreSQL: два агента agents-world одновременно работают с общим счётом",
+  "type": "module",
+  "private": true,
+  "main": "scripts/simulate.ts",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env scripts/simulate.ts",
+    "simulate": "node --env-file-if-exists=.env scripts/simulate.ts",
+    "levels": "node --env-file-if-exists=.env scripts/nonRepeatableRead.ts",
+    "db:up": "docker compose up -d --wait",
+    "db:down": "docker compose down -v",
+    "db:reset": "docker compose down -v && docker compose up -d --wait",
+    "test": "node --env-file-if-exists=.env --test",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "agents-world": "file:../../../../../Инструменты/Для разработки/Симуляции/AgentsWorld",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/pg": "^8.11.10",
+    "typescript": "^5.7.2"
+  },
+  "license": "ISC"
+}
