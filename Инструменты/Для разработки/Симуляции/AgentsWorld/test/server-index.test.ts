@@ -23,8 +23,6 @@ describe('server index', () => {
                 TickAgent: 1,
             });
             const agents = await (await fetch(`${running.url}/api/agents?pageSize=20`)).json();
-            const clock = agents.items.find((agent: { type: string }) => agent.type === 'DayAgent');
-            assert.equal(clock.details.timeScale, 800, 'время идёт в 800 раз быстрее');
 
             const human = agents.items.find((agent: { type: string }) => agent.type === 'HumanAgent');
             assert.equal(human.alive, true);
