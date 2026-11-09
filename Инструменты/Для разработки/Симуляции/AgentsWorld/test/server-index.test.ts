@@ -14,7 +14,7 @@ describe('server index', () => {
             assert.deepEqual(summary.byType, { DayAgent: 1, HumanCatalogAgent: 1, HumanAgent: 2, TickAgent: 1 });
             const agents = await (await fetch(`${running.url}/api/agents?pageSize=10`)).json();
             const clock = agents.items.find((agent: { type: string }) => agent.type === 'DayAgent');
-            assert.equal(clock.details.timeScale, 10, 'время идёт в 10 раз быстрее');
+            assert.equal(clock.details.timeScale, 800, 'время идёт в 800 раз быстрее');
 
             const human = agents.items.find((agent: { type: string }) => agent.type === 'HumanAgent');
             assert.equal(human.alive, true);

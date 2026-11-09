@@ -44,12 +44,12 @@ describe('server config', () => {
         assert.deepEqual(clockEntry, { count: 1, options: { timeScale: 60 } });
     });
 
-    it('по умолчанию время идёт в 10 раз быстрее', () => {
+    it('по умолчанию время идёт в 800 раз быстрее', () => {
         const config = createServerConfig({});
         const clockEntry = [...config.population.entries()].find(([plugin]) => plugin.type === 'DayAgent')?.[1];
 
-        assert.equal(config.timeScale, 10);
-        assert.deepEqual(clockEntry, { count: 1, options: { timeScale: 10 } });
+        assert.equal(config.timeScale, 800);
+        assert.deepEqual(clockEntry, { count: 1, options: { timeScale: 800 } });
     });
 
     it('отвергает некорректный темп времени', () => {
