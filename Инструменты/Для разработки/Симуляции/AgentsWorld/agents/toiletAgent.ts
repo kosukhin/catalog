@@ -1,7 +1,7 @@
 import { AbstractActor, type ActorContext } from '../lib/actor.ts';
 import { createMessage, TICK, type Message } from '../lib/protocol.ts';
 import { DAY_AGENT_ID, TIME_REQUEST, TIME_REPORT } from './dayAgent.ts';
-import { PHYSICS_AGENT_ID, PHYSICS_REGISTER, type Point } from './physicsAgent.ts';
+import { PHYSICS_AGENT_ID, PHYSICS_BODY, PHYSICS_POSITION, PHYSICS_REGISTER, type Point } from './physicsAgent.ts';
 
 const AGENT_TYPE = 'ToiletAgent';
 
@@ -35,8 +35,10 @@ export class ToiletAgent extends AbstractActor {
     readonly #dayId: string;
     readonly #walking = new Set<string>();
     readonly #queue: string[] = [];
+    readonly #distances = new Map<string, number>();
     #occupant: string | null = null;
     #enteredAt: number | null = null;
+    #choosing: Set<string> | null = null;
 
     constructor(options: Readonly<Record<string, unknown>> = {}) {
         super();
@@ -82,6 +84,10 @@ export class ToiletAgent extends AbstractActor {
             this.#leave(message.payload, context);
             return;
         }
+        if (message.type === PHYSICS_BODY) {
+            this.#onPosition(message.payload, context);
+            return;
+        }
         if (message.type === TIME_REPORT) {
             this.#onTime(message.payload, context);
             return;
@@ -101,16 +107,61 @@ export class ToiletAgent extends AbstractActor {
             context.log('просят туалет без обратного адреса');
             return;
         }
-        if (this.#occupant === null && this.#walking.size === 0) {
-            this.#walking.add(id);
-            context.log(`${id} получил место`);
-            context.send(replyTo, createMessage(TOILET_GRANTED, { id }));
-            return;
-        }
         if (!this.#queue.includes(id)) {
             this.#queue.push(id);
         }
         context.send(replyTo, createMessage(TOILET_QUEUED, { id, position: this.#queue.indexOf(id) + 1 }));
+        this.#choose(context);
+    }
+
+    #choose(context: ActorContext): void {
+        if (this.#occupant !== null || this.#walking.size > 0 || this.#choosing !== null) {
+            return;
+        }
+        if (this.#queue.length === 0) {
+            return;
+        }
+        this.#choosing = new Set(this.#queue);
+        this.#distances.clear();
+        for (const id of this.#choosing) {
+            context.send(this.#physicsId, createMessage(PHYSICS_POSITION, { id, replyTo: TOILET_AGENT_ID }));
+        }
+    }
+
+    #onPosition(payload: unknown, context: ActorContext): void {
+        const report = payload as { id?: unknown; body?: unknown } | undefined;
+        const id = typeof report?.id === 'string' ? report.id : null;
+        if (id === null || this.#choosing === null || !this.#choosing.has(id)) {
+            return;
+        }
+        this.#choosing.delete(id);
+        const body = report?.body as { position?: unknown } | null | undefined;
+        const position = body === null || body === undefined ? null : readPositionOrNull(body.position);
+        this.#distances.set(id, position === null ? Number.POSITIVE_INFINITY : distanceBetween(position, this.#position));
+        if (this.#choosing.size === 0) {
+            this.#grantNearest(context);
+        }
+    }
+
+    #grantNearest(context: ActorContext): void {
+        this.#choosing = null;
+        let winner: string | null = null;
+        let best = Number.POSITIVE_INFINITY;
+        for (const [id, distance] of this.#distances) {
+            if (distance < best) {
+                winner = id;
+                best = distance;
+            }
+        }
+        this.#distances.clear();
+        if (winner === null || !Number.isFinite(best)) {
+            context.log('желающих не нашлось в пространстве, место пока свободно');
+            return;
+        }
+        this.#walking.add(winner);
+        this.#dropFromQueue(winner);
+        context.log(`${winner} ближе всех (${round(best)}), место его`);
+        context.send(winner, createMessage(TOILET_GRANTED, { id: winner }));
     }
 
     #enter(payload: unknown, context: ActorContext): void {
@@ -168,12 +219,8 @@ export class ToiletAgent extends AbstractActor {
         this.#occupant = null;
         this.#enteredAt = null;
         context.send(who, createMessage(TOILET_RELEASED, { id: who }));
-        const next = this.#queue.shift();
-        if (next !== undefined) {
-            this.#walking.add(next);
-            context.log(`${next} получил место из очереди`);
-            context.send(next, createMessage(TOILET_GRANTED, { id: next }));
-        }
+        context.log(`${who} освободил место`);
+        this.#choose(context);
     }
 
     #dropFromQueue(id: string): void {
@@ -236,5 +283,27 @@ function readCoordinate(value: unknown, name: string): number {
         throw new Error(`${name} должен быть конечным числом`);
     }
     return value;
+}
+
+function readPositionOrNull(value: unknown): Point | null {
+    const candidate = value as { x?: unknown; y?: unknown; z?: unknown } | undefined;
+    const x = candidate?.x;
+    const y = candidate?.y;
+    const z = candidate?.z;
+    if (typeof x !== 'number' || typeof y !== 'number' || typeof z !== 'number') {
+        return null;
+    }
+    if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)) {
+        return null;
+    }
+    return { x, y, z };
+}
+
+function distanceBetween(a: Point, b: Point): number {
+    return Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
+}
+
+function round(value: number): number {
+    return Math.round(value * 1000) / 1000;
 }
 

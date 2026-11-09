@@ -134,12 +134,22 @@ describe('HumanAgent', () => {
         assert.equal(last(value)?.to, toilet.TOILET_AGENT_ID);
         assert.equal(last(value)?.type, toilet.TOILET_REQUEST);
 
-        value.agent.receive(createMessage(toilet.TOILET_GRANTED, { id: ID }), value.context);
+        value.agent.receive(createMessage(toilet.TOILET_QUEUED, { id: ID, position: 1 }), value.context);
+        assert.equal(value.agent.state, 'идёт в туалет');
+        assert.equal(value.agent.toiletStatus, 'запросил');
         assert.equal(last(value)?.to, physics.PHYSICS_AGENT_ID);
         assert.equal(last(value)?.type, physics.PHYSICS_MOVE_TO);
         assert.deepEqual(last(value)?.payload, { id: ID, targetId: toilet.TOILET_AGENT_ID, replyTo: ID });
 
-        value.agent.receive(createMessage(physics.PHYSICS_ARRIVED, { id: ID, position: { x: 50, y: 0, z: 0 } }), value.context);
+        value.agent.receive(createMessage(physics.PHYSICS_ARRIVED, { id: ID, position: { x: 0, y: 49, z: 0 } }), value.context);
+        assert.equal(value.agent.state, 'идёт в туалет');
+        assert.match(value.log.at(-1) ?? '', /жду место/);
+
+        value.agent.receive(createMessage(toilet.TOILET_GRANTED, { id: ID }), value.context);
+        assert.equal(value.agent.toiletStatus, 'идёт');
+        assert.equal(last(value)?.type, physics.PHYSICS_MOVE_TO);
+
+        value.agent.receive(createMessage(physics.PHYSICS_ARRIVED, { id: ID, position: { x: 0, y: 50, z: 0 } }), value.context);
         assert.equal(value.agent.state, 'в туалете');
         assert.equal(last(value)?.type, toilet.TOILET_ENTER);
 
@@ -155,18 +165,27 @@ describe('HumanAgent', () => {
         assert.match(value.log.at(-1) ?? '', /вернулся домой/);
     });
 
-    it('в очереди ждёт и не идёт сам', () => {
+    it('в списке желающих идёт к туалету, но без места не входит', () => {
         const value = fixture(0.05);
         withAccountAndHouse(value);
         value.agent.receive(createMessage(day.TIME_REPORT, { phase: 'день' }), value.context);
 
         value.agent.receive(createMessage(toilet.TOILET_QUEUED, { id: ID, position: 1 }), value.context);
-
         assert.equal(value.agent.state, 'идёт в туалет');
-        assert.match(value.log.at(-1) ?? '', /очередь/);
+        assert.equal(last(value)?.type, physics.PHYSICS_MOVE_TO);
+
+        value.agent.receive(createMessage(physics.PHYSICS_ARRIVED, { id: ID, position: { x: 0, y: 49, z: 0 } }), value.context);
+        assert.equal(value.agent.state, 'идёт в туалет');
+        assert.equal(value.agent.toiletStatus, 'запросил');
+        assert.match(value.log.at(-1) ?? '', /жду место/);
+
+        const before = value.sent.length;
+        value.agent.receive(createMessage(TICK), value.context);
+        assert.equal(value.sent.length, before + 1);
+        assert.equal(last(value)?.type, day.TIME_REQUEST);
     });
 
-    it('отменяет поход, если физика не пустила', () => {
+    it('при отказе физики не отменяет поход, а пробует снова', () => {
         const value = fixture(0.05);
         withAccountAndHouse(value);
         value.agent.receive(createMessage(day.TIME_REPORT, { phase: 'день' }), value.context);
@@ -174,9 +193,17 @@ describe('HumanAgent', () => {
 
         value.agent.receive(createMessage(physics.PHYSICS_REPORT, { id: ID, accepted: false, reason: 'на пути тело' }), value.context);
 
-        assert.equal(value.agent.toiletStatus, 'нет');
-        assert.equal(value.agent.state, 'активен');
-        assert.equal(last(value)?.type, toilet.TOILET_LEAVE);
+        assert.equal(value.agent.toiletStatus, 'идёт');
+        assert.equal(value.agent.state, 'идёт в туалет');
+        assert.match(value.log.at(-1) ?? '', /попробую ещё/);
+        assert.equal(
+            value.sent.some((item) => item.type === toilet.TOILET_LEAVE),
+            false,
+        );
+
+        value.agent.receive(createMessage(TICK), value.context);
+        assert.equal(last(value)?.type, physics.PHYSICS_MOVE_TO);
+        assert.deepEqual(last(value)?.payload, { id: ID, targetId: toilet.TOILET_AGENT_ID, replyTo: ID });
     });
 
     it('по импульсу заново спрашивает время', () => {

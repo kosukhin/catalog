@@ -54,7 +54,9 @@ export class HumanAgent extends AbstractActor {
     #house: string | null = null;
     #houseTried = false;
     #toilet: ToiletStatus = 'нет';
+    #toiletPass = false;
     #walkingToToilet = false;
+    #atToiletDoor = false;
     #walkingHome = false;
 
     constructor(options: Readonly<Record<string, unknown>> = {}) {
@@ -108,6 +110,7 @@ export class HumanAgent extends AbstractActor {
     protected override handle(message: Message, context: ActorContext): void {
         if (message.type === TICK) {
             this.#askTime(context);
+            this.#retryToilet(context);
             return;
         }
         if (message.type === day.TIME_REPORT) {
@@ -131,7 +134,7 @@ export class HumanAgent extends AbstractActor {
             return;
         }
         if (message.type === toilet.TOILET_QUEUED) {
-            context.log('жду очередь в туалет');
+            this.#waitForToilet(context);
             return;
         }
         if (message.type === toilet.TOILET_RELEASED) {
@@ -229,16 +232,37 @@ export class HumanAgent extends AbstractActor {
         context.send(toilet.TOILET_AGENT_ID, createMessage(toilet.TOILET_REQUEST, { id: context.id, replyTo: context.id }));
     }
 
+    #waitForToilet(context: ActorContext): void {
+        context.log('в списке желающих, иду к туалету');
+        this.#walkToToilet(context);
+    }
+
     #goToToilet(context: ActorContext): void {
         this.#toilet = 'идёт';
+        this.#toiletPass = true;
+        context.log('место моё, иду в туалет');
+        this.#walkToToilet(context);
+    }
+
+    #walkToToilet(context: ActorContext): void {
         this.#walkingToToilet = true;
+        this.#atToiletDoor = false;
         this.#state = 'идёт в туалет';
         context.send(physics.PHYSICS_AGENT_ID, createMessage(physics.PHYSICS_MOVE_TO, { id: context.id, targetId: toilet.TOILET_AGENT_ID, replyTo: context.id }));
     }
 
+    #retryToilet(context: ActorContext): void {
+        if (this.#toilet === 'нет' || this.#toilet === 'внутри' || this.#walkingToToilet || this.#atToiletDoor) {
+            return;
+        }
+        this.#walkToToilet(context);
+    }
+
     #leaveToilet(context: ActorContext): void {
         this.#toilet = 'нет';
+        this.#toiletPass = false;
         this.#walkingToToilet = false;
+        this.#atToiletDoor = false;
         context.log('вышел из туалета');
         if (this.#house !== null) {
             this.#walkingHome = true;
@@ -260,6 +284,13 @@ export class HumanAgent extends AbstractActor {
             return;
         }
         this.#walkingToToilet = false;
+        if (!this.#toiletPass) {
+            this.#atToiletDoor = true;
+            this.#state = 'идёт в туалет';
+            context.log('стою у туалета, жду место');
+            return;
+        }
+        this.#toiletPass = false;
         this.#toilet = 'внутри';
         this.#state = 'в туалете';
         context.log('я в туалете');
@@ -278,14 +309,13 @@ export class HumanAgent extends AbstractActor {
             context.log(`домой не дойти: ${reason}`);
             return;
         }
-        if (!this.#walkingToToilet) {
+        if (this.#toilet === 'нет' || this.#toilet === 'внутри') {
             return;
         }
         this.#walkingToToilet = false;
-        this.#toilet = 'нет';
-        this.#state = 'активен';
-        context.log(`до туалета не дойти: ${reason}`);
-        context.send(toilet.TOILET_AGENT_ID, createMessage(toilet.TOILET_LEAVE, { id: context.id }));
+        this.#atToiletDoor = false;
+        this.#state = 'идёт в туалет';
+        context.log(`до туалета не дойти: ${reason}, попробую ещё`);
     }
 
     #onBulletin(payload: unknown, context: ActorContext): void {

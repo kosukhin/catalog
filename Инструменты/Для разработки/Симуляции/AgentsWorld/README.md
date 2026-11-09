@@ -132,7 +132,7 @@ PORT=8080 HUMANS=50 TIME_SCALE=60 TICK_MS=500 npm start
 | `BankAgent` | банк: счёт с депозитом 1000, списание за дом | [bankAgent.md](docs/bankAgent.md) |
 | `HouseAgent` | дома: продаёт дом за 800 и ставит его в точке человека | [houseAgent.md](docs/houseAgent.md) |
 | `BulletinBoardAgent` | доска объявлений: находит агентов нужного типа через реестр | [bulletinBoardAgent.md](docs/bulletinBoardAgent.md) |
-| `ToiletAgent` | туалет: одно место, очередь, 20 игровых минут внутри | [toiletAgent.md](docs/toiletAgent.md) |
+| `ToiletAgent` | туалет: одно место, все желающие идут к нему, место достаётся ближайшему, 20 игровых минут внутри | [toiletAgent.md](docs/toiletAgent.md) |
 | `TickAgent` | будильник мира: шлёт `tick` агентам нужных типов (адреса берёт у реестра) | [tickAgent.md](docs/tickAgent.md) |
 | `RosterAgent` (служебный) | реестр агентов мира: поиск по типу и подписка на новых; поднимает `World` | [rosterAgent.md](docs/rosterAgent.md) |
 
