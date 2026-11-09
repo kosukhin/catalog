@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { createMotionTracker } from './physicsMotion.ts';
 import { bodyColor, boxOf } from './physicsView.ts';
 import type { PhysicsState } from '../agents/physicsAgent.ts';
 
@@ -106,35 +107,60 @@ function createOrbit(canvas: HTMLCanvasElement, context: Context): Orbit {
 }
 
 interface BodyEntry {
-    readonly mesh: THREE.Mesh<THREE.SphereGeometry, THREE.MeshStandardMaterial>;
+    readonly mesh: THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>;
     readonly label: THREE.Sprite;
+}
+
+interface Layer {
+    readonly group: THREE.Group;
+    readonly entries: Map<string, BodyEntry>;
 }
 
 export function createScene(canvas: HTMLCanvasElement): SceneView {
     const context = createContext(canvas);
     const orbit = createOrbit(canvas, context);
-    const group = new THREE.Group();
-    context.scene.add(group);
-    const bodies = new Map<string, BodyEntry>();
+    const motion = createMotionTracker();
+    const seconds = (): number => performance.now() / 1000;
+    const bodies: Layer = { group: new THREE.Group(), entries: new Map() };
+    const objects: Layer = { group: new THREE.Group(), entries: new Map() };
+    context.scene.add(bodies.group);
+    context.scene.add(objects.group);
     let boundsBox: THREE.LineSegments | null = null;
 
-    const upsert = (id: string, position: { readonly x: number; readonly y: number; readonly z: number }, moving: boolean): void => {
-        let entry = bodies.get(id);
+    const upsert = (
+        layer: Layer,
+        id: string,
+        position: { readonly x: number; readonly y: number; readonly z: number },
+        moving: boolean,
+        geometry: THREE.BufferGeometry,
+    ): void => {
+        let entry = layer.entries.get(id);
         if (entry === undefined) {
-            const mesh = new THREE.Mesh(
-                new THREE.SphereGeometry(0.9, 20, 14),
-                new THREE.MeshStandardMaterial({ color: bodyColor(id) }),
-            );
+            const mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: bodyColor(id) }));
+            mesh.position.set(position.x, position.y, position.z);
             const label = makeLabel(id);
-            group.add(mesh);
-            group.add(label);
+            layer.group.add(mesh);
+            layer.group.add(label);
             entry = { mesh, label };
-            bodies.set(id, entry);
+            layer.entries.set(id, entry);
         }
-        entry.mesh.position.set(position.x, position.y, position.z);
+        motion.setTarget(id, position, seconds());
         entry.mesh.scale.setScalar(moving ? 1.6 : 1);
         entry.mesh.material.color.setHex(moving ? 0xf97316 : bodyColor(id));
-        entry.label.position.set(position.x, position.y + 2.4, position.z);
+    };
+
+    const prune = (layer: Layer, seen: ReadonlySet<string>): void => {
+        for (const [id, entry] of layer.entries) {
+            if (!seen.has(id)) {
+                layer.group.remove(entry.mesh);
+                layer.group.remove(entry.label);
+                entry.mesh.geometry.dispose();
+                entry.mesh.material.dispose();
+                entry.label.material.map?.dispose();
+                entry.label.material.dispose();
+                layer.entries.delete(id);
+            }
+        }
     };
 
     const apply = (state: PhysicsState): void => {
@@ -151,28 +177,47 @@ export function createScene(canvas: HTMLCanvasElement): SceneView {
         boundsBox = new THREE.Box3Helper(box, 0x3b82f6);
         context.scene.add(boundsBox);
 
-        const seen = new Set<string>();
+        const moving = new Set(state.moving);
+        const seenBodies = new Set<string>();
         for (const body of state.bodies) {
-            seen.add(body.id);
-            upsert(body.id, body.position, state.moving.includes(body.id));
+            seenBodies.add(body.id);
+            upsert(bodies, body.id, body.position, moving.has(body.id), new THREE.SphereGeometry(0.9, 20, 14));
         }
-        for (const [id, entry] of bodies) {
-            if (!seen.has(id)) {
-                group.remove(entry.mesh);
-                group.remove(entry.label);
-                entry.mesh.geometry.dispose();
-                entry.mesh.material.dispose();
-                entry.label.material.map?.dispose();
-                entry.label.material.dispose();
-                bodies.delete(id);
+        prune(bodies, seenBodies);
+
+        const seenObjects = new Set<string>();
+        for (const object of state.objects) {
+            seenObjects.add(object.id);
+            upsert(objects, object.id, object.position, false, new THREE.BoxGeometry(2.4, 2.4, 2.4));
+        }
+        prune(objects, seenObjects);
+        motion.prune(new Set<string>([...seenBodies, ...seenObjects]));
+    };
+
+    let disposed = false;
+    const animate = (now: number): void => {
+        if (disposed) {
+            return;
+        }
+        const nowSeconds = now / 1000;
+        for (const layer of [bodies, objects]) {
+            for (const [id, entry] of layer.entries) {
+                const point = motion.position(id, nowSeconds);
+                if (point !== null) {
+                    entry.mesh.position.set(point.x, point.y, point.z);
+                }
+                entry.label.position.set(entry.mesh.position.x, entry.mesh.position.y + 2.4, entry.mesh.position.z);
             }
         }
         context.render();
+        requestAnimationFrame(animate);
     };
+    requestAnimationFrame(animate);
 
     return {
         apply,
         dispose: (): void => {
+            disposed = true;
             context.renderer.dispose();
         },
     };

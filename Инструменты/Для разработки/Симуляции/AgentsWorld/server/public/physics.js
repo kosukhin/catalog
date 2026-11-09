@@ -28374,6 +28374,63 @@ var WebGLRenderer = class {
   }
 };
 
+// client/physicsMotion.ts
+var MIN_DURATION_SECONDS = 0.05;
+var MAX_DURATION_SECONDS = 5;
+function createMotionTracker() {
+  const segments = /* @__PURE__ */ new Map();
+  return {
+    setTarget: (id, point, now) => {
+      const current = segments.get(id);
+      if (current === void 0) {
+        segments.set(id, { start: point, end: point, startedAt: now, duration: 0, changedAt: now });
+        return;
+      }
+      if (samePoint(current.end, point)) {
+        return;
+      }
+      segments.set(id, {
+        start: positionOf(current, now),
+        end: point,
+        startedAt: now,
+        duration: clamp2(now - current.changedAt, MIN_DURATION_SECONDS, MAX_DURATION_SECONDS),
+        changedAt: now
+      });
+    },
+    position: (id, now) => {
+      const segment = segments.get(id);
+      return segment === void 0 ? null : positionOf(segment, now);
+    },
+    prune: (seen) => {
+      for (const id of [...segments.keys()]) {
+        if (!seen.has(id)) {
+          segments.delete(id);
+        }
+      }
+    }
+  };
+}
+function positionOf(segment, now) {
+  if (segment.duration <= 0) {
+    return segment.end;
+  }
+  const t = clamp2((now - segment.startedAt) / segment.duration, 0, 1);
+  return {
+    x: lerp2(segment.start.x, segment.end.x, t),
+    y: lerp2(segment.start.y, segment.end.y, t),
+    z: lerp2(segment.start.z, segment.end.z, t)
+  };
+}
+function lerp2(from, to, t) {
+  return from + (to - from) * t;
+}
+function clamp2(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+function samePoint(a, b) {
+  return a.x === b.x && a.y === b.y && a.z === b.z;
+}
+
 // client/physicsView.ts
 var DEFAULT_COLOR = 9147297;
 var COLORS = [
@@ -28405,6 +28462,7 @@ function stateRows(state) {
     { label: "\u0441\u043A\u043E\u0440\u043E\u0441\u0442\u044C", value: `${state.speed} \u0435\u0434./\u0441` },
     { label: "\u0448\u0430\u0433", value: `${state.stepSeconds} \u0441` },
     { label: "\u0442\u0435\u043B", value: String(state.bodies.length) },
+    { label: "\u043E\u0431\u044A\u0435\u043A\u0442\u043E\u0432", value: String(state.objects.length) },
     { label: "\u0434\u0432\u0438\u0436\u0435\u0442\u0441\u044F", value: String(state.moving.length) },
     { label: "\u043C\u0438\u043D. \u0434\u0438\u0441\u0442\u0430\u043D\u0446\u0438\u044F", value: String(state.minDistance) },
     { label: "\u0434\u0438\u0441\u0442\u0430\u043D\u0446\u0438\u044F \u043F\u0440\u0438\u0431\u044B\u0442\u0438\u044F", value: String(state.arriveDistance) },
@@ -28503,27 +28561,40 @@ function createOrbit(canvas, context) {
 function createScene(canvas) {
   const context = createContext(canvas);
   const orbit = createOrbit(canvas, context);
-  const group = new Group();
-  context.scene.add(group);
-  const bodies = /* @__PURE__ */ new Map();
+  const motion = createMotionTracker();
+  const seconds = () => performance.now() / 1e3;
+  const bodies = { group: new Group(), entries: /* @__PURE__ */ new Map() };
+  const objects = { group: new Group(), entries: /* @__PURE__ */ new Map() };
+  context.scene.add(bodies.group);
+  context.scene.add(objects.group);
   let boundsBox = null;
-  const upsert = (id, position, moving) => {
-    let entry = bodies.get(id);
+  const upsert = (layer, id, position, moving, geometry) => {
+    let entry = layer.entries.get(id);
     if (entry === void 0) {
-      const mesh = new Mesh(
-        new SphereGeometry(0.9, 20, 14),
-        new MeshStandardMaterial({ color: bodyColor(id) })
-      );
+      const mesh = new Mesh(geometry, new MeshStandardMaterial({ color: bodyColor(id) }));
+      mesh.position.set(position.x, position.y, position.z);
       const label = makeLabel(id);
-      group.add(mesh);
-      group.add(label);
+      layer.group.add(mesh);
+      layer.group.add(label);
       entry = { mesh, label };
-      bodies.set(id, entry);
+      layer.entries.set(id, entry);
     }
-    entry.mesh.position.set(position.x, position.y, position.z);
+    motion.setTarget(id, position, seconds());
     entry.mesh.scale.setScalar(moving ? 1.6 : 1);
     entry.mesh.material.color.setHex(moving ? 16347926 : bodyColor(id));
-    entry.label.position.set(position.x, position.y + 2.4, position.z);
+  };
+  const prune = (layer, seen) => {
+    for (const [id, entry] of layer.entries) {
+      if (!seen.has(id)) {
+        layer.group.remove(entry.mesh);
+        layer.group.remove(entry.label);
+        entry.mesh.geometry.dispose();
+        entry.mesh.material.dispose();
+        entry.label.material.map?.dispose();
+        entry.label.material.dispose();
+        layer.entries.delete(id);
+      }
+    }
   };
   const apply = (state) => {
     orbit.setTarget(boxOf(state.bounds).center);
@@ -28538,27 +28609,44 @@ function createScene(canvas) {
     );
     boundsBox = new Box3Helper(box, 3900150);
     context.scene.add(boundsBox);
-    const seen = /* @__PURE__ */ new Set();
+    const moving = new Set(state.moving);
+    const seenBodies = /* @__PURE__ */ new Set();
     for (const body of state.bodies) {
-      seen.add(body.id);
-      upsert(body.id, body.position, state.moving.includes(body.id));
+      seenBodies.add(body.id);
+      upsert(bodies, body.id, body.position, moving.has(body.id), new SphereGeometry(0.9, 20, 14));
     }
-    for (const [id, entry] of bodies) {
-      if (!seen.has(id)) {
-        group.remove(entry.mesh);
-        group.remove(entry.label);
-        entry.mesh.geometry.dispose();
-        entry.mesh.material.dispose();
-        entry.label.material.map?.dispose();
-        entry.label.material.dispose();
-        bodies.delete(id);
+    prune(bodies, seenBodies);
+    const seenObjects = /* @__PURE__ */ new Set();
+    for (const object of state.objects) {
+      seenObjects.add(object.id);
+      upsert(objects, object.id, object.position, false, new BoxGeometry(2.4, 2.4, 2.4));
+    }
+    prune(objects, seenObjects);
+    motion.prune(/* @__PURE__ */ new Set([...seenBodies, ...seenObjects]));
+  };
+  let disposed = false;
+  const animate = (now) => {
+    if (disposed) {
+      return;
+    }
+    const nowSeconds = now / 1e3;
+    for (const layer of [bodies, objects]) {
+      for (const [id, entry] of layer.entries) {
+        const point = motion.position(id, nowSeconds);
+        if (point !== null) {
+          entry.mesh.position.set(point.x, point.y, point.z);
+        }
+        entry.label.position.set(entry.mesh.position.x, entry.mesh.position.y + 2.4, entry.mesh.position.z);
       }
     }
     context.render();
+    requestAnimationFrame(animate);
   };
+  requestAnimationFrame(animate);
   return {
     apply,
     dispose: () => {
+      disposed = true;
       context.renderer.dispose();
     }
   };
@@ -28583,7 +28671,7 @@ function makeLabel(text) {
 }
 
 // client/physicsMain.ts
-var POLL_MS = 700;
+var POLL_MS = 400;
 function startPhysicsView() {
   const canvas = document.getElementById("scene");
   const hud = document.getElementById("hud");

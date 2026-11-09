@@ -11,6 +11,7 @@ const state = {
     arriveDistance: 1,
     bounds,
     bodies: [{ id: 'HumanAgent-1', position: { x: 1, y: 2, z: 3 } }],
+    objects: [{ id: 'House-HumanAgent-1', position: { x: 5, y: 0, z: 0 } }],
     moving: ['HumanAgent-1'],
 };
 
@@ -39,6 +40,7 @@ describe('physicsView', () => {
 
         assert.equal(byLabel['скорость'], '5 ед./с');
         assert.equal(byLabel['тел'], '1');
+        assert.equal(byLabel['объектов'], '1');
         assert.equal(byLabel['движется'], '1');
         assert.equal(byLabel['мин. дистанция'], '2');
         assert.equal(byLabel['границы x'], '0…10');

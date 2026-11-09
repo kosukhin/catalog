@@ -1,7 +1,7 @@
 import { AbstractActor, type ActorContext } from '../lib/actor.ts';
 import { createMessage, type Message } from '../lib/protocol.ts';
 import { BANK_AGENT_ID, BANK_CHARGE, BANK_PAYMENT } from './bankAgent.ts';
-import { PHYSICS_AGENT_ID, PHYSICS_BODY, PHYSICS_POSITION, type Point } from './physicsAgent.ts';
+import { PHYSICS_AGENT_ID, PHYSICS_BODY, PHYSICS_PLACE, PHYSICS_POSITION, type Point } from './physicsAgent.ts';
 
 const AGENT_TYPE = 'HouseAgent';
 
@@ -131,6 +131,7 @@ export class HouseAgent extends AbstractActor {
         }
         const record: HouseRecord = { id: `House-${owner}`, owner, position: body.position };
         this.#houses.set(owner, record);
+        context.send(this.#physicsId, createMessage(PHYSICS_PLACE, { id: record.id, position: record.position }));
         context.log(`дом для «${owner}» стоит в точке (${record.position.x}; ${record.position.y}; ${record.position.z})`);
         this.#report(pending.replyTo, record, true, null, context);
     }

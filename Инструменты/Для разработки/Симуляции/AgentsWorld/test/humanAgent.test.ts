@@ -125,7 +125,7 @@ describe('HumanAgent', () => {
         assert.match(value.log.at(-1) ?? '', /не смог купить дом: недостаточно средств/);
     });
 
-    it('идёт в туалет: запрос, движение, вход, выход', () => {
+    it('идёт в туалет и возвращается домой: запрос, движение, вход, выход', () => {
         const value = fixture(0.05);
         withAccountAndHouse(value);
 
@@ -144,8 +144,15 @@ describe('HumanAgent', () => {
         assert.equal(last(value)?.type, toilet.TOILET_ENTER);
 
         value.agent.receive(createMessage(toilet.TOILET_RELEASED, { id: ID }), value.context);
-        assert.equal(value.agent.state, 'активен');
+        assert.equal(value.agent.state, 'идёт домой');
         assert.equal(value.agent.toiletStatus, 'нет');
+        assert.equal(last(value)?.to, physics.PHYSICS_AGENT_ID);
+        assert.equal(last(value)?.type, physics.PHYSICS_MOVE_TO);
+        assert.deepEqual(last(value)?.payload, { id: ID, targetId: 'House-HumanAgent-1', replyTo: ID });
+
+        value.agent.receive(createMessage(physics.PHYSICS_ARRIVED, { id: ID, position: { x: 5, y: 0, z: 0 } }), value.context);
+        assert.equal(value.agent.state, 'активен');
+        assert.match(value.log.at(-1) ?? '', /вернулся домой/);
     });
 
     it('в очереди ждёт и не идёт сам', () => {

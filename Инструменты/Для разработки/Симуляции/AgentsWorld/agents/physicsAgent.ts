@@ -27,6 +27,8 @@ export const PHYSICS_LIST = 'physics-list';
 
 export const PHYSICS_STATE = 'physics-state';
 
+export const PHYSICS_PLACE = 'physics-place';
+
 export interface Point {
     readonly x: number;
     readonly y: number;
@@ -71,6 +73,7 @@ export interface PhysicsState {
     readonly arriveDistance: number;
     readonly bounds: Bounds;
     readonly bodies: readonly PhysicsBody[];
+    readonly objects: readonly PhysicsBody[];
     readonly moving: readonly string[];
 }
 
@@ -98,6 +101,7 @@ export class PhysicsAgent extends AbstractActor {
     readonly #arriveDistance: number;
     readonly #bounds: Bounds;
     readonly #bodies = new Map<string, Point>();
+    readonly #objects = new Map<string, Point>();
     readonly #moves = new Map<string, Move>();
 
     constructor(options: Readonly<Record<string, unknown>> = {}) {
@@ -116,6 +120,10 @@ export class PhysicsAgent extends AbstractActor {
 
     get bodyCount(): number {
         return this.#bodies.size;
+    }
+
+    get objectCount(): number {
+        return this.#objects.size;
     }
 
     get movingCount(): number {
@@ -158,11 +166,15 @@ export class PhysicsAgent extends AbstractActor {
             this.#reportState(message.payload, context);
             return;
         }
+        if (message.type === PHYSICS_PLACE) {
+            this.#place(message.payload, context);
+            return;
+        }
         context.log(`не знаю, что делать с сообщением «${message.type}»`);
     }
 
     protected override describe(): Readonly<Record<string, unknown>> {
-        return { bodies: this.#bodies.size, moving: this.#moves.size, speed: this.#speed };
+        return { bodies: this.#bodies.size, objects: this.#objects.size, moving: this.#moves.size, speed: this.#speed };
     }
 
     #register(payload: unknown, context: ActorContext): void {
@@ -178,6 +190,16 @@ export class PhysicsAgent extends AbstractActor {
         }
         this.#bodies.set(request.id, position);
         context.log(`тело «${request.id}» в точке ${formatPoint(position)}`);
+    }
+
+    #place(payload: unknown, context: ActorContext): void {
+        const request = readPlaceRequest(payload);
+        if (!this.#insideBounds(request.position)) {
+            context.log(`точка ${formatPoint(request.position)} вне границ мира, объект «${request.id}» не поставлен`);
+            return;
+        }
+        this.#objects.set(request.id, request.position);
+        context.log(`объект «${request.id}» в точке ${formatPoint(request.position)}`);
     }
 
     #requestMove(payload: unknown, context: ActorContext): void {
@@ -209,7 +231,7 @@ export class PhysicsAgent extends AbstractActor {
             this.#reply(request.replyTo, request.id, false, `тело «${request.id}» не зарегистрировано`, ZERO, context);
             return;
         }
-        const target = this.#bodies.get(request.targetId);
+        const target = this.#bodies.get(request.targetId) ?? this.#objects.get(request.targetId);
         if (target === undefined) {
             this.#reply(request.replyTo, request.id, false, `тело-цель «${request.targetId}» не зарегистрировано`, from, context);
             return;
@@ -225,7 +247,7 @@ export class PhysicsAgent extends AbstractActor {
 
     #reportPosition(payload: unknown, context: ActorContext): void {
         const request = readPositionRequest(payload);
-        const position = this.#bodies.get(request.id) ?? null;
+        const position = this.#bodies.get(request.id) ?? this.#objects.get(request.id) ?? null;
         const body: PhysicsBody | null = position === null ? null : { id: request.id, position };
         if (request.replyTo === null) {
             context.log(`спросили позицию «${request.id}» без обратного адреса`);
@@ -243,6 +265,7 @@ export class PhysicsAgent extends AbstractActor {
             arriveDistance: this.#arriveDistance,
             bounds: this.#bounds,
             bodies: [...this.#bodies.entries()].map(([id, position]) => ({ id, position })),
+            objects: [...this.#objects.entries()].map(([id, position]) => ({ id, position })),
             moving: [...this.#moves.keys()],
         };
         if (replyTo === null) {
@@ -300,7 +323,7 @@ export class PhysicsAgent extends AbstractActor {
         if (move.kind === 'segment') {
             return move.goal;
         }
-        return move.targetId === null ? null : this.#bodies.get(move.targetId) ?? null;
+        return move.targetId === null ? null : this.#bodies.get(move.targetId) ?? this.#objects.get(move.targetId) ?? null;
     }
 
     #blocked(from: Point, to: Point, ignore: readonly string[]): string | null {
@@ -376,6 +399,11 @@ function readRegister(payload: unknown): { id: string; position: Point | null } 
     const candidate = payload as { id?: unknown; position?: unknown } | undefined;
     const id = readId(candidate?.id);
     return { id, position: candidate?.position === undefined ? null : readPoint(candidate.position, 'position') };
+}
+
+function readPlaceRequest(payload: unknown): { id: string; position: Point } {
+    const candidate = payload as { id?: unknown; position?: unknown } | undefined;
+    return { id: readId(candidate?.id), position: readPoint(candidate?.position, 'position') };
 }
 
 function readMoveRequest(payload: unknown): { id: string; direction: Point; distance: number; replyTo: string | null } {

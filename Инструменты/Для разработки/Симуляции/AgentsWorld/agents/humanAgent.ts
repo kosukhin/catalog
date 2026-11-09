@@ -14,7 +14,7 @@ export const type = AGENT_TYPE;
 
 export const moduleUrl = import.meta.url;
 
-export type HumanState = 'спит' | 'активен' | 'принимает пищу' | 'идёт в туалет' | 'в туалете';
+export type HumanState = 'спит' | 'активен' | 'принимает пищу' | 'идёт в туалет' | 'в туалете' | 'идёт домой';
 
 type ToiletStatus = 'нет' | 'запросил' | 'идёт' | 'внутри';
 
@@ -55,6 +55,7 @@ export class HumanAgent extends AbstractActor {
     #houseTried = false;
     #toilet: ToiletStatus = 'нет';
     #walkingToToilet = false;
+    #walkingHome = false;
 
     constructor(options: Readonly<Record<string, unknown>> = {}) {
         super();
@@ -189,6 +190,10 @@ export class HumanAgent extends AbstractActor {
             this.#state = this.#toilet === 'внутри' ? 'в туалете' : 'идёт в туалет';
             return;
         }
+        if (this.#walkingHome) {
+            this.#state = 'идёт домой';
+            return;
+        }
         if (this.#phase === 'ночь') {
             this.#state = 'спит';
             return;
@@ -234,11 +239,23 @@ export class HumanAgent extends AbstractActor {
     #leaveToilet(context: ActorContext): void {
         this.#toilet = 'нет';
         this.#walkingToToilet = false;
-        this.#state = 'активен';
         context.log('вышел из туалета');
+        if (this.#house !== null) {
+            this.#walkingHome = true;
+            this.#state = 'идёт домой';
+            context.send(physics.PHYSICS_AGENT_ID, createMessage(physics.PHYSICS_MOVE_TO, { id: context.id, targetId: this.#house, replyTo: context.id }));
+            return;
+        }
+        this.#state = 'активен';
     }
 
     #onArrived(context: ActorContext): void {
+        if (this.#walkingHome) {
+            this.#walkingHome = false;
+            this.#state = 'активен';
+            context.log('вернулся домой');
+            return;
+        }
         if (!this.#walkingToToilet) {
             return;
         }
@@ -250,17 +267,24 @@ export class HumanAgent extends AbstractActor {
     }
 
     #onPhysicsReport(payload: unknown, context: ActorContext): void {
-        if (!this.#walkingToToilet) {
-            return;
-        }
         const report = payload as { accepted?: unknown; reason?: unknown } | undefined;
         if (report?.accepted === true) {
+            return;
+        }
+        const reason = typeof report?.reason === 'string' ? report.reason : 'отказ физики';
+        if (this.#walkingHome) {
+            this.#walkingHome = false;
+            this.#state = 'активен';
+            context.log(`домой не дойти: ${reason}`);
+            return;
+        }
+        if (!this.#walkingToToilet) {
             return;
         }
         this.#walkingToToilet = false;
         this.#toilet = 'нет';
         this.#state = 'активен';
-        context.log(`до туалета не дойти: ${typeof report?.reason === 'string' ? report.reason : 'отказ физики'}`);
+        context.log(`до туалета не дойти: ${reason}`);
         context.send(toilet.TOILET_AGENT_ID, createMessage(toilet.TOILET_LEAVE, { id: context.id }));
     }
 

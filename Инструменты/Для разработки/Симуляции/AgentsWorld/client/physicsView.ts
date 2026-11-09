@@ -42,6 +42,7 @@ export function stateRows(state: PhysicsState): ReadonlyArray<{ readonly label: 
         { label: 'скорость', value: `${state.speed} ед./с` },
         { label: 'шаг', value: `${state.stepSeconds} с` },
         { label: 'тел', value: String(state.bodies.length) },
+        { label: 'объектов', value: String(state.objects.length) },
         { label: 'движется', value: String(state.moving.length) },
         { label: 'мин. дистанция', value: String(state.minDistance) },
         { label: 'дистанция прибытия', value: String(state.arriveDistance) },

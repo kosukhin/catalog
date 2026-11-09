@@ -64,7 +64,8 @@
 |---|---|---|---|
 | `client/physicsView.ts` | [client-physicsView.md](client-physicsView.md) | `test/physicsView.test.ts` | 1 |
 | `client/physicsApi.ts` | [client-physicsApi.md](client-physicsApi.md) | `test/physicsApi.test.ts` | 1 |
-| `client/physicsScene.ts` | [client-physicsScene.md](client-physicsScene.md) | `test/physicsScene.test.ts` | 3 |
+| `client/physicsMotion.ts` | [client-physicsMotion.md](client-physicsMotion.md) | `test/physicsMotion.test.ts` | 0 |
+| `client/physicsScene.ts` | [client-physicsScene.md](client-physicsScene.md) | `test/physicsScene.test.ts` | 4 |
 | `client/physicsMain.ts` | [client-physicsMain.md](client-physicsMain.md) | `test/physicsMain.test.ts` | 3 |
 
 Правило «не больше четырёх импортов на модуль» соблюдено почти везде — предел виден

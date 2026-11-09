@@ -2,7 +2,7 @@ import { loadPhysicsState } from './physicsApi.ts';
 import { createScene } from './physicsScene.ts';
 import { stateRows } from './physicsView.ts';
 
-const POLL_MS = 700;
+const POLL_MS = 400;
 
 export function startPhysicsView(): void {
     const canvas = document.getElementById('scene');
