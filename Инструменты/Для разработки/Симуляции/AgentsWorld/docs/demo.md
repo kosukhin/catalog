@@ -12,8 +12,13 @@ import * as agents from '../agents/index.ts';
 const world = new World(new Map([
     [agents.dayAgent, { count: 1, options: { timeScale: 120 } }],
     [agents.humanCatalogAgent, 1],
+    [agents.physicsAgent, { count: 1, options: { spawnDistance: 5 } }],
+    [agents.bankAgent, 1],
+    [agents.houseAgent, 1],
+    [agents.bulletinBoardAgent, 1],
+    [agents.toiletAgent, 1],
     [agents.humanAgent, 3],
-    [agents.tickAgent, { count: 1, options: { intervalMs: 100, types: ['HumanAgent'] } }],
+    [agents.tickAgent, { count: 1, options: { intervalMs: 100, types: ['HumanAgent', 'PhysicsAgent', 'ToiletAgent'] } }],
 ]));
 ```
 

@@ -1,8 +1,9 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { takeSnapshot, type WorldQuery } from '../server/snapshot.ts';
+import { takePhysics, takeSnapshot, type WorldQuery } from '../server/snapshot.ts';
 import { STATUS_REPORT, type Message } from '../lib/protocol.ts';
 import { TIME_REQUEST, TIME_REPORT } from '../agents/dayAgent.ts';
+import { PHYSICS_LIST, PHYSICS_STATE } from '../agents/physicsAgent.ts';
 
 function createWorld(
     answers: Record<string, unknown>,
@@ -75,5 +76,44 @@ describe('snapshot', () => {
 
         assert.equal(snapshot.agents[0]?.alive, true);
         assert.equal(snapshot.clock, null);
+    });
+
+    it('забирает состояние физики у агента физики', async () => {
+        const state = {
+            speed: 5,
+            stepSeconds: 1,
+            minDistance: 1,
+            arriveDistance: 1,
+            bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 10, y: 10, z: 10 } },
+            bodies: [{ id: 'HumanAgent-1', position: { x: 5, y: 0, z: 0 } }],
+            moving: ['HumanAgent-1'],
+        };
+        const world: WorldQuery = {
+            running: true,
+            threadCount: 1,
+            actors: [{ id: 'physics', type: 'PhysicsAgent' }],
+            async ask(to: string, message: Message) {
+                assert.equal(to, 'physics');
+                assert.equal(message.type, PHYSICS_LIST);
+                return { type: PHYSICS_STATE, payload: state };
+            },
+        };
+
+        const result = await takePhysics(world, 'physics');
+
+        assert.deepEqual(result, state);
+    });
+
+    it('падает, если агент физики ответил не тем сообщением', async () => {
+        const world: WorldQuery = {
+            running: true,
+            threadCount: 1,
+            actors: [{ id: 'physics', type: 'PhysicsAgent' }],
+            async ask() {
+                return { type: 'status-report', payload: {} };
+            },
+        };
+
+        await assert.rejects(() => takePhysics(world, 'physics'), /вместо/);
     });
 });

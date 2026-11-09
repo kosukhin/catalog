@@ -28,11 +28,15 @@
 |---|---|---|---|
 | `agents/echoAgent.ts` | [echoAgent.md](echoAgent.md) | `test/echoAgent.test.ts` | 2 |
 | `agents/dayAgent.ts` | [dayAgent.md](dayAgent.md) | `test/dayAgent.test.ts` | 2 |
-| `agents/humanAgent.ts` | [humanAgent.md](humanAgent.md) | `test/humanAgent.test.ts` | 4 |
+| `agents/humanAgent.ts` | [humanAgent.md](humanAgent.md) | `test/humanAgent.test.ts` | 9 |
 | `agents/humanCatalogAgent.ts` | [humanCatalogAgent.md](humanCatalogAgent.md) | `test/humanCatalogAgent.test.ts` | 2 |
-| `agents/tickAgent.ts` | [tickAgent.md](tickAgent.md) | `test/tickAgent.test.ts` | 2 |
 | `agents/physicsAgent.ts` | [physicsAgent.md](physicsAgent.md) | `test/physicsAgent.test.ts` | 2 |
-| `agents/index.ts` | [agents-index.md](agents-index.md) | `test/agents-index.test.ts` | 4 |
+| `agents/bankAgent.ts` | [bankAgent.md](bankAgent.md) | `test/bankAgent.test.ts` | 2 |
+| `agents/houseAgent.ts` | [houseAgent.md](houseAgent.md) | `test/houseAgent.test.ts` | 4 |
+| `agents/bulletinBoardAgent.ts` | [bulletinBoardAgent.md](bulletinBoardAgent.md) | `test/bulletinBoardAgent.test.ts` | 3 |
+| `agents/toiletAgent.ts` | [toiletAgent.md](toiletAgent.md) | `test/toiletAgent.test.ts` | 4 |
+| `agents/tickAgent.ts` | [tickAgent.md](tickAgent.md) | `test/tickAgent.test.ts` | 3 |
+| `agents/index.ts` | [agents-index.md](agents-index.md) | `test/agents-index.test.ts` | 9 |
 
 ## Сервер и дашборд (`server/`)
 
@@ -50,7 +54,22 @@
 |---|---|---|---|
 | `scripts/demo.ts` | [demo.md](demo.md) | — (запускается вручную) | 2 |
 
-Правило «не больше четырёх импортов на модуль» соблюдено во всех файлах: предел
-виден в последнем столбце. Направление зависимостей — `agents/ → lib/`: в `lib/`
-нет агентов моделей. Исключение одно — служебный `lib/rosterAgent.ts`: он часть
-ядра и поднимается `World` автоматически.
+## Клиент рендеринга (`client/`) — TypeScript + three.js
+
+Собирается в `server/public/physics.js` командой `npm run build:client` (`npm start`
+собирает автоматически через `prestart`). Страница — `server/public/physics.html`,
+ссылка на неё есть на главном дашборде. Импорты считаются как в остальных модулях.
+
+| Модуль | Документация | Тест | Импортов |
+|---|---|---|---|
+| `client/physicsView.ts` | [client-physicsView.md](client-physicsView.md) | `test/physicsView.test.ts` | 1 |
+| `client/physicsApi.ts` | [client-physicsApi.md](client-physicsApi.md) | `test/physicsApi.test.ts` | 1 |
+| `client/physicsScene.ts` | [client-physicsScene.md](client-physicsScene.md) | `test/physicsScene.test.ts` | 3 |
+| `client/physicsMain.ts` | [client-physicsMain.md](client-physicsMain.md) | `test/physicsMain.test.ts` | 3 |
+
+Правило «не больше четырёх импортов на модуль» соблюдено почти везде — предел виден
+в последнем столбце. Два отступления: `agents/humanAgent.ts` (9) — оркестратор дел и
+походов человека, и `agents/index.ts` (9) — список всех агентов; оба можно разбить на
+подмодули, если понадобится. Направление зависимостей — `agents/ → lib/`: в `lib/` нет
+агентов моделей. Исключение одно — служебный `lib/rosterAgent.ts`: он часть ядра и
+поднимается `World` автоматически.

@@ -8,15 +8,20 @@
     "start": "node server/index.ts",
     "demo": "node scripts/demo.ts",
     "test": "node --test",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build:client": "esbuild client/physicsMain.ts --bundle --outfile=server/public/physics.js --format=esm --target=es2023 --log-level=warning",
+    "prestart": "npm run build:client"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
     "@types/node": "^22.20.5",
+    "@types/three": "^0.187.0",
+    "esbuild": "^0.28.2",
     "typescript": "^7.0.2"
   },
   "license": "ISC",
   "dependencies": {
-    "express": "^5.3.0"
+    "express": "^5.3.0",
+    "three": "^0.187.0"
   }
 }

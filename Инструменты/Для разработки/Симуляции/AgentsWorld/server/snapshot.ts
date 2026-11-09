@@ -1,5 +1,6 @@
 import { createMessage, STATUS_REQUEST, WORLD_ID, type ActorId, type Message, type StatusReport } from '../lib/protocol.ts';
 import { TIME_REQUEST, type TimeReport } from '../agents/dayAgent.ts';
+import { PHYSICS_LIST, PHYSICS_STATE, type PhysicsState } from '../agents/physicsAgent.ts';
 
 export interface WorldQuery {
     readonly running: boolean;
@@ -65,4 +66,12 @@ function countByType(agents: readonly AgentSnapshot[]): Record<string, number> {
         counts[agent.type] = (counts[agent.type] ?? 0) + 1;
     }
     return counts;
+}
+
+export async function takePhysics(world: WorldQuery, physicsId: string, timeoutMs = 500): Promise<PhysicsState> {
+    const reply = await world.ask(physicsId, createMessage(PHYSICS_LIST, { replyTo: WORLD_ID }), timeoutMs);
+    if (reply.type !== PHYSICS_STATE) {
+        throw new Error(`агент ${physicsId} ответил «${reply.type}» вместо «${PHYSICS_STATE}»`);
+    }
+    return reply.payload as PhysicsState;
 }

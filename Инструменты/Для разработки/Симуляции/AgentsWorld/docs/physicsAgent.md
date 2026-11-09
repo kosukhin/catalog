@@ -14,8 +14,8 @@
 | `moduleUrl`, `createAgent` | контракт модуля агента |
 | `PhysicsAgent` | класс |
 | `PHYSICS_AGENT_ID` | `'PhysicsAgent-1'` |
-| `PHYSICS_REGISTER`, `PHYSICS_MOVE`, `PHYSICS_MOVE_TO`, `PHYSICS_REPORT`, `PHYSICS_ARRIVED`, `PHYSICS_POSITION`, `PHYSICS_BODY` | типы сообщений |
-| `Point`, `PhysicsBody`, `Bounds`, `MoveReport`, `ArrivalReport`, `PhysicsAgentOptions` | типы данных |
+| `PHYSICS_REGISTER`, `PHYSICS_MOVE`, `PHYSICS_MOVE_TO`, `PHYSICS_REPORT`, `PHYSICS_ARRIVED`, `PHYSICS_POSITION`, `PHYSICS_BODY`, `PHYSICS_LIST`, `PHYSICS_STATE` | типы сообщений |
+| `Point`, `PhysicsBody`, `Bounds`, `MoveReport`, `ArrivalReport`, `PhysicsState`, `PhysicsAgentOptions` | типы данных |
 
 ## Настройки
 
@@ -24,6 +24,7 @@
 | `speed` | 5 | скорость перемещения, единиц в секунду |
 | `stepSeconds` | 1 | сколько секунд мира проходит за один `tick` |
 | `minDistance` | 1 | минимальная дистанция между телами (коллизия) |
+| `spawnDistance` | = `minDistance` | шаг поиска свободной точки при регистрации без позиции (разнос тел) |
 | `arriveDistance` | 1 | на каком расстоянии от цели считать, что дошёл |
 | `bounds` | `0…100` по x/y/z | границы мира |
 
@@ -39,7 +40,9 @@
 | `physics-report` | `MoveReport` | ответ: `accepted`, `reason`, текущая точка |
 | `physics-arrived` | `ArrivalReport` | тело дошло (или остановилось с причиной) |
 | `physics-position` | `{ id, replyTo }` | вопрос о позиции |
-| `physics-body` | `{ body }` | ответ с телом или `null` |
+| `physics-body` | `{ id, body }` | ответ: для кого спрашивали и тело или `null` |
+| `physics-list` | `{ replyTo }` | запрос всего состояния физики |
+| `physics-state` | `PhysicsState` | ответ: `speed`, `stepSeconds`, `minDistance`, `arriveDistance`, `bounds`, `bodies`, `moving` |
 
 `tick` (из `lib/protocol.ts`) запускает шаг физики: кто-то должен будить
 `PhysicsAgent` — например, `TickAgent` с типом `PhysicsAgent` в настройках.
@@ -79,4 +82,5 @@ context.send(PHYSICS_AGENT_ID, createMessage(PHYSICS_MOVE_TO, { id: context.id, 
 `test/physicsAgent.test.ts` — контракт модуля, регистрация с точкой и без, границы,
 движение по направлению и дистанции, отказ за границы и на наложение, путь к другому
 телу, отказы на незарегистрированное тело/цель и нулевое направление, вопрос о
-позиции, состояние для дашборда, незнакомое сообщение, проверка настроек.
+позиции, полное состояние физики, состояние для дашборда, незнакомое сообщение,
+проверка настроек.

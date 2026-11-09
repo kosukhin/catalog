@@ -14,6 +14,8 @@ const {
     PHYSICS_ARRIVED,
     PHYSICS_POSITION,
     PHYSICS_BODY,
+    PHYSICS_LIST,
+    PHYSICS_STATE,
 } = physics;
 
 interface Fixture {
@@ -171,10 +173,10 @@ describe('PhysicsAgent', () => {
         agent.receive(createMessage(PHYSICS_REGISTER, { id: 'A', position: { x: 1, y: 1, z: 1 } }), context);
 
         agent.receive(createMessage(PHYSICS_POSITION, { id: 'A', replyTo: 'мир' }), context);
-        assert.deepEqual(lastOf(sent, PHYSICS_BODY)?.payload, { body: { id: 'A', position: { x: 1, y: 1, z: 1 } } });
+        assert.deepEqual(lastOf(sent, PHYSICS_BODY)?.payload, { id: 'A', body: { id: 'A', position: { x: 1, y: 1, z: 1 } } });
 
         agent.receive(createMessage(PHYSICS_POSITION, { id: 'нет', replyTo: 'мир' }), context);
-        assert.deepEqual(lastOf(sent, PHYSICS_BODY)?.payload, { body: null });
+        assert.deepEqual(lastOf(sent, PHYSICS_BODY)?.payload, { id: 'нет', body: null });
     });
 
     it('на запрос состояния отдаёт тела, движения и скорость', () => {
@@ -205,6 +207,33 @@ describe('PhysicsAgent', () => {
             /bounds.max/,
         );
         assert.throws(() => new PhysicsAgent({ bounds: { min: { x: 0, y: 0, z: 0 } } }), /bounds.max.x/);
+    });
+
+    it('отдаёт полное состояние физики по запросу', () => {
+        const agent = new PhysicsAgent({ bounds: SMALL, speed: 7 });
+        const { context, sent } = createContext();
+        agent.receive(createMessage(PHYSICS_REGISTER, { id: 'A', position: { x: 1, y: 2, z: 3 } }), context);
+        agent.receive(createMessage(PHYSICS_REGISTER, { id: 'B', position: { x: 4, y: 5, z: 6 } }), context);
+        agent.receive(createMessage(PHYSICS_MOVE, { id: 'A', direction: { x: 1, y: 0, z: 0 }, distance: 1, replyTo: 'мир' }), context);
+
+        agent.receive(createMessage(PHYSICS_LIST, { replyTo: 'мир' }), context);
+
+        const report = lastOf(sent, PHYSICS_STATE);
+        assert.equal(report?.to, 'мир');
+        const state = report?.payload as { speed: number; moving: string[]; bodies: Array<{ id: string }>; bounds: unknown };
+        assert.equal(state.speed, 7);
+        assert.deepEqual(state.moving, ['A']);
+        assert.deepEqual(state.bodies.map((body) => body.id), ['A', 'B']);
+        assert.deepEqual(state.bounds, SMALL);
+    });
+
+    it('на запрос состояния без обратного адреса пишет в лог', () => {
+        const agent = new PhysicsAgent({ bounds: SMALL });
+        const { context, log } = createContext();
+
+        agent.receive(createMessage(PHYSICS_LIST, {}), context);
+
+        assert.match(log.at(-1) ?? '', /без обратного адреса/);
     });
 });
 

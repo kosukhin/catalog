@@ -10,16 +10,26 @@ describe('server index', () => {
         try {
             const summary = await (await fetch(`${running.url}/api/world`)).json();
             assert.equal(summary.running, true);
-            assert.equal(summary.total, 5, 'два человека плюс время, каталог и тикер');
-            assert.deepEqual(summary.byType, { DayAgent: 1, HumanCatalogAgent: 1, HumanAgent: 2, TickAgent: 1 });
-            const agents = await (await fetch(`${running.url}/api/agents?pageSize=10`)).json();
+            assert.equal(summary.total, 10, 'два человека плюс время, каталог, физика, банк, дом, доска и туалет и тикер');
+            assert.deepEqual(summary.byType, {
+                DayAgent: 1,
+                HumanCatalogAgent: 1,
+                PhysicsAgent: 1,
+                BankAgent: 1,
+                HouseAgent: 1,
+                BulletinBoardAgent: 1,
+                ToiletAgent: 1,
+                HumanAgent: 2,
+                TickAgent: 1,
+            });
+            const agents = await (await fetch(`${running.url}/api/agents?pageSize=20`)).json();
             const clock = agents.items.find((agent: { type: string }) => agent.type === 'DayAgent');
             assert.equal(clock.details.timeScale, 800, 'время идёт в 800 раз быстрее');
 
             const human = agents.items.find((agent: { type: string }) => agent.type === 'HumanAgent');
             assert.equal(human.alive, true);
             assert.equal(typeof human.details.name, 'string');
-            assert.ok(['спит', 'активен', 'в туалете', 'принимает пищу'].includes(human.details.state));
+            assert.ok(['спит', 'активен', 'в туалете', 'идёт в туалет', 'принимает пищу'].includes(human.details.state));
 
             const html = await (await fetch(running.url)).text();
             assert.match(html, /AgentsWorld — дашборд/);

@@ -8,6 +8,7 @@ export interface ServerConfig {
     readonly timeScale: number;
     readonly tickMs: number;
     readonly clockId: string;
+    readonly physicsId: string;
     readonly population: Map<AgentPlugin, number | PopulationEntry>;
 }
 
@@ -24,11 +25,17 @@ export function createServerConfig(env: Readonly<Record<string, string | undefin
         timeScale,
         tickMs,
         clockId: agents.dayAgent.DAY_AGENT_ID,
+        physicsId: agents.physicsAgent.PHYSICS_AGENT_ID,
         population: new Map<AgentPlugin, number | PopulationEntry>([
             [agents.dayAgent, { count: 1, options: { timeScale } }],
             [agents.humanCatalogAgent, 1],
+            [agents.physicsAgent, { count: 1, options: { spawnDistance: 5 } }],
+            [agents.bankAgent, 1],
+            [agents.houseAgent, 1],
+            [agents.bulletinBoardAgent, 1],
+            [agents.toiletAgent, 1],
             [agents.humanAgent, humans],
-            [agents.tickAgent, { count: 1, options: { intervalMs: tickMs, types: [agents.humanAgent.type] } }],
+            [agents.tickAgent, { count: 1, options: { intervalMs: tickMs, types: [agents.humanAgent.type, agents.physicsAgent.type, agents.toiletAgent.type] } }],
         ]),
     };
 }

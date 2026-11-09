@@ -23,6 +23,10 @@ export const PHYSICS_POSITION = 'physics-position';
 
 export const PHYSICS_BODY = 'physics-body';
 
+export const PHYSICS_LIST = 'physics-list';
+
+export const PHYSICS_STATE = 'physics-state';
+
 export interface Point {
     readonly x: number;
     readonly y: number;
@@ -60,6 +64,16 @@ export interface ArrivalReport {
     readonly reason: string | null;
 }
 
+export interface PhysicsState {
+    readonly speed: number;
+    readonly stepSeconds: number;
+    readonly minDistance: number;
+    readonly arriveDistance: number;
+    readonly bounds: Bounds;
+    readonly bodies: readonly PhysicsBody[];
+    readonly moving: readonly string[];
+}
+
 const DEFAULT_SPEED = 5;
 const DEFAULT_STEP_SECONDS = 1;
 const DEFAULT_MIN_DISTANCE = 1;
@@ -80,6 +94,7 @@ export class PhysicsAgent extends AbstractActor {
     readonly #speed: number;
     readonly #stepSeconds: number;
     readonly #minDistance: number;
+    readonly #spawnDistance: number;
     readonly #arriveDistance: number;
     readonly #bounds: Bounds;
     readonly #bodies = new Map<string, Point>();
@@ -90,6 +105,7 @@ export class PhysicsAgent extends AbstractActor {
         this.#speed = readNumberOption(options.speed, DEFAULT_SPEED, 'speed');
         this.#stepSeconds = readNumberOption(options.stepSeconds, DEFAULT_STEP_SECONDS, 'stepSeconds');
         this.#minDistance = readNumberOption(options.minDistance, DEFAULT_MIN_DISTANCE, 'minDistance');
+        this.#spawnDistance = options.spawnDistance === undefined ? this.#minDistance : readPositive(options.spawnDistance, 'spawnDistance');
         this.#arriveDistance = readNumberOption(options.arriveDistance, DEFAULT_ARRIVE_DISTANCE, 'arriveDistance');
         this.#bounds = readBounds(options.bounds, DEFAULT_BOUNDS);
     }
@@ -136,6 +152,10 @@ export class PhysicsAgent extends AbstractActor {
         }
         if (message.type === PHYSICS_POSITION) {
             this.#reportPosition(message.payload, context);
+            return;
+        }
+        if (message.type === PHYSICS_LIST) {
+            this.#reportState(message.payload, context);
             return;
         }
         context.log(`не знаю, что делать с сообщением «${message.type}»`);
@@ -211,7 +231,25 @@ export class PhysicsAgent extends AbstractActor {
             context.log(`спросили позицию «${request.id}» без обратного адреса`);
             return;
         }
-        context.send(request.replyTo, createMessage(PHYSICS_BODY, { body }));
+        context.send(request.replyTo, createMessage(PHYSICS_BODY, { id: request.id, body }));
+    }
+
+    #reportState(payload: unknown, context: ActorContext): void {
+        const replyTo = readReplyTo((payload as { replyTo?: unknown } | undefined)?.replyTo);
+        const state: PhysicsState = {
+            speed: this.#speed,
+            stepSeconds: this.#stepSeconds,
+            minDistance: this.#minDistance,
+            arriveDistance: this.#arriveDistance,
+            bounds: this.#bounds,
+            bodies: [...this.#bodies.entries()].map(([id, position]) => ({ id, position })),
+            moving: [...this.#moves.keys()],
+        };
+        if (replyTo === null) {
+            context.log('спросили состояние физики без обратного адреса');
+            return;
+        }
+        context.send(replyTo, createMessage(PHYSICS_STATE, state));
     }
 
     #advance(context: ActorContext): void {
@@ -303,14 +341,14 @@ export class PhysicsAgent extends AbstractActor {
     #freeSpot(): Point | null {
         const { min, max } = this.#bounds;
         const counts = {
-            x: Math.floor((max.x - min.x) / this.#minDistance),
-            y: Math.floor((max.y - min.y) / this.#minDistance),
-            z: Math.floor((max.z - min.z) / this.#minDistance),
+            x: Math.floor((max.x - min.x) / this.#spawnDistance),
+            y: Math.floor((max.y - min.y) / this.#spawnDistance),
+            z: Math.floor((max.z - min.z) / this.#spawnDistance),
         };
         for (let iz = 0; iz <= counts.z; iz += 1) {
             for (let iy = 0; iy <= counts.y; iy += 1) {
                 for (let ix = 0; ix <= counts.x; ix += 1) {
-                    const point = { x: min.x + ix * this.#minDistance, y: min.y + iy * this.#minDistance, z: min.z + iz * this.#minDistance };
+                    const point = { x: min.x + ix * this.#spawnDistance, y: min.y + iy * this.#spawnDistance, z: min.z + iz * this.#spawnDistance };
                     if (this.#nearest(point, []) === null) {
                         return point;
                     }

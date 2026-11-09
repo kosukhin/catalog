@@ -70,8 +70,12 @@ lib/                  ядро мира (+ служебный реестр) — 
 agents/               агенты — подключаются снаружи
 ├── dayAgent.ts       время в мире: число, день недели, день/ночь (единственный)
 ├── humanCatalogAgent.ts  каталог людей с поиском по свойствам (единственный)
-├── humanAgent.ts     человек: имя, пол, профессия, состояние по времени
+├── humanAgent.ts     человек: ищет банк, покупает дом, ходит в туалет
 ├── physicsAgent.ts   физика мира: точки и высоты тел, перемещение по запросу
+├── bankAgent.ts      банк: счёт с депозитом 1000 и списания
+├── houseAgent.ts     дома: продаёт дом за 800 в точке человека
+├── bulletinBoardAgent.ts  доска объявлений: ищет агентов по типу через реестр
+├── toiletAgent.ts    туалет: одно место, очередь, 20 игровых минут
 ├── tickAgent.ts      будильник мира: шлёт импульсы tick агентам нужных типов
 ├── index.ts          все агенты мира одним списком
 └── echoAgent.ts      простейший печатающий агент (для проверки рантайма)
@@ -117,7 +121,12 @@ PORT=8080 HUMANS=50 TIME_SCALE=60 TICK_MS=500 npm start
 |---|---|---|
 | `DayAgent` | единственный источник времени; идёт в 10× быстрее реального (`timeScale`) | [dayAgent.md](docs/dayAgent.md) |
 | `HumanCatalogAgent` | единственный каталог: поиск людей по имени, полу, профессии | [humanCatalogAgent.md](docs/humanCatalogAgent.md) |
-| `HumanAgent` | человек со свойствами и состоянием: спит ночью, днём активен | [humanAgent.md](docs/humanAgent.md) |
+| `HumanAgent` | человек: днём находит банк, открывает счёт, покупает дом, ходит в туалет | [humanAgent.md](docs/humanAgent.md) |
+| `PhysicsAgent` | физика мира: хранит точки и высоты тел, перемещает тела по запросу | [physicsAgent.md](docs/physicsAgent.md) |
+| `BankAgent` | банк: счёт с депозитом 1000, списание за дом | [bankAgent.md](docs/bankAgent.md) |
+| `HouseAgent` | дома: продаёт дом за 800 и ставит его в точке человека | [houseAgent.md](docs/houseAgent.md) |
+| `BulletinBoardAgent` | доска объявлений: находит агентов нужного типа через реестр | [bulletinBoardAgent.md](docs/bulletinBoardAgent.md) |
+| `ToiletAgent` | туалет: одно место, очередь, 20 игровых минут внутри | [toiletAgent.md](docs/toiletAgent.md) |
 | `TickAgent` | будильник мира: шлёт `tick` агентам нужных типов (адреса берёт у реестра) | [tickAgent.md](docs/tickAgent.md) |
 | `RosterAgent` (служебный) | реестр агентов мира: поиск по типу и подписка на новых; поднимает `World` | [rosterAgent.md](docs/rosterAgent.md) |
 

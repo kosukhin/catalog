@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { createApp } from '../server/app.ts';
 import { createServerConfig } from '../server/config.ts';
 import type { WorldQuery } from '../server/snapshot.ts';
+import { PHYSICS_STATE } from '../agents/physicsAgent.ts';
 
 function createWorld(states: Record<string, Record<string, unknown>>): WorldQuery {
     return {
@@ -107,6 +108,32 @@ describe('express app', () => {
             assert.equal(response.status, 200);
             assert.match(html, /AgentsWorld — дашборд/);
             assert.match(html, /\/api\/agents/);
+        });
+    });
+
+    it('отдаёт состояние физики', async () => {
+        const state = {
+            speed: 5,
+            stepSeconds: 1,
+            minDistance: 1,
+            arriveDistance: 1,
+            bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 10, y: 10, z: 10 } },
+            bodies: [{ id: 'HumanAgent-1', position: { x: 5, y: 0, z: 0 } }],
+            moving: ['HumanAgent-1'],
+        };
+        const world: WorldQuery = {
+            running: true,
+            threadCount: 1,
+            actors: [{ id: 'PhysicsAgent-1', type: 'PhysicsAgent' }],
+            async ask() {
+                return { type: PHYSICS_STATE, payload: state };
+            },
+        };
+
+        await withApp(world, async (url) => {
+            const json = await (await fetch(`${url}/api/physics`)).json();
+
+            assert.deepEqual(json, state);
         });
     });
 });

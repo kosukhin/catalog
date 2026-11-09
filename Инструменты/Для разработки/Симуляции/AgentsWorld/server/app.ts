@@ -1,6 +1,6 @@
 import express from 'express';
 import { fileURLToPath } from 'node:url';
-import { takeSnapshot, type AgentSnapshot, type WorldQuery } from './snapshot.ts';
+import { takePhysics, takeSnapshot, type AgentSnapshot, type WorldQuery } from './snapshot.ts';
 import type { ServerConfig } from './config.ts';
 
 const PUBLIC_DIR = fileURLToPath(new URL('./public/', import.meta.url));
@@ -42,6 +42,14 @@ export function createApp(world: WorldQuery, config: ServerConfig): express.Expr
                 total: filtered.length,
                 items: filtered.slice(start, start + pageSize),
             });
+        } catch (error) {
+            response.status(500).json({ error: messageOf(error) });
+        }
+    });
+
+    app.get('/api/physics', async (_request, response) => {
+        try {
+            response.json(await takePhysics(world, config.physicsId));
         } catch (error) {
             response.status(500).json({ error: messageOf(error) });
         }

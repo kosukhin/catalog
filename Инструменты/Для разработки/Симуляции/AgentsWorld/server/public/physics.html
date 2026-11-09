@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AgentsWorld — физика</title>
+    <style>
+        :root { color-scheme: dark; }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            height: 100vh;
+            display: grid;
+            grid-template-rows: auto 1fr;
+            font: 14px/1.5 -apple-system, Segoe UI, Roboto, Ubuntu, sans-serif;
+            background: #0f1115;
+            color: #e5e7eb;
+        }
+        header { display: flex; align-items: baseline; gap: 12px; padding: 10px 16px; border-bottom: 1px solid #232838; }
+        header a { color: #93c5fd; text-decoration: none; }
+        #status { color: #9ca3af; font-size: 12px; margin-left: auto; }
+        main { position: relative; min-height: 0; }
+        canvas { display: block; width: 100%; height: 100%; }
+        #hud {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            min-width: 215px;
+            padding: 10px 12px;
+            background: rgba(17, 20, 28, .82);
+            border: 1px solid #232838;
+            border-radius: 10px;
+        }
+        #hud .row { display: flex; justify-content: space-between; gap: 14px; padding: 1px 0; }
+        #hud .row span { color: #9ca3af; }
+        #hud .row b { font-weight: 600; }
+        .hint { position: absolute; bottom: 12px; left: 12px; color: #6b7280; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <header>
+        <b>AgentsWorld · физика</b>
+        <a href="/">← дашборд</a>
+        <span id="status">загружаю…</span>
+    </header>
+    <main>
+        <canvas id="scene"></canvas>
+        <div id="hud"></div>
+        <div class="hint">ЛКМ — поворот · колесо — приближение</div>
+    </main>
+    <script type="module" src="/physics.js"></script>
+</body>
+</html>

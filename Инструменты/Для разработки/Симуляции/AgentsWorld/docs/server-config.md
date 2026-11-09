@@ -6,7 +6,7 @@
 
 | Имя | Назначение |
 |---|---|
-| `ServerConfig` | `port`, `humans`, `pageSize`, `timeScale`, `tickMs`, `clockId`, `population` |
+| `ServerConfig` | `port`, `humans`, `pageSize`, `timeScale`, `tickMs`, `clockId`, `physicsId`, `population` |
 | `createServerConfig(env)` | собирает конфигурацию из окружения |
 
 ## Переменные окружения
@@ -26,10 +26,15 @@
 
 ```js
 population = new Map([
-    [dayAgent, { count: 1, options: { timeScale } }],  // время: единственный, с темпом из окружения
-    [humanCatalogAgent, 1],                            // каталог людей — единственный
-    [humanAgent, humans],                              // люди
-    [tickAgent, { count: 1, options: { intervalMs: tickMs, types: ['HumanAgent'] } }],
+    [dayAgent, { count: 1, options: { timeScale } }],            // время
+    [humanCatalogAgent, 1],                                      // каталог людей
+    [physicsAgent, { count: 1, options: { spawnDistance: 5 } }], // физика: разнос точек
+    [bankAgent, 1],                                              // банк
+    [houseAgent, 1],                                             // дома
+    [bulletinBoardAgent, 1],                                     // доска объявлений
+    [toiletAgent, 1],                                            // туалет
+    [humanAgent, humans],                                        // люди
+    [tickAgent, { count: 1, options: { intervalMs: tickMs, types: ['HumanAgent', 'PhysicsAgent', 'ToiletAgent'] } }],
 ]);
 ```
 
@@ -37,14 +42,16 @@ population = new Map([
 лежат в `options` записи состава мира, а не зашиты в код агента. Так же можно
 передать любые другие настройки.
 
-Тикеру передаются **типы** (`types: ['HumanAgent']`), а не список адресов: адреса
-`TickAgent` берёт у служебного реестра (`lib/rosterAgent.ts`), который `World`
-поднимает сам. Поэтому конфигурации не нужно знать, сколько людей и как они
-называются.
+Тикеру передаются **типы** (`types: ['HumanAgent', 'PhysicsAgent', 'ToiletAgent']`), а не
+список адресов: адреса `TickAgent` берёт у служебного реестра (`lib/rosterAgent.ts`),
+который `World` поднимает сам. Поэтому конфигурации не нужно знать, сколько людей и как
+они называются. Физику и туалет тикер тоже будит (`tick` двигает тела и отсчитывает
+игровое время в туалете).
 
 `clockId` — адрес агента, у которого приложение спрашивает виртуальное время
 (`DayAgent-1`). Он лежит в конфигурации, чтобы `snapshot.ts` и `app.ts` не знали
-про `DayAgent` напрямую.
+про `DayAgent` напрямую. `physicsId` — адрес агента физики (`PhysicsAgent-1`) для
+маршрута `/api/physics`; по той же причине приложение не знает про `PhysicsAgent`.
 
 ## Тест
 

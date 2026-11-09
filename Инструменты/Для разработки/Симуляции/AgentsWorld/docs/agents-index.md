@@ -9,8 +9,13 @@ import * as agents from '../agents/index.ts';
 
 new World(new Map([
     [agents.dayAgent, { count: 1, options: { timeScale: 10 } }],
+    [agents.physicsAgent, { count: 1, options: { spawnDistance: 5 } }],
+    [agents.bankAgent, 1],
+    [agents.houseAgent, 1],
+    [agents.bulletinBoardAgent, 1],
+    [agents.toiletAgent, 1],
     [agents.humanAgent, 12],
-    [agents.tickAgent, { count: 1, options: { intervalMs: 1000, types: ['HumanAgent'] } }],
+    [agents.tickAgent, { count: 1, options: { intervalMs: 1000, types: ['HumanAgent', 'PhysicsAgent', 'ToiletAgent'] } }],
 ]));
 ```
 
@@ -21,6 +26,11 @@ new World(new Map([
 | `dayAgent` | `agents/dayAgent.ts` |
 | `humanAgent` | `agents/humanAgent.ts` |
 | `humanCatalogAgent` | `agents/humanCatalogAgent.ts` |
+| `physicsAgent` | `agents/physicsAgent.ts` |
+| `bankAgent` | `agents/bankAgent.ts` |
+| `houseAgent` | `agents/houseAgent.ts` |
+| `bulletinBoardAgent` | `agents/bulletinBoardAgent.ts` |
+| `toiletAgent` | `agents/toiletAgent.ts` |
 | `tickAgent` | `agents/tickAgent.ts` |
 
 `echoAgent` сюда не входит: это тестовый агент для проверки рантайма, в мире из

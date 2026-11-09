@@ -1,24 +1,30 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import * as human from '../agents/humanAgent.ts';
-import { DAY_AGENT_ID, TIME_REPORT } from '../agents/dayAgent.ts';
-import { CATALOG_REGISTER, CATALOG_RESULT, CATALOG_SEARCH, HUMAN_CATALOG_AGENT_ID } from '../agents/humanCatalogAgent.ts';
+import * as day from '../agents/dayAgent.ts';
+import * as catalog from '../agents/humanCatalogAgent.ts';
+import * as physics from '../agents/physicsAgent.ts';
+import * as bulletin from '../agents/bulletinBoardAgent.ts';
+import * as bank from '../agents/bankAgent.ts';
+import * as house from '../agents/houseAgent.ts';
+import * as toilet from '../agents/toiletAgent.ts';
 import { createMessage, TICK } from '../lib/protocol.ts';
 import type { ActorContext } from '../lib/actor.ts';
 
-const { HumanAgent } = human;
+const ID = 'HumanAgent-1';
 
 interface Fixture {
+    readonly agent: human.HumanAgent;
     readonly context: ActorContext;
     readonly log: string[];
     readonly sent: Array<{ to: string; type: string; payload: unknown }>;
 }
 
-function createContext(id = 'HumanAgent-1'): Fixture {
+function fixture(roll = 0.9): Fixture {
     const log: string[] = [];
     const sent: Array<{ to: string; type: string; payload: unknown }> = [];
     const context: ActorContext = {
-        id,
+        id: ID,
         send: (to, message): void => {
             sent.push({ to, type: message.type, payload: message.payload });
         },
@@ -26,163 +32,187 @@ function createContext(id = 'HumanAgent-1'): Fixture {
             log.push(text);
         },
     };
-    return { context, log, sent };
+    const agent = new human.HumanAgent({ name: 'Иван', gender: 'мужчина', profession: 'врач', random: () => roll });
+    return { agent, context, log, sent };
 }
 
-function createHuman(roll = 0.9): InstanceType<typeof HumanAgent> {
-    return new HumanAgent({ name: 'Иван', gender: 'мужчина', profession: 'врач', random: () => roll });
+function last(fixtureValue: Fixture): { to: string; type: string; payload: unknown } | undefined {
+    return fixtureValue.sent.at(-1);
+}
+
+function withAccountAndHouse(value: Fixture): void {
+    value.agent.receive(createMessage(day.TIME_REPORT, { phase: 'день' }), value.context);
+    value.agent.receive(createMessage(bulletin.BULLETIN_RESULT, { type: 'BankAgent', ids: ['BankAgent-1'] }), value.context);
+    value.agent.receive(createMessage(bank.BANK_ACCOUNT, { owner: ID, balance: 1000 }), value.context);
+    value.agent.receive(createMessage(day.TIME_REPORT, { phase: 'день' }), value.context);
+    value.agent.receive(
+        createMessage(house.HOUSE_REPORT, { owner: ID, houseId: 'House-HumanAgent-1', position: { x: 5, y: 0, z: 0 }, accepted: true, reason: null }),
+        value.context,
+    );
 }
 
 describe('HumanAgent', () => {
     it('модуль сообщает тип, адрес и умеет создавать агента', () => {
         assert.equal(human.type, 'HumanAgent');
         assert.match(human.moduleUrl, /agents\/humanAgent\.ts$/);
-        assert.equal(human.createAgent('HumanAgent-1', { name: 'Иван', gender: 'мужчина' }).name, 'Иван');
-        assert.equal(createHuman().type, 'HumanAgent');
+        assert.equal(human.createAgent(ID, { name: 'Иван', gender: 'мужчина' }).name, 'Иван');
     });
 
-    it('при старте регистрируется в каталоге и спрашивает время', () => {
-        const agent = createHuman();
-        const { context, log, sent } = createContext();
+    it('при старте идёт в каталог, встаёт в пространство и спрашивает время', () => {
+        const value = fixture();
 
-        agent.start(context);
+        value.agent.start(value.context);
 
-        assert.match(log[0] ?? '', /я Иван, мужчина, врач/);
-        assert.deepEqual(
-            sent.map((item) => `${item.to}:${item.type}`),
-            [`${HUMAN_CATALOG_AGENT_ID}:${CATALOG_REGISTER}`, `${DAY_AGENT_ID}:time-request`],
-        );
-        assert.deepEqual(sent[0]?.payload, { id: 'HumanAgent-1', name: 'Иван', gender: 'мужчина', profession: 'врач' });
-        assert.deepEqual(sent[1]?.payload, { replyTo: 'HumanAgent-1' });
+        assert.deepEqual(value.sent.map((item) => `${item.to}:${item.type}`), [
+            `${catalog.HUMAN_CATALOG_AGENT_ID}:${catalog.CATALOG_REGISTER}`,
+            `${physics.PHYSICS_AGENT_ID}:${physics.PHYSICS_REGISTER}`,
+            `${day.DAY_AGENT_ID}:${day.TIME_REQUEST}`,
+        ]);
+        assert.deepEqual(value.sent[0]?.payload, { id: ID, name: 'Иван', gender: 'мужчина', profession: 'врач' });
     });
 
-    it('ночью спит, днём активен', () => {
-        const { context } = createContext();
+    it('ночью спит', () => {
+        const value = fixture();
 
-        const sleeper = createHuman();
-        sleeper.receive(createMessage(TIME_REPORT, { phase: 'ночь', hours: 3 }), context);
-        assert.equal(sleeper.state, 'спит');
+        value.agent.receive(createMessage(day.TIME_REPORT, { phase: 'ночь' }), value.context);
 
-        const active = createHuman(0.9);
-        active.receive(createMessage(TIME_REPORT, { phase: 'день', hours: 14 }), context);
-        assert.equal(active.state, 'активен');
-        assert.equal(active.phase, 'день');
+        assert.equal(value.agent.phase, 'ночь');
+        assert.equal(value.agent.state, 'спит');
     });
 
-    it('днём состояние выбирается по вероятностям', () => {
-        const { context } = createContext();
-        const cases: Array<[number, string]> = [
-            [0.05, 'в туалете'],
-            [0.1, 'принимает пищу'],
-            [0.29, 'принимает пищу'],
-            [0.3, 'активен'],
-            [0.99, 'активен'],
-        ];
+    it('днём сначала ищет банк через доску объявлений', () => {
+        const value = fixture();
 
-        for (const [roll, expected] of cases) {
-            const agent = createHuman(roll);
-            agent.receive(createMessage(TIME_REPORT, { phase: 'день', hours: 12 }), context);
-            assert.equal(agent.state, expected, `при roll=${roll}`);
-        }
+        value.agent.receive(createMessage(day.TIME_REPORT, { phase: 'день' }), value.context);
+
+        assert.equal(value.agent.state, 'активен');
+        assert.equal(last(value)?.to, bulletin.BULLETIN_BOARD_AGENT_ID);
+        assert.equal(last(value)?.type, bulletin.BULLETIN_FIND);
+        assert.deepEqual(last(value)?.payload, { type: 'BankAgent', replyTo: ID });
     });
 
-    it('ночью вероятности не применяются', () => {
-        const { context } = createContext();
-        const agent = createHuman(0.05);
+    it('после банка открывает счёт и покупает дом', () => {
+        const value = fixture();
 
-        agent.receive(createMessage(TIME_REPORT, { phase: 'ночь', hours: 2 }), context);
+        value.agent.receive(createMessage(day.TIME_REPORT, { phase: 'день' }), value.context);
+        value.agent.receive(createMessage(bulletin.BULLETIN_RESULT, { type: 'BankAgent', ids: ['BankAgent-1'] }), value.context);
+        assert.equal(last(value)?.to, 'BankAgent-1');
+        assert.equal(last(value)?.type, bank.BANK_OPEN);
 
-        assert.equal(agent.state, 'спит');
+        value.agent.receive(createMessage(bank.BANK_ACCOUNT, { owner: ID, balance: 1000 }), value.context);
+        assert.equal(value.agent.bankId, 'BankAgent-1');
+        assert.equal(value.agent.balance, 1000);
+
+        value.agent.receive(createMessage(day.TIME_REPORT, { phase: 'день' }), value.context);
+        assert.equal(last(value)?.to, house.HOUSE_AGENT_ID);
+        assert.equal(last(value)?.type, house.HOUSE_BUY);
+        assert.deepEqual(last(value)?.payload, { owner: ID, bankId: 'BankAgent-1', replyTo: ID });
+
+        value.agent.receive(createMessage(house.HOUSE_REPORT, { owner: ID, houseId: 'House-HumanAgent-1', accepted: true, reason: null }), value.context);
+        assert.equal(value.agent.houseId, 'House-HumanAgent-1');
     });
 
-    it('пересылает поиск каталогу и указывает свой адрес для ответа', () => {
-        const agent = createHuman();
-        const { context, sent } = createContext('HumanAgent-7');
+    it('сообщает, если дом купить не удалось', () => {
+        const value = fixture();
+        value.agent.receive(createMessage(day.TIME_REPORT, { phase: 'день' }), value.context);
+        value.agent.receive(createMessage(bulletin.BULLETIN_RESULT, { type: 'BankAgent', ids: ['BankAgent-1'] }), value.context);
+        value.agent.receive(createMessage(bank.BANK_ACCOUNT, { owner: ID, balance: 1000 }), value.context);
+        value.agent.receive(createMessage(day.TIME_REPORT, { phase: 'день' }), value.context);
 
-        agent.receive(createMessage(CATALOG_SEARCH, { criteria: { profession: 'врач' } }), context);
+        value.agent.receive(createMessage(house.HOUSE_REPORT, { accepted: false, reason: 'недостаточно средств' }), value.context);
 
-        assert.equal(sent.length, 1);
-        assert.equal(sent[0]?.to, HUMAN_CATALOG_AGENT_ID);
-        assert.equal(sent[0]?.type, CATALOG_SEARCH);
-        assert.deepEqual(sent[0]?.payload, { criteria: { profession: 'врач' }, replyTo: 'HumanAgent-7' });
+        assert.equal(value.agent.houseId, null);
+        assert.match(value.log.at(-1) ?? '', /не смог купить дом: недостаточно средств/);
     });
 
-    it('печатает результат поиска', () => {
-        const agent = createHuman();
-        const { context, log } = createContext();
-        const anna = { id: 'HumanAgent-2', name: 'Анна', gender: 'женщина', profession: 'врач' };
+    it('идёт в туалет: запрос, движение, вход, выход', () => {
+        const value = fixture(0.05);
+        withAccountAndHouse(value);
 
-        agent.receive(createMessage(CATALOG_RESULT, { criteria: {}, matches: [anna] }), context);
-        agent.receive(createMessage(CATALOG_RESULT, { criteria: {}, matches: [] }), context);
+        value.agent.receive(createMessage(day.TIME_REPORT, { phase: 'день' }), value.context);
+        assert.equal(value.agent.state, 'идёт в туалет');
+        assert.equal(last(value)?.to, toilet.TOILET_AGENT_ID);
+        assert.equal(last(value)?.type, toilet.TOILET_REQUEST);
 
-        assert.match(log[0] ?? '', /нашёл: Анна \(врач\)/);
-        assert.match(log[1] ?? '', /никого не нашёл/);
+        value.agent.receive(createMessage(toilet.TOILET_GRANTED, { id: ID }), value.context);
+        assert.equal(last(value)?.to, physics.PHYSICS_AGENT_ID);
+        assert.equal(last(value)?.type, physics.PHYSICS_MOVE_TO);
+        assert.deepEqual(last(value)?.payload, { id: ID, targetId: toilet.TOILET_AGENT_ID, replyTo: ID });
+
+        value.agent.receive(createMessage(physics.PHYSICS_ARRIVED, { id: ID, position: { x: 50, y: 0, z: 0 } }), value.context);
+        assert.equal(value.agent.state, 'в туалете');
+        assert.equal(last(value)?.type, toilet.TOILET_ENTER);
+
+        value.agent.receive(createMessage(toilet.TOILET_RELEASED, { id: ID }), value.context);
+        assert.equal(value.agent.state, 'активен');
+        assert.equal(value.agent.toiletStatus, 'нет');
     });
 
-    it('на незнакомое сообщение отвечает в лог', () => {
-        const agent = createHuman();
-        const { context, log } = createContext();
+    it('в очереди ждёт и не идёт сам', () => {
+        const value = fixture(0.05);
+        withAccountAndHouse(value);
+        value.agent.receive(createMessage(day.TIME_REPORT, { phase: 'день' }), value.context);
 
-        agent.receive(createMessage('что-то'), context);
+        value.agent.receive(createMessage(toilet.TOILET_QUEUED, { id: ID, position: 1 }), value.context);
 
-        assert.match(log[0] ?? '', /не знаю, что делать с сообщением «что-то»/);
+        assert.equal(value.agent.state, 'идёт в туалет');
+        assert.match(value.log.at(-1) ?? '', /очередь/);
     });
 
-    it('выбирает свойства случайно, если их не задали', () => {
-        const first = new HumanAgent({ random: () => 0 });
-        const last = new HumanAgent({ random: () => 0.99 });
+    it('отменяет поход, если физика не пустила', () => {
+        const value = fixture(0.05);
+        withAccountAndHouse(value);
+        value.agent.receive(createMessage(day.TIME_REPORT, { phase: 'день' }), value.context);
+        value.agent.receive(createMessage(toilet.TOILET_GRANTED, { id: ID }), value.context);
 
-        assert.equal(first.name, 'Иван');
-        assert.equal(last.name, 'Ольга');
-        assert.equal(first.record('HumanAgent-1').profession, 'инженер');
-        assert.equal(last.record('HumanAgent-1').profession, 'водитель');
-    });
+        value.agent.receive(createMessage(physics.PHYSICS_REPORT, { id: ID, accepted: false, reason: 'на пути тело' }), value.context);
 
-    it('проверяет настройки', () => {
-        assert.throws(() => new HumanAgent({ name: '', gender: 'мужчина' }), /name должен быть непустой строкой/);
-        assert.throws(() => new HumanAgent({ name: 'Иван', gender: 'робот' }), /gender должен быть/);
-        assert.throws(() => new HumanAgent({ profession: '' }), /profession должен быть непустой строкой/);
-        assert.throws(() => new HumanAgent({ random: 5 }), /random должен быть функцией/);
+        assert.equal(value.agent.toiletStatus, 'нет');
+        assert.equal(value.agent.state, 'активен');
+        assert.equal(last(value)?.type, toilet.TOILET_LEAVE);
     });
 
     it('по импульсу заново спрашивает время', () => {
-        const agent = createHuman();
-        const { context, sent } = createContext('HumanAgent-5');
+        const value = fixture();
 
-        agent.receive(createMessage(TICK), context);
+        value.agent.receive(createMessage(TICK), value.context);
 
-        assert.deepEqual(sent, [{ to: DAY_AGENT_ID, type: 'time-request', payload: { replyTo: 'HumanAgent-5' } }]);
+        assert.deepEqual(last(value), { to: day.DAY_AGENT_ID, type: day.TIME_REQUEST, payload: { replyTo: ID } });
     });
 
-    it('пересчитывает состояние по каждому импульсу', () => {
-        const rolls = [0.9, 0.05];
-        const agent = new HumanAgent({
-            name: 'Иван',
-            gender: 'мужчина',
-            profession: 'врач',
-            random: () => rolls.shift() ?? 0.9,
-        });
-        const { context } = createContext();
-        agent.receive(createMessage(TIME_REPORT, { phase: 'день', hours: 12 }), context);
-        assert.equal(agent.state, 'активен');
+    it('пересылает поиск в каталог и печатает результат', () => {
+        const value = fixture();
 
-        agent.receive(createMessage(TICK), context);
-        agent.receive(createMessage(TIME_REPORT, { phase: 'день', hours: 12 }), context);
+        value.agent.receive(createMessage(catalog.CATALOG_SEARCH, { criteria: { profession: 'врач' } }), value.context);
+        assert.deepEqual(last(value)?.payload, { criteria: { profession: 'врач' }, replyTo: ID });
 
-        assert.equal(agent.state, 'в туалете');
+        value.agent.receive(createMessage(catalog.CATALOG_RESULT, { matches: [{ id: 'HumanAgent-2', name: 'Анна', gender: 'женщина', profession: 'врач' }] }), value.context);
+        assert.match(value.log.at(-1) ?? '', /нашёл: Анна \(врач\)/);
     });
 
-    it('печатает только смену состояния', () => {
-        const agent = createHuman(0.9);
-        const { context, log } = createContext();
+    it('на незнакомое сообщение отвечает в лог', () => {
+        const value = fixture();
 
-        agent.receive(createMessage(TIME_REPORT, { phase: 'день', hours: 12 }), context);
-        agent.receive(createMessage(TIME_REPORT, { phase: 'день', hours: 13 }), context);
-        assert.equal(log.length, 1, 'одинаковое состояние повторно не печатается');
+        value.agent.receive(createMessage('что-то'), value.context);
 
-        agent.receive(createMessage(TIME_REPORT, { phase: 'ночь', hours: 2 }), context);
+        assert.match(value.log.at(-1) ?? '', /не знаю, что делать с сообщением «что-то»/);
+    });
 
-        assert.equal(log.length, 2);
-        assert.match(log[1] ?? '', /моё состояние: спит/);
+    it('выбирает свойства случайно, если их не задали', () => {
+        const first = new human.HumanAgent({ random: () => 0 });
+        const other = new human.HumanAgent({ random: () => 0.99 });
+
+        assert.equal(first.name, 'Иван');
+        assert.equal(other.name, 'Ольга');
+        assert.equal(first.record(ID).profession, 'инженер');
+        assert.equal(other.record(ID).profession, 'водитель');
+    });
+
+    it('проверяет настройки', () => {
+        assert.throws(() => new human.HumanAgent({ name: '', gender: 'мужчина' }), /name должен быть непустой строкой/);
+        assert.throws(() => new human.HumanAgent({ name: 'Иван', gender: 'робот' }), /gender должен быть/);
+        assert.throws(() => new human.HumanAgent({ profession: '' }), /profession должен быть непустой строкой/);
+        assert.throws(() => new human.HumanAgent({ random: 5 }), /random должен быть функцией/);
     });
 });
+

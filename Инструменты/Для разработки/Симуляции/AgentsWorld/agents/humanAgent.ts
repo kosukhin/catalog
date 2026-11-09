@@ -1,15 +1,12 @@
 import { AbstractActor, type ActorContext } from '../lib/actor.ts';
 import { createMessage, TICK, type Message } from '../lib/protocol.ts';
-import { DAY_AGENT_ID, TIME_REQUEST, TIME_REPORT, type DayPhase } from './dayAgent.ts';
-import {
-    CATALOG_REGISTER,
-    CATALOG_RESULT,
-    CATALOG_SEARCH,
-    HUMAN_CATALOG_AGENT_ID,
-    type CatalogResult,
-    type Gender,
-    type HumanRecord,
-} from './humanCatalogAgent.ts';
+import * as day from './dayAgent.ts';
+import * as catalog from './humanCatalogAgent.ts';
+import * as physics from './physicsAgent.ts';
+import * as bulletin from './bulletinBoardAgent.ts';
+import * as bank from './bankAgent.ts';
+import * as house from './houseAgent.ts';
+import * as toilet from './toiletAgent.ts';
 
 const AGENT_TYPE = 'HumanAgent';
 
@@ -17,13 +14,15 @@ export const type = AGENT_TYPE;
 
 export const moduleUrl = import.meta.url;
 
-export type HumanState = 'спит' | 'активен' | 'в туалете' | 'принимает пищу';
+export type HumanState = 'спит' | 'активен' | 'принимает пищу' | 'идёт в туалет' | 'в туалете';
+
+type ToiletStatus = 'нет' | 'запросил' | 'идёт' | 'внутри';
 
 const TOILET_LIMIT = 0.1;
 
 const EATING_LIMIT = 0.3;
 
-const PEOPLE: ReadonlyArray<{ readonly name: string; readonly gender: Gender }> = [
+const PEOPLE: ReadonlyArray<{ readonly name: string; readonly gender: catalog.Gender }> = [
     { name: 'Иван', gender: 'мужчина' },
     { name: 'Пётр', gender: 'мужчина' },
     { name: 'Сергей', gender: 'мужчина' },
@@ -36,7 +35,7 @@ const PROFESSIONS = ['инженер', 'врач', 'учитель', 'повар
 
 export interface HumanAgentOptions {
     readonly name: string;
-    readonly gender: Gender;
+    readonly gender: catalog.Gender;
     readonly profession: string;
     readonly random: () => number;
 }
@@ -44,11 +43,18 @@ export interface HumanAgentOptions {
 export class HumanAgent extends AbstractActor {
     readonly type = AGENT_TYPE;
     readonly #name: string;
-    readonly #gender: Gender;
+    readonly #gender: catalog.Gender;
     readonly #profession: string;
     readonly #random: () => number;
-    #phase: DayPhase | null = null;
+    #phase: day.DayPhase | null = null;
     #state: HumanState | null = null;
+    #bankId: string | null = null;
+    #balance: number | null = null;
+    #accountPending = false;
+    #house: string | null = null;
+    #houseTried = false;
+    #toilet: ToiletStatus = 'нет';
+    #walkingToToilet = false;
 
     constructor(options: Readonly<Record<string, unknown>> = {}) {
         super();
@@ -67,22 +73,35 @@ export class HumanAgent extends AbstractActor {
         return this.#state;
     }
 
-    get phase(): DayPhase | null {
+    get phase(): day.DayPhase | null {
         return this.#phase;
     }
 
-    record(id: string): HumanRecord {
+    get bankId(): string | null {
+        return this.#bankId;
+    }
+
+    get balance(): number | null {
+        return this.#balance;
+    }
+
+    get houseId(): string | null {
+        return this.#house;
+    }
+
+    get toiletStatus(): ToiletStatus {
+        return this.#toilet;
+    }
+
+    record(id: string): catalog.HumanRecord {
         return { id, name: this.#name, gender: this.#gender, profession: this.#profession };
     }
 
     start(context: ActorContext): void {
         context.log(`я ${this.#name}, ${this.#gender}, ${this.#profession}`);
-        context.send(HUMAN_CATALOG_AGENT_ID, createMessage(CATALOG_REGISTER, this.record(context.id)));
+        context.send(catalog.HUMAN_CATALOG_AGENT_ID, createMessage(catalog.CATALOG_REGISTER, this.record(context.id)));
+        context.send(physics.PHYSICS_AGENT_ID, createMessage(physics.PHYSICS_REGISTER, { id: context.id }));
         this.#askTime(context);
-    }
-
-    #askTime(context: ActorContext): void {
-        context.send(DAY_AGENT_ID, createMessage(TIME_REQUEST, { replyTo: context.id }));
     }
 
     protected override handle(message: Message, context: ActorContext): void {
@@ -90,46 +109,204 @@ export class HumanAgent extends AbstractActor {
             this.#askTime(context);
             return;
         }
-        if (message.type === TIME_REPORT) {
-            const previous = this.#state;
-            this.#applyTime(message.payload);
-            if (previous !== this.#state) {
-                context.log(`сейчас ${this.#phase}, моё состояние: ${this.#state}`);
-            }
+        if (message.type === day.TIME_REPORT) {
+            this.#applyTime(message.payload, context);
             return;
         }
-        if (message.type === CATALOG_SEARCH) {
-            const criteria = (message.payload as { criteria?: unknown } | undefined)?.criteria;
-            context.send(HUMAN_CATALOG_AGENT_ID, createMessage(CATALOG_SEARCH, { criteria, replyTo: context.id }));
+        if (message.type === bulletin.BULLETIN_RESULT) {
+            this.#onBulletin(message.payload, context);
             return;
         }
-        if (message.type === CATALOG_RESULT) {
-            const result = message.payload as CatalogResult | undefined;
-            const names = (result?.matches ?? []).map((human) => `${human.name} (${human.profession})`);
-            context.log(names.length === 0 ? 'никого не нашёл' : `нашёл: ${names.join(', ')}`);
+        if (message.type === bank.BANK_ACCOUNT) {
+            this.#onAccount(message.payload, context);
+            return;
+        }
+        if (message.type === house.HOUSE_REPORT) {
+            this.#onHouse(message.payload, context);
+            return;
+        }
+        if (message.type === toilet.TOILET_GRANTED) {
+            this.#goToToilet(context);
+            return;
+        }
+        if (message.type === toilet.TOILET_QUEUED) {
+            context.log('жду очередь в туалет');
+            return;
+        }
+        if (message.type === toilet.TOILET_RELEASED) {
+            this.#leaveToilet(context);
+            return;
+        }
+        if (message.type === physics.PHYSICS_ARRIVED) {
+            this.#onArrived(context);
+            return;
+        }
+        if (message.type === physics.PHYSICS_REPORT) {
+            this.#onPhysicsReport(message.payload, context);
+            return;
+        }
+        if (message.type === catalog.CATALOG_SEARCH) {
+            this.#forwardSearch(message.payload, context);
+            return;
+        }
+        if (message.type === catalog.CATALOG_RESULT) {
+            this.#onSearchResult(message.payload, context);
             return;
         }
         context.log(`не знаю, что делать с сообщением «${message.type}»`);
     }
 
     protected override describe(): Readonly<Record<string, unknown>> {
-        return { name: this.#name, gender: this.#gender, profession: this.#profession, phase: this.#phase, state: this.#state };
+        return {
+            name: this.#name,
+            gender: this.#gender,
+            profession: this.#profession,
+            phase: this.#phase,
+            state: this.#state,
+            bank: this.#bankId,
+            balance: this.#balance,
+            house: this.#house,
+            toilet: this.#toilet,
+        };
     }
 
-    #applyTime(payload: unknown): void {
-        const report = payload as { phase?: unknown; weekday?: unknown; hours?: unknown; minutes?: unknown } | undefined;
+    #askTime(context: ActorContext): void {
+        context.send(day.DAY_AGENT_ID, createMessage(day.TIME_REQUEST, { replyTo: context.id }));
+    }
+
+    #applyTime(payload: unknown, context: ActorContext): void {
+        const report = payload as { phase?: unknown } | undefined;
+        const previous = this.#state;
         this.#phase = report?.phase === 'день' ? 'день' : 'ночь';
-        this.#state = this.#phase === 'ночь' ? 'спит' : this.#dayState(this.#random());
+        this.#decide(context);
+        if (previous !== this.#state) {
+            context.log(`сейчас ${this.#phase}, моё состояние: ${this.#state}`);
+        }
     }
 
-    #dayState(roll: number): HumanState {
+    #decide(context: ActorContext): void {
+        if (this.#toilet !== 'нет') {
+            this.#state = this.#toilet === 'внутри' ? 'в туалете' : 'идёт в туалет';
+            return;
+        }
+        if (this.#phase === 'ночь') {
+            this.#state = 'спит';
+            return;
+        }
+        if (this.#balance === null) {
+            this.#state = 'активен';
+            if (!this.#accountPending) {
+                this.#accountPending = true;
+                context.send(bulletin.BULLETIN_BOARD_AGENT_ID, createMessage(bulletin.BULLETIN_FIND, { type: bank.type, replyTo: context.id }));
+            }
+            return;
+        }
+        if (this.#house === null) {
+            this.#state = 'активен';
+            if (!this.#houseTried) {
+                this.#houseTried = true;
+                context.send(house.HOUSE_AGENT_ID, createMessage(house.HOUSE_BUY, { owner: context.id, bankId: this.#bankId, replyTo: context.id }));
+            }
+            return;
+        }
+        const roll = this.#random();
         if (roll < TOILET_LIMIT) {
-            return 'в туалете';
+            this.#startToilet(context);
+            return;
         }
-        if (roll < EATING_LIMIT) {
-            return 'принимает пищу';
+        this.#state = roll < EATING_LIMIT ? 'принимает пищу' : 'активен';
+    }
+
+    #startToilet(context: ActorContext): void {
+        this.#toilet = 'запросил';
+        this.#state = 'идёт в туалет';
+        context.log('хочу в туалет');
+        context.send(toilet.TOILET_AGENT_ID, createMessage(toilet.TOILET_REQUEST, { id: context.id, replyTo: context.id }));
+    }
+
+    #goToToilet(context: ActorContext): void {
+        this.#toilet = 'идёт';
+        this.#walkingToToilet = true;
+        this.#state = 'идёт в туалет';
+        context.send(physics.PHYSICS_AGENT_ID, createMessage(physics.PHYSICS_MOVE_TO, { id: context.id, targetId: toilet.TOILET_AGENT_ID, replyTo: context.id }));
+    }
+
+    #leaveToilet(context: ActorContext): void {
+        this.#toilet = 'нет';
+        this.#walkingToToilet = false;
+        this.#state = 'активен';
+        context.log('вышел из туалета');
+    }
+
+    #onArrived(context: ActorContext): void {
+        if (!this.#walkingToToilet) {
+            return;
         }
-        return 'активен';
+        this.#walkingToToilet = false;
+        this.#toilet = 'внутри';
+        this.#state = 'в туалете';
+        context.log('я в туалете');
+        context.send(toilet.TOILET_AGENT_ID, createMessage(toilet.TOILET_ENTER, { id: context.id }));
+    }
+
+    #onPhysicsReport(payload: unknown, context: ActorContext): void {
+        if (!this.#walkingToToilet) {
+            return;
+        }
+        const report = payload as { accepted?: unknown; reason?: unknown } | undefined;
+        if (report?.accepted === true) {
+            return;
+        }
+        this.#walkingToToilet = false;
+        this.#toilet = 'нет';
+        this.#state = 'активен';
+        context.log(`до туалета не дойти: ${typeof report?.reason === 'string' ? report.reason : 'отказ физики'}`);
+        context.send(toilet.TOILET_AGENT_ID, createMessage(toilet.TOILET_LEAVE, { id: context.id }));
+    }
+
+    #onBulletin(payload: unknown, context: ActorContext): void {
+        const result = payload as { type?: unknown; ids?: unknown } | undefined;
+        if (result?.type !== bank.type) {
+            return;
+        }
+        const ids = Array.isArray(result.ids) ? result.ids.filter((item): item is string => typeof item === 'string') : [];
+        if (ids.length === 0) {
+            this.#accountPending = false;
+            context.log('банков не нашлось');
+            return;
+        }
+        const bankId = ids[0] ?? '';
+        this.#bankId = bankId;
+        context.log(`нашёл банк ${bankId}`);
+        context.send(bankId, createMessage(bank.BANK_OPEN, { owner: context.id, replyTo: context.id }));
+    }
+
+    #onAccount(payload: unknown, context: ActorContext): void {
+        this.#accountPending = false;
+        const report = payload as { owner?: unknown; balance?: unknown } | undefined;
+        this.#balance = typeof report?.balance === 'number' ? report.balance : null;
+        context.log(`счёт открыт, на нём ${this.#balance}`);
+    }
+
+    #onHouse(payload: unknown, context: ActorContext): void {
+        const report = payload as { houseId?: unknown; accepted?: unknown; reason?: unknown } | undefined;
+        if (report?.accepted === true && typeof report.houseId === 'string') {
+            this.#house = report.houseId;
+            context.log(`купил дом ${this.#house}`);
+            return;
+        }
+        context.log(`не смог купить дом: ${typeof report?.reason === 'string' ? report.reason : 'отказ'}`);
+    }
+
+    #forwardSearch(payload: unknown, context: ActorContext): void {
+        const criteria = (payload as { criteria?: unknown } | undefined)?.criteria;
+        context.send(catalog.HUMAN_CATALOG_AGENT_ID, createMessage(catalog.CATALOG_SEARCH, { criteria, replyTo: context.id }));
+    }
+
+    #onSearchResult(payload: unknown, context: ActorContext): void {
+        const result = payload as catalog.CatalogResult | undefined;
+        const names = (result?.matches ?? []).map((human) => `${human.name} (${human.profession})`);
+        context.log(names.length === 0 ? 'никого не нашёл' : `нашёл: ${names.join(', ')}`);
     }
 }
 
@@ -137,7 +314,7 @@ export function createAgent(_id: string, options: Readonly<Record<string, unknow
     return new HumanAgent(options);
 }
 
-function readPerson(options: Readonly<Record<string, unknown>>): { name: string; gender: Gender } {
+function readPerson(options: Readonly<Record<string, unknown>>): { name: string; gender: catalog.Gender } {
     const name = options.name;
     const gender = options.gender;
     if (name !== undefined || gender !== undefined) {

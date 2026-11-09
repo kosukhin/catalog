@@ -10,6 +10,7 @@ describe('server config', () => {
         assert.equal(config.humans, 12);
         assert.equal(config.pageSize, 20);
         assert.equal(config.clockId, 'DayAgent-1');
+        assert.equal(config.physicsId, 'PhysicsAgent-1');
     });
 
     it('состав мира: по одному DayAgent и каталогу плюс люди', () => {
@@ -17,8 +18,8 @@ describe('server config', () => {
         const counts = [...config.population.values()].map((entry) => (typeof entry === 'number' ? entry : entry.count));
         const types = [...config.population.keys()].map((plugin) => plugin.type);
 
-        assert.deepEqual(types, ['DayAgent', 'HumanCatalogAgent', 'HumanAgent', 'TickAgent']);
-        assert.deepEqual(counts, [1, 1, 7, 1]);
+        assert.deepEqual(types, ['DayAgent', 'HumanCatalogAgent', 'PhysicsAgent', 'BankAgent', 'HouseAgent', 'BulletinBoardAgent', 'ToiletAgent', 'HumanAgent', 'TickAgent']);
+        assert.deepEqual(counts, [1, 1, 1, 1, 1, 1, 1, 7, 1]);
     });
 
     it('читает переменные окружения', () => {
@@ -70,7 +71,7 @@ describe('server config', () => {
         const tickEntry = [...config.population.entries()].find(([plugin]) => plugin.type === 'TickAgent')?.[1];
 
         assert.equal(config.tickMs, 250);
-        assert.deepEqual(tickEntry, { count: 1, options: { intervalMs: 250, types: ['HumanAgent'] } });
+        assert.deepEqual(tickEntry, { count: 1, options: { intervalMs: 250, types: ['HumanAgent', 'PhysicsAgent', 'ToiletAgent'] } });
     });
 
     it('по умолчанию тикер будит людей раз в секунду', () => {
@@ -78,7 +79,7 @@ describe('server config', () => {
         const tickEntry = [...config.population.entries()].find(([plugin]) => plugin.type === 'TickAgent')?.[1];
 
         assert.equal(config.tickMs, 1000);
-        assert.deepEqual(tickEntry, { count: 1, options: { intervalMs: 1000, types: ['HumanAgent'] } });
+        assert.deepEqual(tickEntry, { count: 1, options: { intervalMs: 1000, types: ['HumanAgent', 'PhysicsAgent', 'ToiletAgent'] } });
     });
 
     it('отвергает некорректный период тика', () => {

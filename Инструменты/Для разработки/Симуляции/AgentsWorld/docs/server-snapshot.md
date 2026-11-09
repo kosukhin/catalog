@@ -28,7 +28,8 @@ takeSnapshot → каждому актору status-request  (replyTo = 'мир'
 | `WorldQuery` | минимум от мира: `running`, `threadCount`, `actors`, `ask` |
 | `AgentSnapshot` | `{ id, type, alive, details }` |
 | `WorldSnapshot` | `{ running, threadCount, total, byType, clock, agents }` |
-| `takeSnapshot(world, clockId, timeoutMs)` | собирает снимок |
+| `takeSnapshot(world, clockId, timeoutMs)` | собирает снимок агентов |
+| `takePhysics(world, physicsId, timeoutMs)` | снимок физики: тела, позиции, движущиеся |
 
 `WorldQuery` — узкий интерфейс, а не сам `World`: снимок можно тестировать на
 заглушке, без потоков и агентов.
@@ -38,6 +39,14 @@ takeSnapshot → каждому актору status-request  (replyTo = 'мир'
 Отдельным запросом `time-request` у агента `clockId` берётся `TimeReport` — с
 уже ускоренным временем (`DayAgent` по умолчанию идёт в 10× быстрее реального).
 Если часы не ответили, `clock` равен `null`, остальной снимок остаётся рабочим.
+
+## Физика
+
+`takePhysics` шлёт агенту физики (`physicsId`) сообщение `physics-list` и ждёт ответ
+`physics-state` — всё, что знает `PhysicsAgent`: `speed`, `stepSeconds`,
+`minDistance`, `arriveDistance`, `bounds`, `bodies` (id + позиция) и `moving`.
+Ответ не того типа — исключение. На этой функции стоит маршрут `/api/physics` и
+страница физики.
 
 ## Стоимость
 
@@ -50,4 +59,4 @@ takeSnapshot → каждому актору status-request  (replyTo = 'мир'
 
 `test/server-snapshot.test.ts` — подсчёт агентов и типов, перенос подробностей,
 `alive: false` для молчащего агента, часы мира и их отсутствие, работа с коротким
-таймаутом.
+таймаутом, состояние физики и ошибка при чужом ответе.
