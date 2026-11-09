@@ -60,6 +60,10 @@ function answerPositions(
     }
 }
 
+function grantsTo(sent: Fixture['sent'], id: string): number {
+    return sent.filter((item) => item.type === TOILET_GRANTED && item.to === id).length;
+}
+
 describe('ToiletAgent', () => {
     it('модуль сообщает тип, адрес и умеет создавать агента', () => {
         assert.equal(toilet.type, 'ToiletAgent');
@@ -113,6 +117,30 @@ describe('ToiletAgent', () => {
         assert.equal(lastOf(fixture.sent, TOILET_GRANTED)?.to, 'H3');
         assert.equal(agent.queueLength, 1);
         assert.match(fixture.log.at(-1) ?? '', /H3 ближе всех/);
+    });
+
+    it('не выбирает того, кто только что вышел, пока место не получит другой', () => {
+        const agent = new ToiletAgent({ position: { x: 0, y: 50, z: 0 } });
+        const fixture = createContext();
+        agent.receive(createMessage(TOILET_REQUEST, { id: 'H1', replyTo: 'H1' }), fixture.context);
+        answerPositions(agent, fixture, { H1: { x: 0, y: 0 } });
+        agent.receive(createMessage(TOILET_ENTER, { id: 'H1' }), fixture.context);
+        agent.receive(createMessage(TOILET_LEAVE, { id: 'H1' }), fixture.context);
+
+        agent.receive(createMessage(TOILET_REQUEST, { id: 'H1', replyTo: 'H1' }), fixture.context);
+        assert.equal(grantsTo(fixture.sent, 'H1'), 1, 'вышедшего сразу не пускают обратно');
+        assert.equal(agent.queueLength, 1);
+
+        agent.receive(createMessage(TOILET_REQUEST, { id: 'H2', replyTo: 'H2' }), fixture.context);
+        answerPositions(agent, fixture, { H2: { x: 0, y: 40 } });
+        assert.equal(grantsTo(fixture.sent, 'H2'), 1, 'место получает другой');
+
+        agent.receive(createMessage(TOILET_ENTER, { id: 'H2' }), fixture.context);
+        agent.receive(createMessage(TOILET_LEAVE, { id: 'H2' }), fixture.context);
+        agent.receive(createMessage(TOILET_REQUEST, { id: 'H1', replyTo: 'H1' }), fixture.context);
+        answerPositions(agent, fixture, { H1: { x: 0, y: 0 } });
+
+        assert.equal(grantsTo(fixture.sent, 'H1'), 2, 'после другого H1 снова может');
     });
 
     it('не отдаёт место, если желающих нет в пространстве', () => {

@@ -39,6 +39,7 @@ export class ToiletAgent extends AbstractActor {
     #occupant: string | null = null;
     #enteredAt: number | null = null;
     #choosing: Set<string> | null = null;
+    #justLeft: string | null = null;
 
     constructor(options: Readonly<Record<string, unknown>> = {}) {
         super();
@@ -118,10 +119,11 @@ export class ToiletAgent extends AbstractActor {
         if (this.#occupant !== null || this.#walking.size > 0 || this.#choosing !== null) {
             return;
         }
-        if (this.#queue.length === 0) {
+        const candidates = this.#queue.filter((id) => id !== this.#justLeft);
+        if (candidates.length === 0) {
             return;
         }
-        this.#choosing = new Set(this.#queue);
+        this.#choosing = new Set(candidates);
         this.#distances.clear();
         for (const id of this.#choosing) {
             context.send(this.#physicsId, createMessage(PHYSICS_POSITION, { id, replyTo: TOILET_AGENT_ID }));
@@ -160,6 +162,7 @@ export class ToiletAgent extends AbstractActor {
         }
         this.#walking.add(winner);
         this.#dropFromQueue(winner);
+        this.#justLeft = null;
         context.log(`${winner} ближе всех (${round(best)}), место его`);
         context.send(winner, createMessage(TOILET_GRANTED, { id: winner }));
     }
@@ -218,6 +221,7 @@ export class ToiletAgent extends AbstractActor {
         }
         this.#occupant = null;
         this.#enteredAt = null;
+        this.#justLeft = who;
         context.send(who, createMessage(TOILET_RELEASED, { id: who }));
         context.log(`${who} освободил место`);
         this.#choose(context);
