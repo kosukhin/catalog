@@ -31,7 +31,6 @@ const ivan = { id: 'HumanAgent-1', name: 'Иван', gender: 'мужчина', p
 const anna = { id: 'HumanAgent-2', name: 'Анна', gender: 'женщина', profession: 'врач' } as const;
 const peter = { id: 'HumanAgent-3', name: 'Пётр', gender: 'мужчина', profession: 'повар' } as const;
 
-/** Каталог с тремя людьми. */
 function createFilledCatalog(): { agent: InstanceType<typeof HumanCatalogAgent>; fixture: Fixture } {
     const agent = new HumanCatalogAgent();
     const fixture = createContext();

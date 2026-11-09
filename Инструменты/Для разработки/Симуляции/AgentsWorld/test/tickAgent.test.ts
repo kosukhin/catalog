@@ -27,7 +27,6 @@ function createContext(): Fixture {
     return { context, log, sent };
 }
 
-/** Ждёт выполнения условия: тикер работает по таймеру. */
 async function waitFor(predicate: () => boolean, timeoutMs = 2000): Promise<void> {
     const deadline = Date.now() + timeoutMs;
     while (!predicate()) {

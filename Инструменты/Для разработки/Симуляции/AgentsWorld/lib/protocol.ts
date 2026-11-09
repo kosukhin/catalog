@@ -1,79 +1,36 @@
-/**
- * Протокол мира: сообщения акторов и служебные команды между миром и потоками.
- *
- * Модуль не импортирует ничего — это «словарь», на который опираются остальные
- * модули. Здесь два независимых набора типов:
- *
- * 1. `Message` — то, чем акторы обмениваются через почтовые ящики. Акторы никогда
- *    не вызывают друг друга напрямую, поэтому любое взаимодействие описывается
- *    сообщением с типом и полезной нагрузкой.
- * 2. `WorkerCommand` / `WorkerEvent` — служебный канал «главный поток ↔ воркер».
- *    Он нужен только рантайму: доставить сообщение в чужой поток и вернуть лог.
- */
-
-/** Идентификатор актора внутри мира. */
 export type ActorId = string;
 
-/** Сообщение — единственный способ общения акторов между собой. */
 export interface Message {
-    /** Тип сообщения: по нему актор решает, как его обрабатывать. */
     readonly type: string;
-    /** Полезная нагрузка произвольной формы (должна переживать structured clone). */
     readonly payload?: unknown;
 }
 
-/** Наряд на создание одного актора. */
 export interface ActorAssignment {
-    /** Уникальный идентификатор актора, например `МойАгент-1`. */
     readonly id: ActorId;
-    /** Тип агента: имя, под которым агент указан в статистике мира. */
     readonly type: string;
-    /**
-     * Адрес модуля агента (`import.meta.url`).
-     *
-     * Класс и фабрику нельзя передать в другой поток, поэтому поток получает
-     * строку-адрес и загружает код сам — см. `lib/agentLoader.ts`.
-     */
     readonly moduleUrl: string;
-    /** Настройки конкретного экземпляра. */
     readonly options: Readonly<Record<string, unknown>>;
 }
 
-/** Команды, которые главный поток отправляет воркеру. */
 export type WorkerCommand =
     | { readonly kind: 'start'; readonly actors: readonly ActorAssignment[] }
     | { readonly kind: 'deliver'; readonly from: ActorId; readonly to: ActorId; readonly message: Message }
     | { readonly kind: 'stop' };
 
-/** Адрес самого мира: сообщение на него не идёт актору, а попадает в мир. */
 export const WORLD_ID = 'мир';
 
-/** Запрос состояния актора: полезная нагрузка — `{ replyTo }`. */
 export const STATUS_REQUEST = 'status-request';
 
-/** Ответ на запрос состояния: полезная нагрузка — `StatusReport`. */
 export const STATUS_REPORT = 'status-report';
 
-/**
- * Импульс времени: «прошёл ещё один миг мира».
- *
- * Тип сообщения общий, как и `status-request`: его может слать любой агент-тикер,
- * а реагировать — любой агент, которому нужно периодическое действие. Поэтому
- * константа живёт в словаре протокола, а не в конкретном агенте.
- */
 export const TICK = 'tick';
 
-/** Что актор рассказывает о себе на запрос состояния. */
 export interface StatusReport {
-    /** Адрес актора, который ответил. */
     readonly id: ActorId;
-    /** Тип агента. */
     readonly type: string;
-    /** Подробности: их даёт сам агент, мир в них не заглядывает. */
     readonly details: Readonly<Record<string, unknown>>;
 }
 
-/** События, которые воркер отправляет главному потоку. */
 export type WorkerEvent =
     | { readonly kind: 'ready'; readonly actorIds: readonly ActorId[] }
     | { readonly kind: 'deliver'; readonly from: ActorId; readonly to: ActorId; readonly message: Message }
@@ -81,12 +38,6 @@ export type WorkerEvent =
     | { readonly kind: 'error'; readonly actorId: ActorId | null; readonly text: string }
     | { readonly kind: 'done' };
 
-/**
- * Создаёт сообщение, проверяя тип.
- *
- * @param type непустой тип сообщения, например `echo`
- * @param payload полезная нагрузка; если не передана, ключа в объекте не будет
- */
 export function createMessage(type: string, payload?: unknown): Message {
     if (typeof type !== 'string' || type.trim() === '') {
         throw new Error('тип сообщения должен быть непустой строкой');
@@ -94,12 +45,6 @@ export function createMessage(type: string, payload?: unknown): Message {
     return payload === undefined ? { type } : { type, payload };
 }
 
-/**
- * Проверяет, что значение похоже на сообщение актора.
- *
- * Нужна на границе с внешним кодом и в тестах: в поток сообщение попадает через
- * structured clone, поэтому доверять его форме нельзя.
- */
 export function isMessage(value: unknown): value is Message {
     if (typeof value !== 'object' || value === null) {
         return false;

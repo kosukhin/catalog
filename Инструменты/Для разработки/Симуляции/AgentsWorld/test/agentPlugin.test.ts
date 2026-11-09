@@ -2,7 +2,6 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { assertAgentPlugin, type AgentPlugin } from '../lib/agentPlugin.ts';
 
-/** Заглушка модуля агента: настоящие поля контракта, без реального агента. */
 function createPlugin(overrides: Partial<AgentPlugin> = {}): AgentPlugin {
     return {
         type: 'Заглушка',

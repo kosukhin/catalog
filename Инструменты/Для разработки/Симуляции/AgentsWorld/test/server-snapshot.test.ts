@@ -4,7 +4,6 @@ import { takeSnapshot, type WorldQuery } from '../server/snapshot.ts';
 import { STATUS_REPORT, type Message } from '../lib/protocol.ts';
 import { TIME_REQUEST, TIME_REPORT } from '../agents/dayAgent.ts';
 
-/** Заглушка мира: отвечает за агентов по таблице. */
 function createWorld(
     answers: Record<string, unknown>,
     actors: Array<{ id: string; type: string }> = Object.keys(answers).map((id) => ({ id, type: 'HumanAgent' })),

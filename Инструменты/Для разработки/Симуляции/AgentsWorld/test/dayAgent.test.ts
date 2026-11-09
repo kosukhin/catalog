@@ -27,7 +27,6 @@ function createContext(id = DAY_AGENT_ID): Fixture {
     return { context, log, sent };
 }
 
-/** Часы, которые при каждом обращении уходят вперёд на шаг. */
 function advancingClock(start: Date, stepMs: number): () => Date {
     let current = start.getTime();
     return () => {
@@ -37,7 +36,6 @@ function advancingClock(start: Date, stepMs: number): () => Date {
     };
 }
 
-/** Часы, показывающие заданный час. */
 function clockAt(hours: number, minutes = 30): () => Date {
     return () => new Date(2026, 10, 8, hours, minutes);
 }

@@ -29,7 +29,6 @@ function createContext(id = 'HumanAgent-1'): Fixture {
     return { context, log, sent };
 }
 
-/** Человек с заданными свойствами и предсказуемой случайностью. */
 function createHuman(roll = 0.9): InstanceType<typeof HumanAgent> {
     return new HumanAgent({ name: 'Иван', gender: 'мужчина', profession: 'врач', random: () => roll });
 }

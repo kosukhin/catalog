@@ -1,9 +1,8 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { World } from '../lib/world.ts';
+import { World, type Population } from '../lib/index.ts';
 import * as echoAgent from '../agents/echoAgent.ts';
 
-/** Ждёт выполнения условия: мир работает асинхронно. */
 async function waitFor(predicate: () => boolean, timeoutMs = 5000): Promise<void> {
     const deadline = Date.now() + timeoutMs;
     while (!predicate()) {
@@ -54,8 +53,7 @@ describe('World', () => {
     });
 
     it('отвергает обычный объект вместо Map, дубль типа и пустой мир', () => {
-        // @ts-expect-error: обычный объект вместо Map — проверяем понятность ошибки
-        assert.throws(() => new World({ EchoAgent: 1 }), /статистика мира задаётся как Map/);
+        assert.throws(() => new World({ EchoAgent: 1 } as unknown as Population), /статистика мира задаётся как Map/);
         assert.throws(
             () => new World(new Map([[{ ...echoAgent, type: 'EchoAgent' }, 1], [echoAgent, 2]])),
             /тип агента «EchoAgent» подключён дважды/,

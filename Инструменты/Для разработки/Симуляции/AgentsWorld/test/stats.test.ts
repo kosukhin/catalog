@@ -1,9 +1,8 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizePopulation, summarizePopulation, type PopulationEntry } from '../lib/stats.ts';
+import { normalizePopulation, summarizePopulation, type Population, type PopulationEntry } from '../lib/stats.ts';
 import type { AgentPlugin } from '../lib/agentPlugin.ts';
 
-/** Заглушка модуля агента: контракт соблюдён, настоящий агент не нужен. */
 function createPlugin(type: string): AgentPlugin {
     return {
         type,
@@ -55,8 +54,7 @@ describe('stats', () => {
     });
 
     it('требует Map: обычный объект не подходит', () => {
-        // @ts-expect-error: проверяем, что подсказка в ошибке понятная
-        assert.throws(() => normalizePopulation({ EchoAgent: 1 }), /статистика мира задаётся как Map/);
+        assert.throws(() => normalizePopulation({ EchoAgent: 1 } as unknown as Population), /статистика мира задаётся как Map/);
     });
 
     it('отвергает некорректные количества', () => {

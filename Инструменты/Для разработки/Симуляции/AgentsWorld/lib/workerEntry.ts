@@ -1,28 +1,10 @@
-/**
- * Точка входа воркера: то, что исполняется внутри отдельного потока ОС.
- *
- * Поток не знает общего состояния мира — у него только собственный набор
- * рантаймов акторов и канал сообщений `parentPort`. Отсюда три правила:
- *
- * 1. **Код агента грузится по адресу.** В наряде приходит `moduleUrl`; поток
- *    вызывает `import(moduleUrl)` и берёт из модуля `createAgent`. Мир при этом
- *    не знает ни одного класса агента.
- * 2. **Сообщение актору из своего потока** кладётся в его ящик напрямую, а из
- *    чужого — уходит наверх (`deliver`), где мир ищет адресата. У потока нет
- *    доступа к чужим ящикам, иначе акторы получили бы общую память.
- * 3. **Всё, что актор печатает**, уходит наверх событием `log`, потому что печать
- *    из нескольких потоков в stdout перемешалась бы и её нельзя проверить.
- */
-
 import { parentPort, threadId, type MessagePort } from 'node:worker_threads';
 import { ActorRuntime } from './actorRuntime.ts';
 import { loadAgentFactory } from './agentLoader.ts';
 import type { ActorAssignment, ActorId, Message, WorkerCommand, WorkerEvent } from './protocol.ts';
 
-/** Канал связи с главным потоком. Явная аннотация нужна, чтобы тип был non-null. */
 const port: MessagePort = requirePort();
 
-/** Проверяет, что модуль действительно запущен как поток. */
 function requirePort(): MessagePort {
     if (parentPort === null) {
         throw new Error('workerEntry запускается только как поток worker_threads');
@@ -30,15 +12,12 @@ function requirePort(): MessagePort {
     return parentPort;
 }
 
-/** Акторы, живущие в этом потоке. */
 const runtimes = new Map<ActorId, ActorRuntime>();
 
-/** Отправляет событие в главный поток. */
 function emit(event: WorkerEvent): void {
     port.postMessage(event);
 }
 
-/** Создаёт внешние зависимости рантайма для конкретного актора. */
 function createPorts(selfId: ActorId): {
     send(to: ActorId, message: Message): void;
     log(text: string): void;
@@ -62,7 +41,6 @@ function createPorts(selfId: ActorId): {
     };
 }
 
-/** Создаёт и запускает акторов из наряда. */
 async function startActors(actors: readonly ActorAssignment[]): Promise<ActorId[]> {
     const started: ActorId[] = [];
     for (const assignment of actors) {
@@ -81,7 +59,6 @@ async function startActors(actors: readonly ActorAssignment[]): Promise<ActorId[
     return started;
 }
 
-/** Обрабатывает одну команду главного потока. */
 async function handle(command: WorkerCommand): Promise<void> {
     if (command.kind === 'start') {
         const actorIds = await startActors(command.actors);

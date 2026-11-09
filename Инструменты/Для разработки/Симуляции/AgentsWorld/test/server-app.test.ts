@@ -4,7 +4,6 @@ import { createApp } from '../server/app.ts';
 import { createServerConfig } from '../server/config.ts';
 import type { WorldQuery } from '../server/snapshot.ts';
 
-/** Мир-заглушка: состояния заданы таблицей, потоков нет. */
 function createWorld(states: Record<string, Record<string, unknown>>): WorldQuery {
     return {
         running: true,
@@ -19,7 +18,6 @@ function createWorld(states: Record<string, Record<string, unknown>>): WorldQuer
     };
 }
 
-/** Поднимает приложение на свободном порту и гасит после проверки. */
 async function withApp(world: WorldQuery, run: (url: string) => Promise<void>): Promise<void> {
     const app = createApp(world, createServerConfig({ PAGE_SIZE: '2' }));
     const server = app.listen(0);

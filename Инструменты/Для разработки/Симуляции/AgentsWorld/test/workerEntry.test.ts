@@ -3,12 +3,9 @@ import assert from 'node:assert/strict';
 import { Worker } from 'node:worker_threads';
 import type { WorkerEvent } from '../lib/protocol.ts';
 
-/** Адрес модуля агента: поток грузит код сам, поэтому в наряде едет строка. */
 const agentModuleUrl = new URL('../agents/echoAgent.ts', import.meta.url).href;
-/** Модуль без createAgent — на нём проверяем понятность ошибки. */
 const brokenModuleUrl = new URL('../lib/actor.ts', import.meta.url).href;
 
-/** Ждёт выполнения условия: поток отвечает асинхронно. */
 async function waitFor(predicate: () => boolean, timeoutMs = 5000): Promise<void> {
     const deadline = Date.now() + timeoutMs;
     while (!predicate()) {
@@ -19,7 +16,6 @@ async function waitFor(predicate: () => boolean, timeoutMs = 5000): Promise<void
     }
 }
 
-/** Поднимает воркер напрямую, как это делает пул потоков. */
 function spawnWorker(): { worker: Worker; events: WorkerEvent[] } {
     const worker = new Worker(new URL('../lib/workerEntry.ts', import.meta.url));
     const events: WorkerEvent[] = [];

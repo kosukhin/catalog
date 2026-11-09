@@ -3,10 +3,8 @@ import assert from 'node:assert/strict';
 import { ThreadPool } from '../lib/threadPool.ts';
 import type { WorkerEvent } from '../lib/protocol.ts';
 
-/** Адрес модуля агента: поток загрузит его сам, поэтому в наряде едет строка. */
 const agentModuleUrl = new URL('../agents/echoAgent.ts', import.meta.url).href;
 
-/** Ждёт выполнения условия: воркер отвечает асинхронно. */
 async function waitFor(predicate: () => boolean, timeoutMs = 5000): Promise<void> {
     const deadline = Date.now() + timeoutMs;
     while (!predicate()) {

@@ -1,36 +1,12 @@
-/**
- * HTTP-приложение на express: API дашборда и раздача статики.
- *
- * Модуль ничего не знает про конкретных агентов — он работает с `WorldQuery`
- * (`server/snapshot.ts`): список акторов и умение задать вопрос. Поэтому приложение
- * можно тестировать на заглушке мира, без потоков и агентов.
- *
- * Маршруты:
- *
- * | Маршрут | Что отдаёт |
- * |---|---|
- * | `GET /` | дашборд (`public/index.html`) |
- * | `GET /api/world` | сводка: работает ли мир, сколько потоков, состав по типам, виртуальное время |
- * | `GET /api/agents?page=&pageSize=&search=` | страница агентов с их состоянием |
- */
-
 import express from 'express';
 import { fileURLToPath } from 'node:url';
 import { takeSnapshot, type AgentSnapshot, type WorldQuery } from './snapshot.ts';
 import type { ServerConfig } from './config.ts';
 
-/** Каталог со статикой дашборда. */
 const PUBLIC_DIR = fileURLToPath(new URL('./public/', import.meta.url));
 
-/** Предел размера страницы, чтобы один запрос не вытащил весь мир. */
 const MAX_PAGE_SIZE = 200;
 
-/**
- * Собирает express-приложение.
- *
- * @param world мир или его заглушка
- * @param config настройки (порт не используется, нужен размер страницы и адрес часов)
- */
 export function createApp(world: WorldQuery, config: ServerConfig): express.Express {
     const app = express();
     app.disable('x-powered-by');
@@ -74,7 +50,6 @@ export function createApp(world: WorldQuery, config: ServerConfig): express.Expr
     return app;
 }
 
-/** Ищет строку в id, типе и подробностях состояния. */
 function matches(agent: AgentSnapshot, query: string): boolean {
     if (query === '') {
         return true;
@@ -83,23 +58,19 @@ function matches(agent: AgentSnapshot, query: string): boolean {
     return haystack.join(' ').toLowerCase().includes(query.toLowerCase());
 }
 
-/** Приводит параметр запроса к строке. */
 function textOf(value: unknown): string {
     return typeof value === 'string' ? value.trim() : '';
 }
 
-/** Приводит параметр запроса к положительному целому. */
 function toPositiveInt(value: unknown): number | null {
     const parsed = Number(textOf(value));
     return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
 }
 
-/** Ограничивает число диапазоном. */
 function clamp(value: number, min: number, max: number): number {
     return Math.min(max, Math.max(min, value));
 }
 
-/** Достаёт текст ошибки. */
 function messageOf(error: unknown): string {
     return error instanceof Error ? error.message : String(error);
 }

@@ -1,39 +1,16 @@
-/**
- * Пул потоков — реальный параллелизм через `worker_threads`.
- *
- * JavaScript исполняет код в одном потоке, поэтому «параллельно» внутри одного
- * потока нельзя: агенты будут просто переключаться. Чтобы агенты действительно
- * работали одновременно, каждый поток — отдельный `Worker`, то есть отдельный
- * поток ОС со своей памятью.
- *
- * Пул сознательно не умеет распределять работу сам: он лишь поднимает потоки,
- * передаёт в них команды и отдаёт события наверх. Решение «кто в каком потоке
- * живёт» принимает мир.
- *
- * Размер пула по умолчанию равен числу доступных ядер; `maxWorkers` позволяет
- * не поднимать потоков больше, чем есть агентов.
- */
-
 import { Worker } from 'node:worker_threads';
 import { availableParallelism } from 'node:os';
 import type { WorkerCommand, WorkerEvent } from './protocol.ts';
 
-/** Параметры пула. */
 export interface ThreadPoolOptions {
-    /** Сколько потоков поднять; по умолчанию — число доступных ядер. */
     readonly size?: number;
-    /** Верхняя граница числа потоков (например, общее число агентов). */
     readonly maxWorkers?: number;
-    /** Скрипт воркера; по умолчанию — `workerEntry.ts` рядом с этим модулем. */
     readonly workerScript?: URL;
-    /** Обработчик событий воркеров; второй аргумент — индекс потока в пуле. */
     readonly onEvent: (event: WorkerEvent, threadIndex: number) => void;
-    /** Обработчик сбоя самого воркера (не актора). */
     readonly onWorkerError?: (threadIndex: number, error: Error) => void;
 }
 
 export class ThreadPool {
-    /** Сколько потоков в пуле. */
     readonly size: number;
     readonly #workers: Worker[] = [];
     readonly #script: URL;
@@ -53,12 +30,10 @@ export class ThreadPool {
         }
     }
 
-    /** Индексы потоков пула. */
     get threadIndexes(): number[] {
         return this.#workers.map((_worker, threadIndex) => threadIndex);
     }
 
-    /** Отправляет команду в конкретный поток. */
     post(threadIndex: number, command: WorkerCommand): void {
         if (this.#terminated) {
             throw new Error('пул потоков уже остановлен');
@@ -70,14 +45,12 @@ export class ThreadPool {
         worker.postMessage(command);
     }
 
-    /** Отправляет команду во все потоки. */
     postAll(command: WorkerCommand): void {
         for (const threadIndex of this.threadIndexes) {
             this.post(threadIndex, command);
         }
     }
 
-    /** Останавливает все потоки. */
     async terminate(): Promise<void> {
         if (this.#terminated) {
             return;
@@ -87,7 +60,6 @@ export class ThreadPool {
         this.#workers.length = 0;
     }
 
-    /** Поднимает один поток и подписывается на его события. */
     #spawn(threadIndex: number): void {
         const worker = new Worker(this.#script, { name: `agents-world-${threadIndex}` });
         worker.on('message', (event: WorkerEvent) => {

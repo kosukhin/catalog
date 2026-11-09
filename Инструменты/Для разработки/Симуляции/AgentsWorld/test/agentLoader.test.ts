@@ -2,9 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { loadAgentFactory } from '../lib/agentLoader.ts';
 
-/** Адрес настоящего модуля агента: загрузчик должен достать из него createAgent. */
 const agentModuleUrl = new URL('../agents/echoAgent.ts', import.meta.url).href;
-/** Модуль без createAgent: на нём проверяем понятность ошибки. */
 const moduleWithoutFactory = new URL('../lib/actor.ts', import.meta.url).href;
 
 describe('agentLoader', () => {

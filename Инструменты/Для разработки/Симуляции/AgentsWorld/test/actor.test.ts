@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import { AbstractActor, type ActorContext } from '../lib/actor.ts';
 import { createMessage, STATUS_REQUEST, STATUS_REPORT, type Message } from '../lib/protocol.ts';
 
-/** Актор, который записывает всё, что до него дошло. */
 class Recorder extends AbstractActor {
     readonly type = 'Recorder';
     readonly seen: string[] = [];
@@ -12,13 +11,11 @@ class Recorder extends AbstractActor {
         this.seen.push(`${context.id}:${message.type}`);
     }
 
-    /** Открывает доступ к `describe` для проверки состояния. */
     details(): Readonly<Record<string, unknown>> {
         return this.describe();
     }
 }
 
-/** Актор с собственным описанием состояния. */
 class Talkative extends Recorder {
     protected override describe(): Readonly<Record<string, unknown>> {
         return { mood: 'бодрый' };

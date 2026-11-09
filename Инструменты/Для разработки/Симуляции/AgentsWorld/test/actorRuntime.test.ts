@@ -4,7 +4,6 @@ import { ActorRuntime, type ActorPorts } from '../lib/actorRuntime.ts';
 import { AbstractActor } from '../lib/actor.ts';
 import { createMessage, type Message } from '../lib/protocol.ts';
 
-/** Актор-испытатель: запоминает сообщения, умеет падать по команде. */
 class Collector extends AbstractActor {
     readonly type = 'Collector';
     readonly received: string[] = [];
@@ -49,7 +48,6 @@ function createPorts(): PortsFixture {
     return { ports, sent, errors };
 }
 
-/** Ждёт выполнения условия: цикл актора асинхронный, результат появляется не сразу. */
 async function waitFor(predicate: () => boolean, timeoutMs = 2000): Promise<void> {
     const deadline = Date.now() + timeoutMs;
     while (!predicate()) {
