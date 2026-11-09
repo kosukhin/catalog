@@ -16,7 +16,7 @@ await world.stop();
 | Из модуля | Что |
 |---|---|
 | `world.ts` | `World`, `WorldOptions` |
-| `protocol.ts` | `createMessage`, `isMessage`, типы `ActorId`, `ActorAssignment`, `Message` |
+| `protocol.ts` | `createMessage`, `isMessage`, `WORLD_ID`, типы `ActorId`, `ActorAssignment`, `Message` |
 | `agentPlugin.ts` | тип `AgentPlugin` |
 | `stats.ts` | тип `Population` — состав мира: `Map` «модуль → количество» |
 
@@ -24,8 +24,9 @@ await world.stop();
 
 - **Агентов нет.** Ядро не знает ни одного конкретного агента: модуль агента
   подключает приложение и передаёт его ключом в `Map` состава мира.
-- **Реестра нет.** Он был бы знанием ядра о конкретных типах. Вместо него — контракт
-  модуля (`type` + `moduleUrl` + `createAgent`) и загрузка по адресу в потоке.
+- **Реестра агентов мира здесь нет.** Публичный API не знает конкретных типов: модуль
+  агента подключается контрактом (`type` + `moduleUrl` + `createAgent`). Служебный
+  реестр (`lib/rosterAgent.ts`) `World` поднимает сам — он не входит в публичный API.
 - **Типов акторов нет.** `Actor`, `ActorContext`, `AbstractActor` лежат в
   `lib/actor.ts`: нужны только тем, кто пишет своего агента.
 

@@ -1,7 +1,8 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { World, type Population } from '../lib/index.ts';
+import { World, createMessage, WORLD_ID, type Population } from '../lib/index.ts';
 import * as echoAgent from '../agents/echoAgent.ts';
+import { ROSTER_AGENT_ID, ROSTER_QUERY, ROSTER_REPORT } from '../lib/rosterAgent.ts';
 
 async function waitFor(predicate: () => boolean, timeoutMs = 5000): Promise<void> {
     const deadline = Date.now() + timeoutMs;
@@ -120,6 +121,18 @@ describe('World', () => {
             world.ask('Тихий-1', { type: 'status-request', payload: { replyTo: 'мир' } }, 150),
             /не ответил за 150 мс/,
         );
+        await world.stop();
+    });
+
+    it('поднимает служебный реестр и отвечает составом мира по типам', async () => {
+        const world = new World(new Map([[echoAgent, 2]]), { print: () => {}, threadPoolSize: 1 });
+        await world.run();
+
+        const reply = await world.ask(ROSTER_AGENT_ID, createMessage(ROSTER_QUERY, { types: ['EchoAgent'], replyTo: WORLD_ID }));
+
+        assert.equal(reply.type, ROSTER_REPORT);
+        assert.deepEqual((reply.payload as { ids?: unknown } | undefined)?.ids, ['EchoAgent-1', 'EchoAgent-2']);
+        assert.deepEqual(world.actors.map((actor) => actor.id), ['EchoAgent-1', 'EchoAgent-2']);
         await world.stop();
     });
 });

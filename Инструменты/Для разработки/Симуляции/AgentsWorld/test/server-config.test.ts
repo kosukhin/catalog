@@ -65,20 +65,20 @@ describe('server config', () => {
         assert.throws(() => createServerConfig({ PAGE_SIZE: '1.5' }), /PAGE_SIZE должен быть целым числом/);
     });
 
-    it('настраивает тикер и список тех, кого он будит', () => {
+    it('настраивает тикер по типам агентов', () => {
         const config = createServerConfig({ HUMANS: '3', TICK_MS: '250' });
         const tickEntry = [...config.population.entries()].find(([plugin]) => plugin.type === 'TickAgent')?.[1];
 
         assert.equal(config.tickMs, 250);
-        assert.deepEqual(config.recipients, ['HumanAgent-1', 'HumanAgent-2', 'HumanAgent-3']);
-        assert.deepEqual(tickEntry, { count: 1, options: { intervalMs: 250, recipients: config.recipients } });
+        assert.deepEqual(tickEntry, { count: 1, options: { intervalMs: 250, types: ['HumanAgent'] } });
     });
 
-    it('по умолчанию будит людей раз в секунду', () => {
+    it('по умолчанию тикер будит людей раз в секунду', () => {
         const config = createServerConfig({ HUMANS: '2' });
+        const tickEntry = [...config.population.entries()].find(([plugin]) => plugin.type === 'TickAgent')?.[1];
 
         assert.equal(config.tickMs, 1000);
-        assert.deepEqual(config.recipients, ['HumanAgent-1', 'HumanAgent-2']);
+        assert.deepEqual(tickEntry, { count: 1, options: { intervalMs: 1000, types: ['HumanAgent'] } });
     });
 
     it('отвергает некорректный период тика', () => {

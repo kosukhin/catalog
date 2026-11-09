@@ -3,7 +3,7 @@
 Один модуль — один файл документации. Файлы названы так же, как модули.
 Тесты лежат в `test/` и названы `<модуль>.test.ts`.
 
-## Ядро (`lib/`) — ничего не знает об агентах
+## Ядро (`lib/`) — не знает агентов моделей (+ служебный реестр)
 
 | Модуль | Документация | Тест | Импортов |
 |---|---|---|---|
@@ -16,7 +16,8 @@
 | `lib/agentLoader.ts` | [agentLoader.md](agentLoader.md) | `test/agentLoader.test.ts` | 1 |
 | `lib/threadPool.ts` | [threadPool.md](threadPool.md) | `test/threadPool.test.ts` | 3 |
 | `lib/workerEntry.ts` | [workerEntry.md](workerEntry.md) | `test/workerEntry.test.ts` | 4 |
-| `lib/world.ts` | [world.md](world.md) | `test/world.test.ts` | 3 |
+| `lib/world.ts` | [world.md](world.md) | `test/world.test.ts` | 4 |
+| `lib/rosterAgent.ts` | [rosterAgent.md](rosterAgent.md) | `test/rosterAgent.test.ts` | 2 |
 | `lib/index.ts` | [index.md](index.md) | `test/index.test.ts` | 4 |
 
 ## Агенты (`agents/`) — подключаются снаружи
@@ -49,5 +50,6 @@
 | `scripts/demo.ts` | [demo.md](demo.md) | — (запускается вручную) | 2 |
 
 Правило «не больше четырёх импортов на модуль» соблюдено во всех файлах: предел
-виден в последнем столбце. Направление зависимостей — только `agents/ → lib/`:
-в `lib/` нет ни одного упоминания агентов.
+виден в последнем столбце. Направление зависимостей — `agents/ → lib/`: в `lib/`
+нет агентов моделей. Исключение одно — служебный `lib/rosterAgent.ts`: он часть
+ядра и поднимается `World` автоматически.

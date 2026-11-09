@@ -13,14 +13,15 @@ const world = new World(new Map([
     [agents.dayAgent, { count: 1, options: { timeScale: 120 } }],
     [agents.humanCatalogAgent, 1],
     [agents.humanAgent, 3],
-    [agents.tickAgent, { count: 1, options: { intervalMs: 100, recipients } }],
+    [agents.tickAgent, { count: 1, options: { intervalMs: 100, types: ['HumanAgent'] } }],
 ]));
 ```
 
 Сценарий:
 
 1. Люди регистрируются в каталоге и спрашивают время у `DayAgent`.
-2. `TickAgent` каждые 100 мс шлёт им импульс `tick`.
+2. `TickAgent` спрашивает служебный реестр (`RosterAgent`) про агентов типа
+   `HumanAgent` и каждые 100 мс шлёт им импульс `tick`.
 3. По импульсу человек заново спрашивает время и пересчитывает состояние — в лог
    попадает только смена состояния.
 4. Скрипт просит `HumanAgent-1` найти всех людей: человек пересылает поиск
@@ -33,7 +34,8 @@ const world = new World(new Map([
 
 ```
 [HumanAgent-3 · поток 1] сейчас день, моё состояние: принимает пищу
-[TickAgent-1 · поток 2] бужу 3 агентов каждые 100 мс
+[RosterAgent-1 · поток 1] в реестре 6 агентов
+[TickAgent-1 · поток 1] новые агенты получат тики: HumanAgent-1, HumanAgent-2, HumanAgent-3
 [HumanAgent-3 · поток 1] сейчас день, моё состояние: активен
 [HumanAgent-1 · поток 3] сейчас день, моё состояние: в туалете
 [HumanCatalogAgent-1 · поток 2] искали всех людей: найдено 3
@@ -49,7 +51,7 @@ const world = new World(new Map([
 
 | Что | Как |
 |---|---|
-| больше/меньше людей | `[agents.humanAgent, 5]` + адреса в `recipients` |
+| больше/меньше людей | `[agents.humanAgent, 5]` — тикер найдёт их в реестре сам |
 | чаще импульсы | `intervalMs: 50` в настройках тикера |
 | быстрее время | `timeScale: 600` в настройках `DayAgent` |
 | без тикера | убрать пару `[agents.tickAgent, …]` — состояния застынут |

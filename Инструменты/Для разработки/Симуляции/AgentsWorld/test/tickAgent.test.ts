@@ -2,6 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import * as tickAgent from '../agents/tickAgent.ts';
 import { createMessage, TICK } from '../lib/protocol.ts';
+import { ROSTER_AGENT_ID, ROSTER_QUERY, ROSTER_REPORT, ROSTER_SUBSCRIBE, ROSTER_UPDATE } from '../lib/rosterAgent.ts';
 import type { ActorContext } from '../lib/actor.ts';
 
 const { TickAgent, TICK_AGENT_ID } = tickAgent;
@@ -9,16 +10,16 @@ const { TickAgent, TICK_AGENT_ID } = tickAgent;
 interface Fixture {
     readonly context: ActorContext;
     readonly log: string[];
-    readonly sent: string[];
+    readonly sent: Array<{ to: string; type: string; payload: unknown }>;
 }
 
 function createContext(): Fixture {
     const log: string[] = [];
-    const sent: string[] = [];
+    const sent: Array<{ to: string; type: string; payload: unknown }> = [];
     const context: ActorContext = {
         id: TICK_AGENT_ID,
-        send: (to): void => {
-            sent.push(to);
+        send: (to, message): void => {
+            sent.push({ to, type: message.type, payload: message.payload });
         },
         log: (text): void => {
             log.push(text);
@@ -37,38 +38,92 @@ async function waitFor(predicate: () => boolean, timeoutMs = 2000): Promise<void
     }
 }
 
+const ticksTo = (sent: Fixture['sent'], to: string): number =>
+    sent.filter((item) => item.to === to && item.type === TICK).length;
+
 describe('TickAgent', () => {
     it('модуль сообщает тип, адрес и умеет создавать агента', () => {
         assert.equal(tickAgent.type, 'TickAgent');
         assert.match(tickAgent.moduleUrl, /agents\/tickAgent\.ts$/);
         assert.equal(TICK_AGENT_ID, 'TickAgent-1');
-        assert.equal(tickAgent.createAgent(TICK_AGENT_ID, {}).type, 'TickAgent');
+        assert.equal(tickAgent.createAgent(TICK_AGENT_ID, { types: ['HumanAgent'] }).type, 'TickAgent');
     });
 
-    it('по умолчанию будит раз в секунду', () => {
-        const agent = new TickAgent();
+    it('по умолчанию будит раз в секунду и не знает получателей заранее', () => {
+        const agent = new TickAgent({ types: ['HumanAgent'] });
 
         assert.equal(agent.intervalMs, 1000);
+        assert.deepEqual(agent.types, ['HumanAgent']);
         assert.equal(agent.recipientCount, 0);
     });
 
-    it('рассылает tick всем адресатам по таймеру', async () => {
-        const agent = new TickAgent({ intervalMs: 10, recipients: ['HumanAgent-1', 'HumanAgent-2'] });
+    it('при старте спрашивает реестр по типам и подписывается на новых агентов', () => {
+        const agent = new TickAgent({ types: ['HumanAgent'] });
         const { context, sent } = createContext();
 
         agent.start(context);
-        await waitFor(() => sent.length >= 4);
         agent.stop();
 
-        assert.deepEqual(sent.slice(0, 4), ['HumanAgent-1', 'HumanAgent-2', 'HumanAgent-1', 'HumanAgent-2']);
+        assert.deepEqual(sent.map((item) => `${item.to}:${item.type}`), [
+            `${ROSTER_AGENT_ID}:${ROSTER_QUERY}`,
+            `${ROSTER_AGENT_ID}:${ROSTER_SUBSCRIBE}`,
+        ]);
+        assert.deepEqual(sent[0]?.payload, { types: ['HumanAgent'], replyTo: TICK_AGENT_ID });
+        assert.deepEqual(sent[1]?.payload, { types: ['HumanAgent'], replyTo: TICK_AGENT_ID });
+    });
+
+    it('бьёт тиками только тех, кого дал реестр', async () => {
+        const agent = new TickAgent({ intervalMs: 10, types: ['HumanAgent'] });
+        const { context, sent } = createContext();
+
+        agent.start(context);
+        agent.receive(createMessage(ROSTER_REPORT, { types: ['HumanAgent'], ids: ['HumanAgent-1', 'HumanAgent-2'] }), context);
+        await waitFor(() => ticksTo(sent, 'HumanAgent-1') >= 2 && ticksTo(sent, 'HumanAgent-2') >= 2);
+        agent.stop();
+
+        assert.equal(agent.recipientCount, 2);
+        assert.ok(sent.every((item) => item.type !== TICK || item.to.startsWith('HumanAgent-')));
+    });
+
+    it('добавляет новых агентов из уведомления и пропускает чужие типы', async () => {
+        const agent = new TickAgent({ intervalMs: 10, types: ['HumanAgent'] });
+        const { context, sent } = createContext();
+
+        agent.start(context);
+        agent.receive(createMessage(ROSTER_REPORT, { types: ['HumanAgent'], ids: ['HumanAgent-1'] }), context);
+        agent.receive(
+            createMessage(ROSTER_UPDATE, {
+                agents: [
+                    { id: 'HumanAgent-2', type: 'HumanAgent' },
+                    { id: 'DayAgent-1', type: 'DayAgent' },
+                ],
+            }),
+            context,
+        );
+        await waitFor(() => ticksTo(sent, 'HumanAgent-2') >= 1);
+        agent.stop();
+
+        assert.equal(agent.recipientCount, 2);
+        assert.equal(ticksTo(sent, 'DayAgent-1'), 0);
+    });
+
+    it('не дублирует агента, если он пришёл дважды', () => {
+        const agent = new TickAgent({ types: ['HumanAgent'] });
+        const { context } = createContext();
+
+        agent.receive(createMessage(ROSTER_REPORT, { types: ['HumanAgent'], ids: ['HumanAgent-1'] }), context);
+        agent.receive(createMessage(ROSTER_UPDATE, { agents: [{ id: 'HumanAgent-1', type: 'HumanAgent' }] }), context);
+
+        assert.equal(agent.recipientCount, 1);
     });
 
     it('после остановки импульсов не отправляет', async () => {
-        const agent = new TickAgent({ intervalMs: 10, recipients: ['HumanAgent-1'] });
+        const agent = new TickAgent({ intervalMs: 10, types: ['HumanAgent'] });
         const { context, sent } = createContext();
 
         agent.start(context);
-        await waitFor(() => sent.length >= 2);
+        agent.receive(createMessage(ROSTER_REPORT, { types: ['HumanAgent'], ids: ['HumanAgent-1'] }), context);
+        await waitFor(() => ticksTo(sent, 'HumanAgent-1') >= 1);
         agent.stop();
         const afterStop = sent.length;
         await new Promise((resolve) => setTimeout(resolve, 60));
@@ -76,44 +131,14 @@ describe('TickAgent', () => {
         assert.equal(sent.length, afterStop);
     });
 
-    it('без адресатов не запускает таймер и объясняет это в логе', async () => {
-        const agent = new TickAgent({ intervalMs: 10 });
-        const { context, log, sent } = createContext();
+    it('сообщает в дашборд частоту, типы и число получателей', () => {
+        const agent = new TickAgent({ intervalMs: 250, types: ['HumanAgent', 'DayAgent'] });
 
-        agent.start(context);
-        await new Promise((resolve) => setTimeout(resolve, 40));
-        agent.stop();
-
-        assert.equal(sent.length, 0);
-        assert.match(log[0] ?? '', /некого будить/);
-    });
-
-    it('передаёт импульс именно типом tick', async () => {
-        const agent = new TickAgent({ intervalMs: 10, recipients: ['HumanAgent-1'] });
-        const types: string[] = [];
-        const context: ActorContext = {
-            id: TICK_AGENT_ID,
-            send: (_to, message): void => {
-                types.push(message.type);
-            },
-            log: (): void => {},
-        };
-
-        agent.start(context);
-        await waitFor(() => types.length >= 1);
-        agent.stop();
-
-        assert.deepEqual([...new Set(types)], [TICK]);
-    });
-
-    it('сообщает в дашборд частоту и число адресатов', () => {
-        const agent = new TickAgent({ intervalMs: 250, recipients: ['a', 'b', 'c'] });
-
-        assert.deepEqual(agent.describeForDashboard(), { intervalMs: 250, recipients: 3 });
+        assert.deepEqual(agent.describeForDashboard(), { intervalMs: 250, types: ['HumanAgent', 'DayAgent'], recipients: 0 });
     });
 
     it('на незнакомое сообщение отвечает в лог', () => {
-        const agent = new TickAgent({ recipients: [] });
+        const agent = new TickAgent({ types: ['HumanAgent'] });
         const { context, log } = createContext();
 
         agent.receive(createMessage('привет'), context);
@@ -122,10 +147,12 @@ describe('TickAgent', () => {
     });
 
     it('проверяет настройки', () => {
-        assert.throws(() => new TickAgent({ intervalMs: 0 }), /intervalMs должен быть целым положительным/);
-        assert.throws(() => new TickAgent({ intervalMs: 1.5 }), /intervalMs должен быть целым положительным/);
-        assert.throws(() => new TickAgent({ intervalMs: '100' }), /intervalMs должен быть целым положительным/);
-        assert.throws(() => new TickAgent({ recipients: 'HumanAgent-1' }), /recipients должен быть массивом/);
-        assert.throws(() => new TickAgent({ recipients: [''] }), /каждый адресат в recipients/);
+        assert.throws(() => new TickAgent({ intervalMs: 0, types: ['HumanAgent'] }), /intervalMs должен быть целым положительным/);
+        assert.throws(() => new TickAgent({ intervalMs: 1.5, types: ['HumanAgent'] }), /intervalMs должен быть целым положительным/);
+        assert.throws(() => new TickAgent({}), /types должен быть массивом/);
+        assert.throws(() => new TickAgent({ types: [] }), /types должен содержать/);
+        assert.throws(() => new TickAgent({ types: [''] }), /каждый тип в types/);
+        assert.throws(() => new TickAgent({ rosterId: '', types: ['HumanAgent'] }), /rosterId должен быть непустой строкой/);
     });
 });
+

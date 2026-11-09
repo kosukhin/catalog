@@ -1,14 +1,12 @@
 import * as agents from '../agents/index.ts';
 import { World, createMessage, type AgentPlugin, type PopulationEntry } from '../lib/index.ts';
 
-const recipients = ['HumanAgent-1', 'HumanAgent-2', 'HumanAgent-3'];
-
 const world = new World(
     new Map<AgentPlugin, number | PopulationEntry>([
         [agents.dayAgent, { count: 1, options: { timeScale: 120 } }],
         [agents.humanCatalogAgent, 1],
-        [agents.humanAgent, recipients.length],
-        [agents.tickAgent, { count: 1, options: { intervalMs: 100, recipients } }],
+        [agents.humanAgent, 3],
+        [agents.tickAgent, { count: 1, options: { intervalMs: 100, types: [agents.humanAgent.type] } }],
     ]),
 );
 

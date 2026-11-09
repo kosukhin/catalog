@@ -10,7 +10,7 @@ import * as agents from '../agents/index.ts';
 new World(new Map([
     [agents.dayAgent, { count: 1, options: { timeScale: 10 } }],
     [agents.humanAgent, 12],
-    [agents.tickAgent, { count: 1, options: { intervalMs: 1000, recipients } }],
+    [agents.tickAgent, { count: 1, options: { intervalMs: 1000, types: ['HumanAgent'] } }],
 ]));
 ```
 
@@ -24,7 +24,8 @@ new World(new Map([
 | `tickAgent` | `agents/tickAgent.ts` |
 
 `echoAgent` сюда не входит: это тестовый агент для проверки рантайма, в мире из
-моделей он не участвует.
+моделей он не участвует. Служебный `RosterAgent` тоже не здесь: он часть ядра
+(`lib/rosterAgent.ts`) и поднимается `World` автоматически.
 
 ## Зачем нужен
 

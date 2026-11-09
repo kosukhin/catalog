@@ -6,7 +6,7 @@
 
 | Имя | Назначение |
 |---|---|
-| `ServerConfig` | `port`, `humans`, `pageSize`, `clockId`, `population` |
+| `ServerConfig` | `port`, `humans`, `pageSize`, `timeScale`, `tickMs`, `clockId`, `population` |
 | `createServerConfig(env)` | собирает конфигурацию из окружения |
 
 ## Переменные окружения
@@ -27,8 +27,9 @@
 ```js
 population = new Map([
     [dayAgent, { count: 1, options: { timeScale } }],  // время: единственный, с темпом из окружения
-    [humanCatalogAgent, 1],  // каталог людей — единственный
-    [humanAgent, humans],    // люди
+    [humanCatalogAgent, 1],                            // каталог людей — единственный
+    [humanAgent, humans],                              // люди
+    [tickAgent, { count: 1, options: { intervalMs: tickMs, types: ['HumanAgent'] } }],
 ]);
 ```
 
@@ -36,8 +37,10 @@ population = new Map([
 лежат в `options` записи состава мира, а не зашиты в код агента. Так же можно
 передать любые другие настройки.
 
-`recipients` — адреса людей (`HumanAgent-1…N`, по правилу `тип-номер` из
-`lib/stats.ts`); их получает тикер, чтобы будить людей по расписанию.
+Тикеру передаются **типы** (`types: ['HumanAgent']`), а не список адресов: адреса
+`TickAgent` берёт у служебного реестра (`lib/rosterAgent.ts`), который `World`
+поднимает сам. Поэтому конфигурации не нужно знать, сколько людей и как они
+называются.
 
 `clockId` — адрес агента, у которого приложение спрашивает виртуальное время
 (`DayAgent-1`). Он лежит в конфигурации, чтобы `snapshot.ts` и `app.ts` не знали
@@ -45,5 +48,6 @@ population = new Map([
 
 ## Тест
 
-`test/server-config.test.ts` — значения по умолчанию, состав мира, чтение
-окружения, пустые переменные, отказ на некорректных значениях.
+`test/server-config.test.ts` — значения по умолчанию, состав мира (включая
+настройку тикера по типам), чтение окружения, пустые переменные, отказ на
+некорректных значениях.

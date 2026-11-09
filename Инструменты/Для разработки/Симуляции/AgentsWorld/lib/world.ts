@@ -1,27 +1,36 @@
-import { WORLD_ID, type ActorAssignment, type ActorId, type Message, type WorkerEvent } from './protocol.ts';
+import { createMessage, WORLD_ID, type ActorAssignment, type ActorId, type Message, type WorkerEvent } from './protocol.ts';
 import { normalizePopulation, summarizePopulation, type Population } from './stats.ts';
 import { ThreadPool } from './threadPool.ts';
+import * as roster from './rosterAgent.ts';
 
 export interface WorldOptions {
     readonly threadPoolSize?: number;
     readonly print?: (line: string) => void;
 }
 
+type PendingWaiter = {
+    readonly resolve: (message: Message) => void;
+    readonly reject: (error: Error) => void;
+    readonly timer: ReturnType<typeof setTimeout>;
+};
+
 export class World {
     readonly #assignments: ActorAssignment[];
+    readonly #roster: ActorAssignment;
     readonly #print: (line: string) => void;
     readonly #threadPoolSize: number | undefined;
     readonly #routes = new Map<ActorId, number>();
     readonly #readyThreads = new Set<number>();
     readonly #doneThreads = new Set<number>();
+    readonly #pending = new Map<ActorId, PendingWaiter>();
     #readyWaiter: (() => void) | null = null;
     #doneWaiter: (() => void) | null = null;
     #pool: ThreadPool | null = null;
     #running = false;
-    readonly #pending = new Map<ActorId, { resolve: (message: Message) => void; reject: (error: Error) => void; timer: ReturnType<typeof setTimeout> }>();
 
     constructor(population: Population, options: WorldOptions = {}) {
         this.#assignments = normalizePopulation(population);
+        this.#roster = { id: roster.ROSTER_AGENT_ID, type: roster.type, moduleUrl: roster.moduleUrl, options: {} };
         this.#print = options.print ?? ((line: string): void => console.log(line));
         this.#threadPoolSize = options.threadPoolSize;
     }
@@ -46,10 +55,9 @@ export class World {
         if (this.#running) {
             throw new Error('мир уже запущен');
         }
-        const total = this.#assignments.length;
         const pool = new ThreadPool({
             size: this.#threadPoolSize,
-            maxWorkers: total,
+            maxWorkers: this.#assignments.length,
             onEvent: (event: WorkerEvent, threadIndex: number): void => {
                 this.#onEvent(event, threadIndex);
             },
@@ -62,7 +70,8 @@ export class World {
 
         const workerCount = pool.size;
         const perThread: ActorAssignment[][] = Array.from({ length: workerCount }, () => []);
-        this.#assignments.forEach((assignment, index) => {
+        const all = [this.#roster, ...this.#assignments];
+        all.forEach((assignment, index) => {
             const threadIndex = index % workerCount;
             this.#routes.set(assignment.id, threadIndex);
             perThread[threadIndex]?.push(assignment);
@@ -75,6 +84,7 @@ export class World {
             pool.post(threadIndex, { kind: 'start', actors });
         });
         await ready;
+        this.#publishRoster();
     }
 
     async stop(): Promise<void> {
@@ -115,6 +125,11 @@ export class World {
             this.#pending.set(to, { resolve, reject, timer });
             this.send(WORLD_ID, to, message);
         });
+    }
+
+    #publishRoster(): void {
+        const agents = this.#assignments.map(({ id, type }) => ({ id, type }));
+        this.send(WORLD_ID, roster.ROSTER_AGENT_ID, createMessage(roster.ROSTER_SNAPSHOT, { agents }));
     }
 
     #accept(from: ActorId, message: Message): void {
