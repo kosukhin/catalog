@@ -31,6 +31,7 @@
 | `agents/humanAgent.ts` | [humanAgent.md](humanAgent.md) | `test/humanAgent.test.ts` | 4 |
 | `agents/humanCatalogAgent.ts` | [humanCatalogAgent.md](humanCatalogAgent.md) | `test/humanCatalogAgent.test.ts` | 2 |
 | `agents/tickAgent.ts` | [tickAgent.md](tickAgent.md) | `test/tickAgent.test.ts` | 2 |
+| `agents/physicsAgent.ts` | [physicsAgent.md](physicsAgent.md) | `test/physicsAgent.test.ts` | 2 |
 | `agents/index.ts` | [agents-index.md](agents-index.md) | `test/agents-index.test.ts` | 4 |
 
 ## Сервер и дашборд (`server/`)

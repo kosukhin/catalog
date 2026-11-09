@@ -5,7 +5,7 @@ import { assertAgentPlugin } from '../lib/agentPlugin.ts';
 
 describe('agents index', () => {
     it('собирает все модули агентов мира', () => {
-        assert.deepEqual(Object.keys(agents).sort(), ['dayAgent', 'humanAgent', 'humanCatalogAgent', 'tickAgent']);
+        assert.deepEqual(Object.keys(agents).sort(), ['dayAgent', 'humanAgent', 'humanCatalogAgent', 'physicsAgent', 'tickAgent']);
     });
 
     it('каждый модуль подходит для состава мира', () => {
@@ -20,7 +20,7 @@ describe('agents index', () => {
     it('типы агентов не повторяются', () => {
         const types = Object.values(agents).map((plugin) => plugin.type);
 
-        assert.deepEqual(types, ['DayAgent', 'HumanAgent', 'HumanCatalogAgent', 'TickAgent']);
+        assert.deepEqual(types, ['DayAgent', 'HumanAgent', 'HumanCatalogAgent', 'PhysicsAgent', 'TickAgent']);
         assert.equal(new Set(types).size, types.length);
     });
 });
