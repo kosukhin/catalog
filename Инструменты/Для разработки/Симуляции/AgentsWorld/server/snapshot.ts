@@ -1,11 +1,14 @@
-import { createMessage, STATUS_REQUEST, WORLD_ID, type ActorId, type Message, type StatusReport } from '../lib/protocol.ts';
+import { createMessage, type ActorId, type Message } from '../lib/protocol/message.ts';
+import { STATUS_REQUEST, WORLD_ID, type StatusReport } from '../lib/protocol/names.ts';
 import { TIME_REQUEST, type TimeReport } from '../agents/dayAgent.ts';
 import { PHYSICS_LIST, PHYSICS_STATE, type PhysicsState } from '../agents/physicsAgent.ts';
 
 export interface WorldQuery {
-    readonly running: boolean;
-    readonly threadCount: number;
-    readonly actors: readonly { readonly id: ActorId; readonly type: string }[];
+    state(): {
+        readonly running: boolean;
+        readonly threadCount: number;
+        readonly actors: readonly { readonly id: ActorId; readonly type: string }[];
+    };
     ask(to: ActorId, message: Message, timeoutMs?: number): Promise<Message>;
 }
 
@@ -26,10 +29,11 @@ export interface WorldSnapshot {
 }
 
 export async function takeSnapshot(world: WorldQuery, clockId: string, timeoutMs = 500): Promise<WorldSnapshot> {
-    const agents = await Promise.all(world.actors.map((actor) => readAgent(world, actor, timeoutMs)));
+    const plan = world.state();
+    const agents = await Promise.all(plan.actors.map((actor) => readAgent(world, actor, timeoutMs)));
     return {
-        running: world.running,
-        threadCount: world.threadCount,
+        running: plan.running,
+        threadCount: plan.threadCount,
         total: agents.length,
         byType: countByType(agents),
         clock: await takeClock(world, clockId, timeoutMs),

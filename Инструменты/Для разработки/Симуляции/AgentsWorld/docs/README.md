@@ -3,22 +3,46 @@
 Один модуль — один файл документации. Файлы названы так же, как модули.
 Тесты лежат в `test/` и названы `<модуль>.test.ts`.
 
+## Правило размера модуля
+
+| Что за модуль | Лимит |
+|---|---|
+| модуль с классом | один файл — один класс: ≤ 4 свойств и ≤ 3 методов (без конструктора) |
+| модуль без класса | ≤ 4 констант **или** ≤ 3 функций |
+
+Геттеров и сеттеров в коде нет: состояние актора читается методом `state()` или
+запросом `status-request`. Крупные модули разложены на подмодули в поддиректориях
+(`lib/protocol/`, `lib/pool/`, `lib/world/`, `lib/runtime/`, `lib/roster/`,
+`agents/human/`, `agents/physics/`, `agents/toilet/`, `agents/house/`, `agents/bank/`,
+`agents/day/`, `agents/tick/`, `agents/bulletin/`, `client/physics/`).
+
 ## Ядро (`lib/`) — не знает агентов моделей (+ служебный реестр)
 
-| Модуль | Документация | Тест | Импортов |
-|---|---|---|---|
-| `lib/protocol.ts` | [protocol.md](protocol.md) | `test/protocol.test.ts` | 0 |
-| `lib/mailbox.ts` | [mailbox.md](mailbox.md) | `test/mailbox.test.ts` | 1 |
-| `lib/actor.ts` | [actor.md](actor.md) | `test/actor.test.ts` | 1 |
-| `lib/actorRuntime.ts` | [actorRuntime.md](actorRuntime.md) | `test/actorRuntime.test.ts` | 3 |
-| `lib/stats.ts` | [stats.md](stats.md) | `test/stats.test.ts` | 2 |
-| `lib/agentPlugin.ts` | [agentPlugin.md](agentPlugin.md) | `test/agentPlugin.test.ts` | 1 |
-| `lib/agentLoader.ts` | [agentLoader.md](agentLoader.md) | `test/agentLoader.test.ts` | 1 |
-| `lib/threadPool.ts` | [threadPool.md](threadPool.md) | `test/threadPool.test.ts` | 3 |
-| `lib/workerEntry.ts` | [workerEntry.md](workerEntry.md) | `test/workerEntry.test.ts` | 4 |
-| `lib/world.ts` | [world.md](world.md) | `test/world.test.ts` | 4 |
-| `lib/rosterAgent.ts` | [rosterAgent.md](rosterAgent.md) | `test/rosterAgent.test.ts` | 2 |
-| `lib/index.ts` | [index.md](index.md) | `test/index.test.ts` | 4 |
+| Модуль | Документация | Тест |
+|---|---|---|
+| `lib/protocol/message.ts` | [protocol.md](protocol.md) | `test/protocol.test.ts` |
+| `lib/protocol/names.ts` | [protocol.md](protocol.md) | `test/protocol.test.ts` |
+| `lib/protocol/worker.ts` | [protocol.md](protocol.md) | `test/protocol.test.ts` |
+| `lib/mailbox.ts` | [mailbox.md](mailbox.md) | `test/mailbox.test.ts` |
+| `lib/actor.ts` | [actor.md](actor.md) | `test/actor.test.ts` |
+| `lib/actorRuntime.ts` | [actorRuntime.md](actorRuntime.md) | `test/actorRuntime.test.ts` |
+| `lib/runtime/createContext.ts` | [actorRuntime.md](actorRuntime.md) | `test/actorRuntime.test.ts` |
+| `lib/runtime/pump.ts` | [actorRuntime.md](actorRuntime.md) | `test/actorRuntime.test.ts` |
+| `lib/stats.ts` | [stats.md](stats.md) | `test/stats.test.ts` |
+| `lib/agentPlugin.ts` | [agentPlugin.md](agentPlugin.md) | `test/agentPlugin.test.ts` |
+| `lib/agentLoader.ts` | [agentLoader.md](agentLoader.md) | `test/agentLoader.test.ts` |
+| `lib/threadPool.ts` | [threadPool.md](threadPool.md) | `test/threadPool.test.ts` |
+| `lib/pool/poolSize.ts` | [threadPool.md](threadPool.md) | `test/threadPool.test.ts` |
+| `lib/pool/workerSet.ts` | [threadPool.md](threadPool.md) | `test/threadPool.test.ts` |
+| `lib/workerEntry.ts` | [workerEntry.md](workerEntry.md) | `test/workerEntry.test.ts` |
+| `lib/world.ts` | [world.md](world.md) | `test/world.test.ts` |
+| `lib/world/routes.ts` | [world.md](world.md) | `test/world.test.ts` |
+| `lib/world/waitFor.ts` | [world.md](world.md) | `test/world.test.ts` |
+| `lib/world/pendingReplies.ts` | [world.md](world.md) | `test/world.test.ts` |
+| `lib/rosterAgent.ts` | [rosterAgent.md](rosterAgent.md) | `test/rosterAgent.test.ts` |
+| `lib/roster/entries.ts` | [rosterAgent.md](rosterAgent.md) | `test/rosterAgent.test.ts` |
+| `lib/roster/readRequest.ts` | [rosterAgent.md](rosterAgent.md) | `test/rosterAgent.test.ts` |
+| `lib/index.ts` | [index.md](index.md) | `test/index.test.ts` |
 
 ## Агенты (`agents/`) — подключаются снаружи
 
@@ -36,6 +60,33 @@
 | `agents/bulletinBoardAgent.ts` | [bulletinBoardAgent.md](bulletinBoardAgent.md) | `test/bulletinBoardAgent.test.ts` | 3 |
 | `agents/toiletAgent.ts` | [toiletAgent.md](toiletAgent.md) | `test/toiletAgent.test.ts` | 4 |
 | `agents/tickAgent.ts` | [tickAgent.md](tickAgent.md) | `test/tickAgent.test.ts` | 3 |
+| `agents/human/status.ts` | [humanAgent.md](humanAgent.md) | `test/humanAgent.test.ts` |
+| `agents/human/options.ts` | [humanAgent.md](humanAgent.md) | `test/humanAgent.test.ts` |
+| `agents/human/time.ts` | [humanAgent.md](humanAgent.md) | `test/humanAgent.test.ts` |
+| `agents/human/economy.ts` | [humanAgent.md](humanAgent.md) | `test/humanAgent.test.ts` |
+| `agents/human/toilet.ts` | [humanAgent.md](humanAgent.md) | `test/humanAgent.test.ts` |
+| `agents/physics/types.ts` | [physicsAgent.md](physicsAgent.md) | `test/physicsAgent.test.ts` |
+| `agents/physics/messages.ts` | [physicsAgent.md](physicsAgent.md) | `test/physicsAgent.test.ts` |
+| `agents/physics/geometry.ts` | [physicsAgent.md](physicsAgent.md) | `test/physicsAgent.test.ts` |
+| `agents/physics/requests.ts` | [physicsAgent.md](physicsAgent.md) | `test/physicsAgent.test.ts` |
+| `agents/physics/bodies.ts` | [physicsAgent.md](physicsAgent.md) | `test/physicsAgent.test.ts` |
+| `agents/physics/motion.ts` | [physicsAgent.md](physicsAgent.md) | `test/physicsAgent.test.ts` |
+| `agents/physics/handlers.ts` | [physicsAgent.md](physicsAgent.md) | `test/physicsAgent.test.ts` |
+| `agents/toilet/status.ts` | [toiletAgent.md](toiletAgent.md) | `test/toiletAgent.test.ts` |
+| `agents/toilet/messages.ts` | [toiletAgent.md](toiletAgent.md) | `test/toiletAgent.test.ts` |
+| `agents/toilet/queue.ts` | [toiletAgent.md](toiletAgent.md) | `test/toiletAgent.test.ts` |
+| `agents/toilet/occupancy.ts` | [toiletAgent.md](toiletAgent.md) | `test/toiletAgent.test.ts` |
+| `agents/house/status.ts` | [houseAgent.md](houseAgent.md) | `test/houseAgent.test.ts` |
+| `agents/house/messages.ts` | [houseAgent.md](houseAgent.md) | `test/houseAgent.test.ts` |
+| `agents/house/purchase.ts` | [houseAgent.md](houseAgent.md) | `test/houseAgent.test.ts` |
+| `agents/house/settlement.ts` | [houseAgent.md](houseAgent.md) | `test/houseAgent.test.ts` |
+| `agents/bank/accounts.ts` | [bankAgent.md](bankAgent.md) | `test/bankAgent.test.ts` |
+| `agents/bank/requests.ts` | [bankAgent.md](bankAgent.md) | `test/bankAgent.test.ts` |
+| `agents/day/types.ts` | [dayAgent.md](dayAgent.md) | `test/dayAgent.test.ts` |
+| `agents/day/options.ts` | [dayAgent.md](dayAgent.md) | `test/dayAgent.test.ts` |
+| `agents/day/report.ts` | [dayAgent.md](dayAgent.md) | `test/dayAgent.test.ts` |
+| `agents/tick/options.ts` | [tickAgent.md](tickAgent.md) | `test/tickAgent.test.ts` |
+| `agents/bulletin/queue.ts` | [bulletinBoardAgent.md](bulletinBoardAgent.md) | `test/bulletinBoardAgent.test.ts` |
 | `agents/index.ts` | [agents-index.md](agents-index.md) | `test/agents-index.test.ts` | 9 |
 
 ## Сервер и дашборд (`server/`)

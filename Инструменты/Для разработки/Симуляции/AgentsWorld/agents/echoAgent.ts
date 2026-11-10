@@ -1,5 +1,5 @@
 import { AbstractActor, type ActorContext } from '../lib/actor.ts';
-import { createMessage, type Message } from '../lib/protocol.ts';
+import { createMessage, type Message } from '../lib/protocol/message.ts';
 
 const AGENT_TYPE = 'EchoAgent';
 
@@ -14,11 +14,10 @@ export interface EchoAgentOptions {
 const DEFAULT_GREETINGS = 2;
 
 export class EchoAgent extends AbstractActor {
-    readonly type = AGENT_TYPE;
     readonly #greetings: number;
 
     constructor(options: Readonly<Record<string, unknown>> = {}) {
-        super();
+        super(AGENT_TYPE);
         this.#greetings = readGreetings(options.greetings);
     }
 

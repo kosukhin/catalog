@@ -1,5 +1,8 @@
 import { AbstractActor, type ActorContext } from './actor.ts';
-import { createMessage, type Message } from './protocol.ts';
+import { createMessage } from './protocol/message.ts';
+import type { Message } from './protocol/message.ts';
+import { labelOf, matches, type RosterEntry, type RosterReport, type RosterUpdate } from './roster/entries.ts';
+import { readEntries, readRequest } from './roster/readRequest.ts';
 
 const AGENT_TYPE = 'RosterAgent';
 
@@ -19,35 +22,24 @@ export const ROSTER_SUBSCRIBE = 'roster-subscribe';
 
 export const ROSTER_UPDATE = 'roster-update';
 
-export interface RosterEntry {
-    readonly id: string;
-    readonly type: string;
-}
-
-export interface RosterReport {
-    readonly types: readonly string[];
-    readonly ids: readonly string[];
-}
-
-export interface RosterUpdate {
-    readonly agents: readonly RosterEntry[];
+interface RosterStatus {
+    readonly agents: Map<string, string>;
+    readonly subscribers: Map<string, readonly string[] | null>;
 }
 
 export class RosterAgent extends AbstractActor {
-    readonly type = AGENT_TYPE;
-    readonly #agents = new Map<string, string>();
-    readonly #subscribers = new Map<string, readonly string[] | null>();
+    readonly #status: RosterStatus = { agents: new Map<string, string>(), subscribers: new Map<string, readonly string[] | null>() };
+
+    constructor() {
+        super(AGENT_TYPE);
+    }
 
     idsOfTypes(types: readonly string[]): string[] {
-        return this.#matching(types).map((entry) => entry.id);
+        return matches(this.#status.agents, types).map((entry) => entry.id);
     }
 
-    get size(): number {
-        return this.#agents.size;
-    }
-
-    get subscriberCount(): number {
-        return this.#subscribers.size;
+    state(): { readonly known: number; readonly subscribers: number } {
+        return { known: this.#status.agents.size, subscribers: this.#status.subscribers.size };
     }
 
     protected override handle(message: Message, context: ActorContext): void {
@@ -73,35 +65,30 @@ export class RosterAgent extends AbstractActor {
                 context.log('подписка пришла без обратного адреса, уведомлять некого');
                 return;
             }
-            this.#subscribers.set(request.replyTo, request.types.length === 0 ? null : request.types);
+            this.#status.subscribers.set(request.replyTo, request.types.length === 0 ? null : request.types);
             context.log(`${request.replyTo} подписался на агентов «${labelOf(request.types)}»`);
-            this.#notify(request.replyTo, this.#matching(request.types), context);
+            this.#notify(request.replyTo, matches(this.#status.agents, request.types), context);
             return;
         }
         context.log(`не знаю, что делать с сообщением «${message.type}»`);
     }
 
     protected override describe(): Readonly<Record<string, unknown>> {
-        return { known: this.#agents.size, subscribers: this.#subscribers.size };
+        return { known: this.#status.agents.size, subscribers: this.#status.subscribers.size };
     }
 
     #applySnapshot(payload: unknown, context: ActorContext): void {
         const entries = readEntries(payload);
-        const added = entries.filter((entry) => this.#agents.get(entry.id) !== entry.type);
-        this.#agents.clear();
+        const added = entries.filter((entry) => this.#status.agents.get(entry.id) !== entry.type);
+        this.#status.agents.clear();
         for (const entry of entries) {
-            this.#agents.set(entry.id, entry.type);
+            this.#status.agents.set(entry.id, entry.type);
         }
-        context.log(`в реестре ${this.#agents.size} агентов`);
-        for (const [replyTo, filter] of this.#subscribers) {
+        context.log(`в реестре ${this.#status.agents.size} агентов`);
+        for (const [replyTo, filter] of this.#status.subscribers) {
             const matching = filter === null ? added : added.filter((entry) => filter.includes(entry.type));
             this.#notify(replyTo, matching, context);
         }
-    }
-
-    #matching(types: readonly string[]): RosterEntry[] {
-        const entries = [...this.#agents.entries()].map(([id, agentType]) => ({ id, type: agentType }));
-        return types.length === 0 ? entries : entries.filter((entry) => types.includes(entry.type));
     }
 
     #notify(replyTo: string, agents: readonly RosterEntry[], context: ActorContext): void {
@@ -116,53 +103,3 @@ export class RosterAgent extends AbstractActor {
 export function createAgent(_id: string, _options: Readonly<Record<string, unknown>> = {}): RosterAgent {
     return new RosterAgent();
 }
-
-function readRequest(payload: unknown): { types: string[]; replyTo: string | null } {
-    const candidate = payload as { types?: unknown; replyTo?: unknown } | undefined;
-    return { types: readTypes(candidate?.types), replyTo: readReplyTo(candidate?.replyTo) };
-}
-
-function readTypes(value: unknown): string[] {
-    if (value === undefined) {
-        return [];
-    }
-    if (!Array.isArray(value)) {
-        throw new Error('types должен быть массивом типов агентов');
-    }
-    const types: string[] = [];
-    for (const item of value) {
-        if (typeof item !== 'string' || item.trim() === '') {
-            throw new Error('каждый тип в types должен быть непустой строкой');
-        }
-        types.push(item);
-    }
-    return types;
-}
-
-function readReplyTo(value: unknown): string | null {
-    return typeof value === 'string' && value.trim() !== '' ? value : null;
-}
-
-function readEntries(payload: unknown): RosterEntry[] {
-    const candidate = payload as { agents?: unknown } | undefined;
-    if (!Array.isArray(candidate?.agents)) {
-        throw new Error('в снимке реестра нет массива agents');
-    }
-    const entries: RosterEntry[] = [];
-    for (const item of candidate.agents) {
-        const entry = item as { id?: unknown; type?: unknown } | undefined;
-        if (typeof entry?.id !== 'string' || entry.id.trim() === '') {
-            throw new Error('в снимке реестра у агента нет адреса (id)');
-        }
-        if (typeof entry.type !== 'string' || entry.type.trim() === '') {
-            throw new Error(`в снимке реестра у агента «${entry.id}» нет типа (type)`);
-        }
-        entries.push({ id: entry.id, type: entry.type });
-    }
-    return entries;
-}
-
-function labelOf(types: readonly string[]): string {
-    return types.length === 0 ? 'все' : types.join(', ');
-}
-

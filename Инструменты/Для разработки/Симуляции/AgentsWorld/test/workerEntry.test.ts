@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { Worker } from 'node:worker_threads';
-import type { WorkerEvent } from '../lib/protocol.ts';
+import type { WorkerEvent } from '../lib/protocol/worker.ts';
 
 const agentModuleUrl = new URL('../agents/echoAgent.ts', import.meta.url).href;
 const brokenModuleUrl = new URL('../lib/actor.ts', import.meta.url).href;

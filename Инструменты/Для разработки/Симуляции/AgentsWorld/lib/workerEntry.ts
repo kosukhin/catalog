@@ -1,7 +1,8 @@
 import { parentPort, threadId, type MessagePort } from 'node:worker_threads';
 import { ActorRuntime } from './actorRuntime.ts';
 import { loadAgentFactory } from './agentLoader.ts';
-import type { ActorAssignment, ActorId, Message, WorkerCommand, WorkerEvent } from './protocol.ts';
+import type { ActorId, Message } from './protocol/message.ts';
+import type { ActorAssignment, WorkerCommand, WorkerEvent } from './protocol/worker.ts';
 
 const port: MessagePort = requirePort();
 

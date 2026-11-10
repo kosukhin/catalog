@@ -2,7 +2,8 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import * as bulletin from '../agents/bulletinBoardAgent.ts';
 import { ROSTER_AGENT_ID, ROSTER_QUERY, ROSTER_REPORT } from '../lib/rosterAgent.ts';
-import { createMessage, STATUS_REQUEST, STATUS_REPORT } from '../lib/protocol.ts';
+import { createMessage } from '../lib/protocol/message.ts';
+import { STATUS_REQUEST, STATUS_REPORT } from '../lib/protocol/names.ts';
 import type { ActorContext } from '../lib/actor.ts';
 
 const { BulletinBoardAgent, BULLETIN_BOARD_AGENT_ID, BULLETIN_FIND, BULLETIN_RESULT } = bulletin;
@@ -46,7 +47,7 @@ describe('BulletinBoardAgent', () => {
 
         agent.receive(createMessage(BULLETIN_FIND, { type: 'BankAgent', replyTo: 'HumanAgent-1' }), context);
 
-        assert.equal(agent.pendingCount, 1);
+        assert.equal(agent.state().pending, 1);
         assert.equal(lastOf(sent, ROSTER_QUERY)?.to, ROSTER_AGENT_ID);
         assert.deepEqual(lastOf(sent, ROSTER_QUERY)?.payload, { types: ['BankAgent'], replyTo: BULLETIN_BOARD_AGENT_ID });
     });
@@ -58,7 +59,7 @@ describe('BulletinBoardAgent', () => {
 
         agent.receive(createMessage(ROSTER_REPORT, { types: ['BankAgent'], ids: ['BankAgent-1', 'BankAgent-2'] }), context);
 
-        assert.equal(agent.pendingCount, 0);
+        assert.equal(agent.state().pending, 0);
         assert.equal(lastOf(sent, BULLETIN_RESULT)?.to, 'HumanAgent-1');
         assert.deepEqual(lastOf(sent, BULLETIN_RESULT)?.payload, { type: 'BankAgent', ids: ['BankAgent-1', 'BankAgent-2'] });
     });
@@ -69,7 +70,7 @@ describe('BulletinBoardAgent', () => {
 
         agent.receive(createMessage(BULLETIN_FIND, { type: 'BankAgent' }), context);
 
-        assert.equal(agent.pendingCount, 0);
+        assert.equal(agent.state().pending, 0);
         assert.equal(sent.length, 0);
         assert.match(log.at(-1) ?? '', /без обратного адреса/);
     });
@@ -90,15 +91,15 @@ describe('BulletinBoardAgent', () => {
         agent.receive(createMessage(BULLETIN_FIND, { type: 'BankAgent', replyTo: 'HumanAgent-2' }), context);
         agent.receive(createMessage(BULLETIN_FIND, { type: 'BankAgent', replyTo: 'HumanAgent-3' }), context);
 
-        assert.equal(agent.waitingFor('BankAgent'), 3);
+        assert.equal(agent.state().waitingFor('BankAgent'), 3);
         assert.equal(sent.filter((item) => item.type === ROSTER_QUERY).length, 3);
 
         agent.receive(createMessage(ROSTER_REPORT, { types: ['BankAgent'], ids: ['BankAgent-1'] }), context);
         agent.receive(createMessage(ROSTER_REPORT, { types: ['BankAgent'], ids: ['BankAgent-1'] }), context);
         agent.receive(createMessage(ROSTER_REPORT, { types: ['BankAgent'], ids: ['BankAgent-1'] }), context);
 
-        assert.equal(agent.waitingFor('BankAgent'), 0);
-        assert.equal(agent.pendingCount, 0);
+        assert.equal(agent.state().waitingFor('BankAgent'), 0);
+        assert.equal(agent.state().pending, 0);
         assert.deepEqual(
             sent.filter((item) => item.type === BULLETIN_RESULT).map((item) => item.to),
             ['HumanAgent-1', 'HumanAgent-2', 'HumanAgent-3'],
@@ -112,14 +113,14 @@ describe('BulletinBoardAgent', () => {
         agent.receive(createMessage(BULLETIN_FIND, { type: 'HouseAgent', replyTo: 'HumanAgent-2' }), context);
         agent.receive(createMessage(BULLETIN_FIND, { type: 'BankAgent', replyTo: 'HumanAgent-3' }), context);
 
-        assert.equal(agent.pendingCount, 3);
-        assert.equal(agent.waitingFor('BankAgent'), 2);
-        assert.equal(agent.waitingFor('HouseAgent'), 1);
+        assert.equal(agent.state().pending, 3);
+        assert.equal(agent.state().waitingFor('BankAgent'), 2);
+        assert.equal(agent.state().waitingFor('HouseAgent'), 1);
 
         agent.receive(createMessage(ROSTER_REPORT, { types: ['HouseAgent'], ids: ['HouseAgent-1'] }), context);
 
-        assert.equal(agent.waitingFor('BankAgent'), 2);
-        assert.equal(agent.waitingFor('HouseAgent'), 0);
+        assert.equal(agent.state().waitingFor('BankAgent'), 2);
+        assert.equal(agent.state().waitingFor('HouseAgent'), 0);
         assert.equal(lastOf(sent, BULLETIN_RESULT)?.to, 'HumanAgent-2');
     });
 
@@ -131,7 +132,7 @@ describe('BulletinBoardAgent', () => {
         agent.receive(createMessage(ROSTER_REPORT, { types: ['BankAgent'], ids: ['BankAgent-1'] }), context);
         agent.receive(createMessage(ROSTER_REPORT, { types: ['BankAgent'], ids: ['BankAgent-1'] }), context);
 
-        assert.equal(agent.pendingCount, 0);
+        assert.equal(agent.state().pending, 0);
         assert.equal(sent.filter((item) => item.type === BULLETIN_RESULT).length, 1);
         assert.match(log.at(-1) ?? '', /а запроса не было/);
     });

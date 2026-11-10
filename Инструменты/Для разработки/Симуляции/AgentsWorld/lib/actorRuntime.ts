@@ -1,6 +1,8 @@
 import { Mailbox } from './mailbox.ts';
 import type { Actor, ActorContext } from './actor.ts';
-import type { ActorId, Message } from './protocol.ts';
+import type { ActorId, Message } from './protocol/message.ts';
+import { createContext } from './runtime/createContext.ts';
+import { pump } from './runtime/pump.ts';
 
 export interface ActorPorts {
     send(to: ActorId, message: Message): void;
@@ -14,80 +16,72 @@ export interface ActorRuntimeOptions {
     readonly ports: ActorPorts;
 }
 
+interface RunStatus {
+    readonly mailbox: Mailbox;
+    loop: Promise<void> | null;
+    stopped: boolean;
+}
+
+export interface RuntimeReport {
+    readonly id: ActorId;
+    readonly type: string;
+    readonly pending: number;
+    readonly context: ActorContext;
+}
+
 export class ActorRuntime {
     readonly #actor: Actor;
     readonly #ports: ActorPorts;
-    readonly #mailbox = new Mailbox();
     readonly #context: ActorContext;
-    #loop: Promise<void> | null = null;
-    #stopped = false;
+    readonly #status: RunStatus = { mailbox: new Mailbox(), loop: null, stopped: false };
 
     constructor(options: ActorRuntimeOptions) {
         this.#actor = options.actor;
         this.#ports = options.ports;
-        this.#context = {
-            id: options.id,
+        this.#context = createContext(options.id, {
             send: (to: ActorId, message: Message): void => {
-                this.#ports.send(to, message);
+                options.ports.send(to, message);
             },
             log: (text: string): void => {
-                this.#ports.log(text);
+                options.ports.log(text);
             },
+        });
+    }
+
+    state(): RuntimeReport {
+        return {
+            id: this.#context.id,
+            type: this.#actor.type,
+            pending: this.#status.mailbox.pending(),
+            context: this.#context,
         };
     }
 
-    get id(): ActorId {
-        return this.#context.id;
-    }
-
-    get type(): string {
-        return this.#actor.type;
-    }
-
-    get pending(): number {
-        return this.#mailbox.size;
-    }
-
-    get context(): ActorContext {
-        return this.#context;
-    }
-
     async start(): Promise<void> {
-        if (this.#loop) {
-            throw new Error(`актор ${this.id} уже запущен`);
+        if (this.#status.loop) {
+            throw new Error(`актор ${this.#context.id} уже запущен`);
         }
         await this.#actor.start?.(this.#context);
-        this.#loop = this.#pump();
+        this.#status.loop = pump(this.#status.mailbox, this.#actor, this.#context, (error: unknown): void => {
+            this.#ports.onError(this.#context.id, error);
+        });
     }
 
     deliver(from: ActorId, message: Message): boolean {
-        if (this.#stopped) {
+        if (this.#status.stopped) {
             return false;
         }
-        return this.#mailbox.put({ from, message });
+        return this.#status.mailbox.put({ from, message });
     }
 
     async stop(): Promise<void> {
-        if (this.#stopped) {
+        if (this.#status.stopped) {
             return;
         }
-        this.#stopped = true;
-        this.#mailbox.close();
-        await this.#loop;
+        this.#status.stopped = true;
+        this.#status.mailbox.close();
+        await this.#status.loop;
         await this.#actor.stop?.(this.#context);
     }
-
-    async #pump(): Promise<void> {
-        for (;;) {
-            const envelope = await this.#mailbox.take();
-            if (envelope === undefined) {
-                return;
-            }
-            try {
-                await this.#actor.receive(envelope.message, this.#context);
-            } catch (error) {
-                this.#ports.onError(this.id, error);
-            }
-        }
-    }
 }
+

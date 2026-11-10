@@ -33,3 +33,14 @@ WebGL.
 `test/physicsView.test.ts` — цвет по типу, «движется/стоит», размер и центр границ,
 формат точки, состав строк панели, подпись времени мира (с ведущим нулём и фазой),
 прочерк без часов, строка статуса.
+
+## Разложение на подмодули
+
+| Подмодуль | Что содержит |
+|---|---|
+| `client/physics/color.ts` | `bodyColor`, `labelOf`, `isMoving` |
+| `client/physics/format.ts` | `boxOf`, `formatPoint`, `clockLabel`, `round` |
+| `client/physics/rows.ts` | `stateRows`, `statusLine` |
+
+`client/physicsView.ts` остался тонким фасадом: он только ре-экспортирует функции,
+поэтому импорты сцены и тестов не изменились.

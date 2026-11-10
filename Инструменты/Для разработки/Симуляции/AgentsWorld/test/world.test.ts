@@ -1,6 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { World, createMessage, WORLD_ID, type Population } from '../lib/index.ts';
+import { World, createMessage, WORLD_ID } from '../lib/index.ts';
+import type { Population } from '../lib/stats.ts';
 import * as echoAgent from '../agents/echoAgent.ts';
 import { ROSTER_AGENT_ID, ROSTER_QUERY, ROSTER_REPORT } from '../lib/rosterAgent.ts';
 
@@ -18,14 +19,14 @@ describe('World', () => {
     it('принимает статистику и создаёт нужное число агентов', () => {
         const world = new World(new Map([[echoAgent, 3]]), { print: () => {} });
 
-        assert.equal(world.actors.length, 3);
-        assert.deepEqual(world.population, { [echoAgent.type]: 3 });
+        assert.equal(world.state().actors.length, 3);
+        assert.deepEqual(world.state().population, { [echoAgent.type]: 3 });
         assert.deepEqual(
-            world.actors.map((assignment) => assignment.id),
+            world.state().actors.map((assignment) => assignment.id),
             ['EchoAgent-1', 'EchoAgent-2', 'EchoAgent-3'],
         );
-        assert.equal(world.running, false);
-        assert.equal(world.threadCount, 0);
+        assert.equal(world.state().running, false);
+        assert.equal(world.state().threadCount, 0);
     });
 
     it('run поднимает мир, агенты работают в разных потоках', async () => {
@@ -33,22 +34,22 @@ describe('World', () => {
         const world = new World(new Map([[echoAgent, 4]]), { print: (line) => lines.push(line), threadPoolSize: 2 });
 
         await world.run();
-        assert.equal(world.running, true);
-        assert.equal(world.threadCount, 2);
+        assert.equal(world.state().running, true);
+        assert.equal(world.state().threadCount, 2);
 
         await waitFor(() => lines.filter((line) => line.includes('эхо:')).length >= 8);
         const threadIds = new Set(lines.map((line) => /поток (\d+)/.exec(line)?.[1]).filter((id) => id !== undefined));
         assert.ok(threadIds.size >= 2, `ожидали минимум два потока, получили ${[...threadIds].join(', ')}`);
 
         await world.stop();
-        assert.equal(world.running, false);
+        assert.equal(world.state().running, false);
     });
 
     it('число потоков не превышает число агентов', async () => {
         const world = new World(new Map([[echoAgent, 1]]), { print: () => {}, threadPoolSize: 4 });
 
         await world.run();
-        assert.equal(world.threadCount, 1);
+        assert.equal(world.state().threadCount, 1);
 
         await world.stop();
     });
@@ -67,7 +68,7 @@ describe('World', () => {
         const world = new World(new Map([[echoAgent, 1]]), { print: () => {}, threadPoolSize: 1 });
 
         await world.stop();
-        assert.equal(world.running, false);
+        assert.equal(world.state().running, false);
 
         await world.run();
         await assert.rejects(() => world.run(), /мир уже запущен/);
@@ -132,7 +133,7 @@ describe('World', () => {
 
         assert.equal(reply.type, ROSTER_REPORT);
         assert.deepEqual((reply.payload as { ids?: unknown } | undefined)?.ids, ['EchoAgent-1', 'EchoAgent-2']);
-        assert.deepEqual(world.actors.map((actor) => actor.id), ['EchoAgent-1', 'EchoAgent-2']);
+        assert.deepEqual(world.state().actors.map((actor) => actor.id), ['EchoAgent-1', 'EchoAgent-2']);
         await world.stop();
     });
 });

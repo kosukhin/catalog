@@ -35,7 +35,7 @@ describe('server index', () => {
             await running.stop();
         }
 
-        assert.equal(running.world.running, false);
+        assert.equal(running.world.state().running, false);
     });
 
     it('виртуальное время идёт быстрее реального', async () => {

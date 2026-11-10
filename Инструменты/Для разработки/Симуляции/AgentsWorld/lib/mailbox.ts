@@ -1,4 +1,4 @@
-import type { ActorId, Message } from './protocol.ts';
+import type { ActorId, Message } from './protocol/message.ts';
 
 export interface Envelope {
     readonly from: ActorId;
@@ -6,17 +6,9 @@ export interface Envelope {
 }
 
 export class Mailbox {
-    #queue: Envelope[] = [];
-    #waiters: Array<(envelope: Envelope | undefined) => void> = [];
+    readonly #queued: Envelope[] = [];
+    readonly #waiters: Array<(envelope: Envelope | undefined) => void> = [];
     #closed = false;
-
-    get size(): number {
-        return this.#queue.length;
-    }
-
-    get closed(): boolean {
-        return this.#closed;
-    }
 
     put(envelope: Envelope): boolean {
         if (this.#closed) {
@@ -27,12 +19,12 @@ export class Mailbox {
             waiter(envelope);
             return true;
         }
-        this.#queue.push(envelope);
+        this.#queued.push(envelope);
         return true;
     }
 
     take(): Promise<Envelope | undefined> {
-        const envelope = this.#queue.shift();
+        const envelope = this.#queued.shift();
         if (envelope) {
             return Promise.resolve(envelope);
         }
@@ -49,10 +41,15 @@ export class Mailbox {
             return;
         }
         this.#closed = true;
-        const waiters = this.#waiters;
-        this.#waiters = [];
+        const waiters = [...this.#waiters];
+        this.#waiters.length = 0;
         for (const waiter of waiters) {
             waiter(undefined);
         }
     }
+
+    pending(): number {
+        return this.#queued.length;
+    }
 }
+

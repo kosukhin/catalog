@@ -115,3 +115,25 @@ context.send(PHYSICS_AGENT_ID, createMessage(PHYSICS_MOVE_TO, { id: context.id, 
 нескольких тел, сообщение «обойти некуда», отказы на незарегистрированное тело/цель и
 нулевое направление, вопрос о позиции, полное состояние физики, состояние для
 дашборда, незнакомое сообщение, проверка настроек.
+
+## Разложение на подмодули
+
+| Подмодуль | Что содержит |
+|---|---|
+| `agents/physics/types.ts` | `Point`, `Bounds`, `PhysicsBody`, `PhysicsState`, `Move`, `PhysicsStatus` и отчёты |
+| `agents/physics/messages.ts` | константы сообщений физики (чтобы не было циклов) |
+| `agents/physics/geometry.ts` | векторы, расстояния, поворот на плоскости, границы, `formatPoint` |
+| `agents/physics/requests.ts` | разбор payload: регистрация, `move`, `move-to`, позиция, состояние, границы |
+| `agents/physics/bodies.ts` | свободное место, проверка пути (`blocked`), ближайшее тело |
+| `agents/physics/motion.ts` | шаг движения, обход препятствий, завершение и `physics-arrived` |
+| `agents/physics/handlers.ts` | обработчики сообщений: регистрация, установка объекта, запросы движения и состояния |
+
+Класс `PhysicsAgent` держит одно свойство `#status` и методы `state()`, `start`,
+`handle`, `describe`. Геттеров (`speed`, `bodyCount`, …) больше нет — состояние
+читается через `state()` или `physics-list`.
+
+## Тест
+
+`test/physicsAgent.test.ts` — регистрация тел, поиск свободного места, отказы вне
+границ и на занятом пути, движение к точке и к телу, обход препятствий, установка
+объектов, отчёты о прибытии и снимок `physics-list`.

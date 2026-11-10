@@ -39,3 +39,13 @@
 ошибки загрузки, сборка имён по адресам, пропуск агентов без имени и устойчивость к
 чужому ответу, загрузка имён с отдельного адреса, загрузка времени мира, `null` при
 молчании часов и устойчивость `toClock` к чужому ответу.
+
+## Разложение на подмодули
+
+| Подмодуль | Что содержит |
+|---|---|
+| `client/physics/fetcher.ts` | тип `PhysicsFetcher` и `defaultFetcher` (проверка `response.ok`) |
+| `client/physics/names.ts` | `loadAgentNames` и `toNames` (разбор `/api/agents`) |
+
+`client/physicsApi.ts` оставляет три функции: `loadPhysicsState`, `loadWorldClock`,
+`toClock`, и ре-экспортирует тип `PhysicsFetcher`.

@@ -2,11 +2,14 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { ActorRuntime, type ActorPorts } from '../lib/actorRuntime.ts';
 import { AbstractActor } from '../lib/actor.ts';
-import { createMessage, type Message } from '../lib/protocol.ts';
+import { createMessage, type Message } from '../lib/protocol/message.ts';
 
 class Collector extends AbstractActor {
-    readonly type = 'Collector';
     readonly received: string[] = [];
+
+    constructor() {
+        super('Collector');
+    }
     started = 0;
     stopped = 0;
     failOn: string | null = null;
@@ -73,7 +76,7 @@ describe('ActorRuntime', () => {
 
         await runtime.stop();
         assert.equal(actor.stopped, 1);
-        assert.equal(runtime.pending, 0);
+        assert.equal(runtime.state().pending, 0);
     });
 
     it('сообщения и лог уходят через ports, а не напрямую', async () => {
@@ -81,10 +84,10 @@ describe('ActorRuntime', () => {
         const fixture = createPorts();
         const runtime = new ActorRuntime({ id: 'c-2', actor, ports: fixture.ports });
 
-        runtime.context.send('c-3', createMessage('в другой ящик'));
+        runtime.state().context.send('c-3', createMessage('в другой ящик'));
 
         assert.deepEqual(fixture.sent, [{ to: 'c-3', type: 'в другой ящик' }]);
-        assert.equal(runtime.context.id, 'c-2');
+        assert.equal(runtime.state().context.id, 'c-2');
     });
 
     it('ошибка обработчика не останавливает цикл', async () => {

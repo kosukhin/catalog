@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { Mailbox } from '../lib/mailbox.ts';
-import { createMessage } from '../lib/protocol.ts';
+import { createMessage } from '../lib/protocol/message.ts';
 
 describe('Mailbox', () => {
     it('выдаёт сообщения в порядке FIFO', async () => {
@@ -9,14 +9,14 @@ describe('Mailbox', () => {
         mailbox.put({ from: 'a', message: createMessage('первое') });
         mailbox.put({ from: 'b', message: createMessage('второе') });
 
-        assert.equal(mailbox.size, 2);
+        assert.equal(mailbox.pending(), 2);
 
         const first = await mailbox.take();
         const second = await mailbox.take();
         assert.equal(first?.message.type, 'первое');
         assert.equal(first?.from, 'a');
         assert.equal(second?.message.type, 'второе');
-        assert.equal(mailbox.size, 0);
+        assert.equal(mailbox.pending(), 0);
     });
 
     it('take ждёт сообщение, если очередь пуста', async () => {
@@ -32,7 +32,7 @@ describe('Mailbox', () => {
         const mailbox = new Mailbox();
         mailbox.close();
 
-        assert.equal(mailbox.closed, true);
+        assert.equal(mailbox.pending(), 0);
         assert.equal(mailbox.put({ from: 'a', message: createMessage('мимо') }), false);
     });
 

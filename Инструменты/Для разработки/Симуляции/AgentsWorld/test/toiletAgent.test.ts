@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import * as toilet from '../agents/toiletAgent.ts';
 import { DAY_AGENT_ID, TIME_REQUEST, TIME_REPORT } from '../agents/dayAgent.ts';
 import { PHYSICS_AGENT_ID, PHYSICS_BODY, PHYSICS_POSITION, PHYSICS_REGISTER } from '../agents/physicsAgent.ts';
-import { createMessage, TICK, STATUS_REQUEST, STATUS_REPORT } from '../lib/protocol.ts';
+import { createMessage } from '../lib/protocol/message.ts';
+import { TICK, STATUS_REQUEST, STATUS_REPORT } from '../lib/protocol/names.ts';
 import type { ActorContext } from '../lib/actor.ts';
 
 const {
@@ -106,7 +107,7 @@ describe('ToiletAgent', () => {
         answerPositions(agent, fixture, { H1: { x: 0, y: 0 } });
 
         assert.equal(lastOf(fixture.sent, TOILET_GRANTED)?.to, 'H1');
-        assert.equal(agent.queueLength, 0);
+        assert.equal(agent.state().queueLength, 0);
     });
 
     it('место достаётся тому, кто ближе к туалету', () => {
@@ -124,7 +125,7 @@ describe('ToiletAgent', () => {
         answerPositions(agent, fixture, { H2: { x: 0, y: 10 }, H3: { x: 0, y: 45 } });
 
         assert.equal(lastOf(fixture.sent, TOILET_GRANTED)?.to, 'H3');
-        assert.equal(agent.queueLength, 1);
+        assert.equal(agent.state().queueLength, 1);
         assert.match(fixture.log.at(-1) ?? '', /H3 ближе всех/);
     });
 
@@ -138,7 +139,7 @@ describe('ToiletAgent', () => {
 
         agent.receive(createMessage(TOILET_REQUEST, { id: 'H1', replyTo: 'H1' }), fixture.context);
         assert.equal(grantsTo(fixture.sent, 'H1'), 1, 'вышедшего сразу не пускают обратно');
-        assert.equal(agent.queueLength, 1);
+        assert.equal(agent.state().queueLength, 1);
 
         agent.receive(createMessage(TOILET_REQUEST, { id: 'H2', replyTo: 'H2' }), fixture.context);
         answerPositions(agent, fixture, { H2: { x: 0, y: 40 } });
@@ -160,7 +161,7 @@ describe('ToiletAgent', () => {
         answerPositions(agent, fixture, { H1: null });
 
         assert.equal(lastOf(fixture.sent, TOILET_GRANTED), undefined);
-        assert.equal(agent.queueLength, 1);
+        assert.equal(agent.state().queueLength, 1);
         assert.match(fixture.log.at(-1) ?? '', /не нашлось в пространстве/);
     });
 
@@ -170,22 +171,22 @@ describe('ToiletAgent', () => {
         agent.receive(createMessage(TOILET_REQUEST, { id: 'H1', replyTo: 'H1' }), fixture.context);
         answerPositions(agent, fixture, { H1: { x: 0, y: 0 } });
         agent.receive(createMessage(TOILET_ENTER, { id: 'H1' }), fixture.context);
-        assert.equal(agent.occupant, 'H1');
+        assert.equal(agent.state().occupant, 'H1');
         assert.equal(lastOf(fixture.sent, TIME_REQUEST)?.to, DAY_AGENT_ID);
 
         agent.receive(createMessage(TOILET_REQUEST, { id: 'H2', replyTo: 'H2' }), fixture.context);
 
         agent.receive(createMessage(TIME_REPORT, { iso: gameTime(10, 0) }), fixture.context);
         agent.receive(createMessage(TIME_REPORT, { iso: gameTime(10, 10) }), fixture.context);
-        assert.equal(agent.occupant, 'H1');
+        assert.equal(agent.state().occupant, 'H1');
 
         agent.receive(createMessage(TIME_REPORT, { iso: gameTime(10, 20) }), fixture.context);
-        assert.equal(agent.occupant, null);
+        assert.equal(agent.state().occupant, null);
         assert.equal(lastOf(fixture.sent, TOILET_RELEASED)?.to, 'H1');
 
         answerPositions(agent, fixture, { H2: { x: 0, y: 10 } });
         assert.equal(lastOf(fixture.sent, TOILET_GRANTED)?.to, 'H2');
-        assert.equal(agent.queueLength, 0);
+        assert.equal(agent.state().queueLength, 0);
     });
 
     it('пока занят, по тику спрашивает время у часов мира', () => {
@@ -216,7 +217,7 @@ describe('ToiletAgent', () => {
 
         agent.receive(createMessage(TOILET_LEAVE, { id: 'H1' }), fixture.context);
 
-        assert.equal(agent.occupant, null);
+        assert.equal(agent.state().occupant, null);
         assert.equal(lastOf(fixture.sent, TOILET_RELEASED)?.to, 'H1');
     });
 

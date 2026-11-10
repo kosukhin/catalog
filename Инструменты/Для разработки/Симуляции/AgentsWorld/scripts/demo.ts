@@ -1,5 +1,7 @@
 import * as agents from '../agents/index.ts';
-import { World, createMessage, type AgentPlugin, type PopulationEntry } from '../lib/index.ts';
+import { World, createMessage } from '../lib/index.ts';
+import type { AgentPlugin } from '../lib/agentPlugin.ts';
+import type { PopulationEntry } from '../lib/stats.ts';
 
 const world = new World(
     new Map<AgentPlugin, number | PopulationEntry>([
@@ -15,9 +17,10 @@ const world = new World(
     ]),
 );
 
-console.log(`мир: ${world.actors.map((actor) => actor.id).join(', ')}`);
+const plan = world.state();
+console.log(`мир: ${plan.actors.map((actor) => actor.id).join(', ')}`);
 await world.run();
-console.log(`мир запущен на ${world.threadCount} потоках`);
+console.log(`мир запущен на ${world.state().threadCount} потоках`);
 
 await new Promise((resolve) => setTimeout(resolve, 1500));
 

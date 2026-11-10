@@ -1,6 +1,8 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { loadAgentNames, loadPhysicsState, loadWorldClock, toClock, toNames } from '../client/physicsApi.ts';
+import { loadPhysicsState, loadWorldClock, toClock } from '../client/physicsApi.ts';
+import { loadAgentNames, toNames } from '../client/physics/names.ts';
+import { defaultFetcher } from '../client/physics/fetcher.ts';
 
 describe('physicsApi', () => {
     it('загружает состояние физики по адресу', async () => {

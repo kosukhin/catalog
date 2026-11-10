@@ -1,3 +1,12 @@
+// client/physics/fetcher.ts
+async function defaultFetcher(url) {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+  return response;
+}
+
 // client/physicsApi.ts
 async function loadPhysicsState(url, fetcher = defaultFetcher) {
   const response = await fetcher(url);
@@ -18,6 +27,8 @@ function toClock(payload) {
   }
   return clock;
 }
+
+// client/physics/names.ts
 async function loadAgentNames(url, fetcher = defaultFetcher) {
   const response = await fetcher(url);
   return toNames(await response.json());
@@ -36,13 +47,6 @@ function toNames(payload) {
     }
   }
   return names;
-}
-async function defaultFetcher(url) {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}`);
-  }
-  return response;
 }
 
 // ../../../../node_modules/three/build/three.core.js
@@ -28465,7 +28469,7 @@ function samePoint(a, b) {
   return a.x === b.x && a.y === b.y && a.z === b.z;
 }
 
-// client/physicsView.ts
+// client/physics/color.ts
 var DEFAULT_COLOR = 9147297;
 var COLORS = [
   { prefix: "HumanAgent", color: 5213943 },
@@ -28474,24 +28478,18 @@ var COLORS = [
   { prefix: "DayAgent", color: 16172101 },
   { prefix: "BankAgent", color: 2278750 }
 ];
-function labelOf(id, names) {
-  return names[id] ?? id;
-}
 function bodyColor(id) {
   return COLORS.find((item) => id.startsWith(item.prefix))?.color ?? DEFAULT_COLOR;
 }
+function labelOf(id, names) {
+  return names[id] ?? id;
+}
+
+// client/physics/format.ts
 function boxOf(bounds) {
   return {
-    size: {
-      x: bounds.max.x - bounds.min.x,
-      y: bounds.max.y - bounds.min.y,
-      z: bounds.max.z - bounds.min.z
-    },
-    center: {
-      x: (bounds.min.x + bounds.max.x) / 2,
-      y: (bounds.min.y + bounds.max.y) / 2,
-      z: (bounds.min.z + bounds.max.z) / 2
-    }
+    size: { x: bounds.max.x - bounds.min.x, y: bounds.max.y - bounds.min.y, z: bounds.max.z - bounds.min.z },
+    center: { x: (bounds.min.x + bounds.max.x) / 2, y: (bounds.min.y + bounds.max.y) / 2, z: (bounds.min.z + bounds.max.z) / 2 }
   };
 }
 function clockLabel(clock) {
@@ -28500,9 +28498,14 @@ function clockLabel(clock) {
   }
   return `${pad(clock.hours)}:${pad(clock.minutes)} \xB7 ${clock.phase}`;
 }
-function statusLine(bodyCount, movingCount, clock) {
-  return `\u0442\u0435\u043B: ${bodyCount} \xB7 \u0434\u0432\u0438\u0436\u0435\u0442\u0441\u044F: ${movingCount} \xB7 ${clockLabel(clock)}`;
+function round(value) {
+  return Math.round(value * 100) / 100;
 }
+function pad(value) {
+  return String(value).padStart(2, "0");
+}
+
+// client/physics/rows.ts
 function stateRows(state) {
   return [
     { label: "\u0441\u043A\u043E\u0440\u043E\u0441\u0442\u044C", value: `${state.speed} \u0435\u0434./\u0441` },
@@ -28517,11 +28520,8 @@ function stateRows(state) {
     { label: "\u0433\u0440\u0430\u043D\u0438\u0446\u044B z", value: `${round(state.bounds.min.z)}\u2026${round(state.bounds.max.z)}` }
   ];
 }
-function round(value) {
-  return Math.round(value * 100) / 100;
-}
-function pad(value) {
-  return String(value).padStart(2, "0");
+function statusLine(bodyCount, movingCount, clock) {
+  return `\u0442\u0435\u043B: ${bodyCount} \xB7 \u0434\u0432\u0438\u0436\u0435\u0442\u0441\u044F: ${movingCount} \xB7 ${clockLabel(clock)}`;
 }
 
 // client/physicsScene.ts
@@ -28764,7 +28764,7 @@ function startPhysicsView() {
   };
   const names = async () => {
     try {
-      view.setNames(await loadAgentNames("/api/agents?pageSize=200"));
+      view.setNames(await loadAgentNames("/api/agents?pageSize=200", defaultFetcher));
     } catch {
       return;
     }

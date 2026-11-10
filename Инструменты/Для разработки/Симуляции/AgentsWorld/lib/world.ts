@@ -1,6 +1,12 @@
-import { createMessage, WORLD_ID, type ActorAssignment, type ActorId, type Message, type WorkerEvent } from './protocol.ts';
+import { createMessage } from './protocol/message.ts';
+import { WORLD_ID } from './protocol/names.ts';
+import type { ActorId, Message } from './protocol/message.ts';
+import type { ActorAssignment, WorkerEvent } from './protocol/worker.ts';
 import { normalizePopulation, summarizePopulation, type Population } from './stats.ts';
 import { ThreadPool } from './threadPool.ts';
+import { PendingReplies } from './world/pendingReplies.ts';
+import { assignRoutes } from './world/routes.ts';
+import { waitFor } from './world/waitFor.ts';
 import * as roster from './rosterAgent.ts';
 
 export interface WorldOptions {
@@ -8,79 +14,83 @@ export interface WorldOptions {
     readonly print?: (line: string) => void;
 }
 
-type PendingWaiter = {
-    readonly resolve: (message: Message) => void;
-    readonly reject: (error: Error) => void;
-    readonly timer: ReturnType<typeof setTimeout>;
-};
+interface WorldStatus {
+    readonly assignments: readonly ActorAssignment[];
+    readonly roster: ActorAssignment;
+    readonly print: (line: string) => void;
+    readonly threadPoolSize: number | undefined;
+    readonly replies: PendingReplies;
+    readonly routes: Map<ActorId, number>;
+    readonly readyThreads: Set<number>;
+    readonly doneThreads: Set<number>;
+    readyWaiter: (() => void) | null;
+    doneWaiter: (() => void) | null;
+    pool: ThreadPool | null;
+    running: boolean;
+}
+
 
 export class World {
-    readonly #assignments: ActorAssignment[];
-    readonly #roster: ActorAssignment;
-    readonly #print: (line: string) => void;
-    readonly #threadPoolSize: number | undefined;
-    readonly #routes = new Map<ActorId, number>();
-    readonly #readyThreads = new Set<number>();
-    readonly #doneThreads = new Set<number>();
-    readonly #pending = new Map<ActorId, PendingWaiter>();
-    #readyWaiter: (() => void) | null = null;
-    #doneWaiter: (() => void) | null = null;
-    #pool: ThreadPool | null = null;
-    #running = false;
+    readonly #status: WorldStatus;
 
     constructor(population: Population, options: WorldOptions = {}) {
-        this.#assignments = normalizePopulation(population);
-        this.#roster = { id: roster.ROSTER_AGENT_ID, type: roster.type, moduleUrl: roster.moduleUrl, options: {} };
-        this.#print = options.print ?? ((line: string): void => console.log(line));
-        this.#threadPoolSize = options.threadPoolSize;
+        this.#status = {
+            assignments: normalizePopulation(population),
+            roster: { id: roster.ROSTER_AGENT_ID, type: roster.type, moduleUrl: roster.moduleUrl, options: {} },
+            print: options.print ?? ((line: string): void => console.log(line)),
+            threadPoolSize: options.threadPoolSize,
+            replies: new PendingReplies(),
+            routes: new Map<ActorId, number>(),
+            readyThreads: new Set<number>(),
+            doneThreads: new Set<number>(),
+            readyWaiter: null,
+            doneWaiter: null,
+            pool: null,
+            running: false,
+        };
     }
 
-    get actors(): readonly ActorAssignment[] {
-        return this.#assignments;
+    state(): {
+        readonly running: boolean;
+        readonly threadCount: number;
+        readonly actors: readonly ActorAssignment[];
+        readonly population: Readonly<Record<string, number>>;
+    } {
+        return {
+            running: this.#status.running,
+            threadCount: new Set(this.#status.routes.values()).size,
+            actors: this.#status.assignments,
+            population: summarizePopulation(this.#status.assignments),
+        };
     }
 
-    get population(): Record<string, number> {
-        return summarizePopulation(this.#assignments);
-    }
-
-    get running(): boolean {
-        return this.#running;
-    }
-
-    get threadCount(): number {
-        return new Set(this.#routes.values()).size;
-    }
 
     async run(): Promise<void> {
-        if (this.#running) {
+        if (this.#status.running) {
             throw new Error('мир уже запущен');
         }
         const pool = new ThreadPool({
-            size: this.#threadPoolSize,
-            maxWorkers: this.#assignments.length,
+            size: this.#status.threadPoolSize,
+            maxWorkers: this.#status.assignments.length,
             onEvent: (event: WorkerEvent, threadIndex: number): void => {
                 this.#onEvent(event, threadIndex);
             },
             onWorkerError: (threadIndex: number, error: Error): void => {
-                this.#print(`[поток ${threadIndex}] сбой воркера: ${error.message}`);
+                this.#status.print(`[поток ${threadIndex}] сбой воркера: ${error.message}`);
             },
         });
-        this.#pool = pool;
-        this.#running = true;
+        this.#status.pool = pool;
+        this.#status.running = true;
 
-        const workerCount = pool.size;
-        const perThread: ActorAssignment[][] = Array.from({ length: workerCount }, () => []);
-        const all = [this.#roster, ...this.#assignments];
-        all.forEach((assignment, index) => {
-            const threadIndex = index % workerCount;
-            this.#routes.set(assignment.id, threadIndex);
-            perThread[threadIndex]?.push(assignment);
-        });
+        const plan = assignRoutes([this.#status.roster, ...this.#status.assignments], pool.report().size);
+        for (const [id, threadIndex] of plan.routes) {
+            this.#status.routes.set(id, threadIndex);
+        }
 
-        const ready = this.#waitFor(this.#readyThreads, workerCount, (waiter) => {
-            this.#readyWaiter = waiter;
+        const ready = waitFor(this.#status.readyThreads, plan.perThread.length, (waiter) => {
+            this.#status.readyWaiter = waiter;
         });
-        perThread.forEach((actors, threadIndex) => {
+        plan.perThread.forEach((actors, threadIndex) => {
             pool.post(threadIndex, { kind: 'start', actors });
         });
         await ready;
@@ -88,105 +98,72 @@ export class World {
     }
 
     async stop(): Promise<void> {
-        const pool = this.#pool;
-        if (!this.#running || !pool) {
+        const pool = this.#status.pool;
+        if (!this.#status.running || !pool) {
             return;
         }
-        const done = this.#waitFor(this.#doneThreads, pool.size, (waiter) => {
-            this.#doneWaiter = waiter;
+        const done = waitFor(this.#status.doneThreads, pool.report().size, (waiter) => {
+            this.#status.doneWaiter = waiter;
         });
         pool.postAll({ kind: 'stop' });
         await done;
         await pool.terminate();
-        this.#pool = null;
-        this.#running = false;
-        this.#dropPending(new Error('мир остановлен'));
+        this.#status.pool = null;
+        this.#status.running = false;
+        this.#status.replies.drop(new Error('мир остановлен'));
     }
 
     send(from: ActorId, to: ActorId, message: Message): void {
-        const threadIndex = this.#routes.get(to);
+        const threadIndex = this.#status.routes.get(to);
         if (threadIndex === undefined) {
-            this.#print(`[мир] нет агента с идентификатором ${to}`);
+            this.#status.print(`[мир] нет агента с идентификатором ${to}`);
             return;
         }
-        this.#pool?.post(threadIndex, { kind: 'deliver', from, to, message });
+        this.#status.pool?.post(threadIndex, { kind: 'deliver', from, to, message });
     }
 
     ask(to: ActorId, message: Message, timeoutMs = 1000): Promise<Message> {
-        if (!this.#routes.has(to)) {
+        if (!this.#status.routes.has(to)) {
             return Promise.reject(new Error(`нет агента с идентификатором ${to}`));
         }
-        return new Promise<Message>((resolve, reject) => {
-            const timer = setTimeout(() => {
-                this.#pending.delete(to);
-                reject(new Error(`агент ${to} не ответил за ${timeoutMs} мс`));
-            }, timeoutMs);
-            timer.unref?.();
-            this.#pending.set(to, { resolve, reject, timer });
-            this.send(WORLD_ID, to, message);
-        });
+        const reply = this.#status.replies.add(to, timeoutMs);
+        this.send(WORLD_ID, to, message);
+        return reply;
     }
+
 
     #publishRoster(): void {
-        const agents = this.#assignments.map(({ id, type }) => ({ id, type }));
+        const agents = this.#status.assignments.map(({ id, type }) => ({ id, type }));
         this.send(WORLD_ID, roster.ROSTER_AGENT_ID, createMessage(roster.ROSTER_SNAPSHOT, { agents }));
-    }
-
-    #accept(from: ActorId, message: Message): void {
-        const waiter = this.#pending.get(from);
-        if (waiter) {
-            this.#pending.delete(from);
-            clearTimeout(waiter.timer);
-            waiter.resolve(message);
-            return;
-        }
-        this.#print(`[мир] сообщение от ${from}: ${message.type}`);
-    }
-
-    #dropPending(error: Error): void {
-        for (const waiter of this.#pending.values()) {
-            clearTimeout(waiter.timer);
-            waiter.reject(error);
-        }
-        this.#pending.clear();
     }
 
     #onEvent(event: WorkerEvent, threadIndex: number): void {
         if (event.kind === 'ready') {
-            this.#readyThreads.add(threadIndex);
-            this.#readyWaiter?.();
+            this.#status.readyThreads.add(threadIndex);
+            this.#status.readyWaiter?.();
             return;
         }
         if (event.kind === 'done') {
-            this.#doneThreads.add(threadIndex);
-            this.#doneWaiter?.();
+            this.#status.doneThreads.add(threadIndex);
+            this.#status.doneWaiter?.();
             return;
         }
         if (event.kind === 'deliver') {
             if (event.to === WORLD_ID) {
-                this.#accept(event.from, event.message);
+                if (!this.#status.replies.accept(event.from, event.message)) {
+                    this.#status.print(`[мир] сообщение от ${event.from}: ${event.message.type}`);
+                }
                 return;
             }
             this.send(event.from, event.to, event.message);
             return;
         }
         if (event.kind === 'log') {
-            this.#print(`[${event.actorId} · поток ${event.threadId}] ${event.text}`);
+            this.#status.print(`[${event.actorId} · поток ${event.threadId}] ${event.text}`);
             return;
         }
         const who = event.actorId === null ? 'мир' : event.actorId;
-        this.#print(`[${who} · ошибка] ${event.text}`);
-    }
-
-    #waitFor(marks: Set<number>, expected: number, setWaiter: (waiter: () => void) => void): Promise<void> {
-        return new Promise((resolve) => {
-            const check = (): void => {
-                if (marks.size >= expected) {
-                    resolve();
-                }
-            };
-            setWaiter(check);
-            check();
-        });
+        this.#status.print(`[${who} · ошибка] ${event.text}`);
     }
 }
+

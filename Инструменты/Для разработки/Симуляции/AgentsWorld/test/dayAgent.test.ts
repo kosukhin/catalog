@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import * as dayAgent from '../agents/dayAgent.ts';
-import { createMessage } from '../lib/protocol.ts';
+import { createMessage } from '../lib/protocol/message.ts';
 import type { ActorContext } from '../lib/actor.ts';
 
 const { DayAgent, DAY_AGENT_ID, TIME_REQUEST, TIME_REPORT } = dayAgent;
@@ -127,7 +127,7 @@ describe('DayAgent', () => {
     it('по умолчанию идёт в 10 раз быстрее реального времени', () => {
         const agent = new DayAgent({ now: advancingClock(new Date(2026, 10, 8, 14, 0), 6 * 60_000) });
 
-        assert.equal(agent.timeScale, 10);
+        assert.equal(agent.state().timeScale, 10);
         assert.equal(agent.report().hours, 15, '6 реальных минут = 1 виртуальный час');
     });
 
@@ -135,9 +135,9 @@ describe('DayAgent', () => {
         const fast = new DayAgent({ now: advancingClock(new Date(2026, 10, 8, 14, 0), 60_000), timeScale: 60 });
         const slow = new DayAgent({ now: advancingClock(new Date(2026, 10, 8, 14, 0), 30 * 60_000), timeScale: 2 });
 
-        assert.equal(fast.timeScale, 60);
+        assert.equal(fast.state().timeScale, 60);
         assert.equal(fast.report().hours, 15, '1 реальная минута = 1 виртуальный час');
-        assert.equal(slow.timeScale, 2);
+        assert.equal(slow.state().timeScale, 2);
         assert.equal(slow.report().hours, 15, '30 реальных минут = 1 виртуальный час');
     });
 

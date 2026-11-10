@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import * as house from '../agents/houseAgent.ts';
 import { BANK_AGENT_ID, BANK_CHARGE, BANK_PAYMENT } from '../agents/bankAgent.ts';
 import { PHYSICS_AGENT_ID, PHYSICS_POSITION, PHYSICS_BODY } from '../agents/physicsAgent.ts';
-import { createMessage, STATUS_REQUEST, STATUS_REPORT } from '../lib/protocol.ts';
+import { createMessage } from '../lib/protocol/message.ts';
+import { STATUS_REQUEST, STATUS_REPORT } from '../lib/protocol/names.ts';
 import type { ActorContext } from '../lib/actor.ts';
 
 const { HouseAgent, HOUSE_AGENT_ID, HOUSE_BUY, HOUSE_REPORT } = house;
@@ -62,8 +63,8 @@ describe('HouseAgent', () => {
 
         agent.receive(createMessage(PHYSICS_BODY, { id: 'A', body: { id: 'A', position: { x: 5, y: 0, z: 0 } } }), context);
 
-        assert.equal(agent.houseCount, 1);
-        assert.deepEqual(agent.houseOf('A')?.position, { x: 5, y: 0, z: 0 });
+        assert.equal(agent.state().houses, 1);
+        assert.deepEqual(agent.state().houseOf('A')?.position, { x: 5, y: 0, z: 0 });
         assert.equal(lastOf(sent, HOUSE_REPORT)?.to, 'A');
         assert.equal((lastOf(sent, HOUSE_REPORT)?.payload as { accepted: boolean }).accepted, true);
         assert.equal((lastOf(sent, HOUSE_REPORT)?.payload as { houseId: string }).houseId, 'House-A');
@@ -76,7 +77,7 @@ describe('HouseAgent', () => {
 
         agent.receive(createMessage(BANK_PAYMENT, { owner: 'A', accepted: false, reason: 'недостаточно средств' }), context);
 
-        assert.equal(agent.houseCount, 0);
+        assert.equal(agent.state().houses, 0);
         assert.equal((lastOf(sent, HOUSE_REPORT)?.payload as { accepted: boolean }).accepted, false);
         assert.match((lastOf(sent, HOUSE_REPORT)?.payload as { reason: string }).reason, /недостаточно средств/);
     });
@@ -89,7 +90,7 @@ describe('HouseAgent', () => {
 
         agent.receive(createMessage(PHYSICS_BODY, { id: 'A', body: null }), context);
 
-        assert.equal(agent.houseCount, 0);
+        assert.equal(agent.state().houses, 0);
         assert.match((lastOf(sent, HOUSE_REPORT)?.payload as { reason: string }).reason, /нет точки/);
     });
 
@@ -102,7 +103,7 @@ describe('HouseAgent', () => {
 
         agent.receive(createMessage(HOUSE_BUY, { owner: 'A', replyTo: 'A' }), context);
 
-        assert.equal(agent.houseCount, 1);
+        assert.equal(agent.state().houses, 1);
         assert.match((lastOf(sent, HOUSE_REPORT)?.payload as { reason: string }).reason, /уже куплен/);
     });
 

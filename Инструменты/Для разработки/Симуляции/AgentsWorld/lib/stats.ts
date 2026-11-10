@@ -1,4 +1,4 @@
-import type { ActorAssignment } from './protocol.ts';
+import type { ActorAssignment } from './protocol/worker.ts';
 import { assertAgentPlugin, type AgentPlugin } from './agentPlugin.ts';
 
 export interface PopulationEntry {

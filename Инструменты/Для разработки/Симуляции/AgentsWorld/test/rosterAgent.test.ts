@@ -1,7 +1,8 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import * as roster from '../lib/rosterAgent.ts';
-import { createMessage, STATUS_REQUEST, STATUS_REPORT } from '../lib/protocol.ts';
+import { createMessage } from '../lib/protocol/message.ts';
+import { STATUS_REQUEST, STATUS_REPORT } from '../lib/protocol/names.ts';
 import type { ActorContext } from '../lib/actor.ts';
 
 const { RosterAgent, ROSTER_SNAPSHOT, ROSTER_QUERY, ROSTER_REPORT, ROSTER_SUBSCRIBE, ROSTER_UPDATE } = roster;
@@ -51,7 +52,7 @@ describe('RosterAgent', () => {
 
         agent.receive(snapshot([ivan, anna, clock]), context);
 
-        assert.equal(agent.size, 3);
+        assert.equal(agent.state().known, 3);
         assert.match(log[0] ?? '', /в реестре 3 агентов/);
     });
 
@@ -95,7 +96,7 @@ describe('RosterAgent', () => {
 
         agent.receive(createMessage(ROSTER_SUBSCRIBE, { types: ['HumanAgent'], replyTo: 'TickAgent-1' }), context);
 
-        assert.equal(agent.subscriberCount, 1);
+        assert.equal(agent.state().subscribers, 1);
         const update = sent.at(-1);
         assert.equal(update?.to, 'TickAgent-1');
         assert.equal(update?.type, ROSTER_UPDATE);
@@ -134,7 +135,7 @@ describe('RosterAgent', () => {
 
         agent.receive(createMessage(ROSTER_SUBSCRIBE, { types: ['HumanAgent'] }), context);
 
-        assert.equal(agent.subscriberCount, 0);
+        assert.equal(agent.state().subscribers, 0);
         assert.match(log.at(-1) ?? '', /без обратного адреса/);
     });
 

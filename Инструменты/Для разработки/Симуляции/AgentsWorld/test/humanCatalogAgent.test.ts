@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import * as catalog from '../agents/humanCatalogAgent.ts';
-import { createMessage } from '../lib/protocol.ts';
+import { createMessage } from '../lib/protocol/message.ts';
 import type { ActorContext } from '../lib/actor.ts';
 
 const { HumanCatalogAgent, CATALOG_REGISTER, CATALOG_SEARCH, CATALOG_RESULT, HUMAN_CATALOG_AGENT_ID } = catalog;
@@ -51,7 +51,7 @@ describe('HumanCatalogAgent', () => {
     it('запоминает зарегистрированных людей', () => {
         const { agent, fixture } = createFilledCatalog();
 
-        assert.equal(agent.size, 3);
+        assert.equal(agent.state().known, 3);
         assert.match(fixture.log[0] ?? '', /записал в каталог: Иван/);
     });
 
@@ -102,7 +102,7 @@ describe('HumanCatalogAgent', () => {
             () => agent.receive(createMessage(CATALOG_REGISTER, { id: 'HumanAgent-1', name: 'Иван', gender: 'робот', profession: 'врач' }), context),
             /пол должен быть/,
         );
-        assert.equal(agent.size, 0);
+        assert.equal(agent.state().known, 0);
     });
 
     it('на незнакомое сообщение отвечает в лог', () => {

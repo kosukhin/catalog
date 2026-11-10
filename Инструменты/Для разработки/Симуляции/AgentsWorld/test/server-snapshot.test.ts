@@ -1,7 +1,8 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { takeClock, takePhysics, takeSnapshot, type WorldQuery } from '../server/snapshot.ts';
-import { STATUS_REPORT, type Message } from '../lib/protocol.ts';
+import type { Message } from '../lib/protocol/message.ts';
+import { STATUS_REPORT } from '../lib/protocol/names.ts';
 import { TIME_REQUEST, TIME_REPORT } from '../agents/dayAgent.ts';
 import { PHYSICS_LIST, PHYSICS_STATE } from '../agents/physicsAgent.ts';
 
@@ -10,9 +11,7 @@ function createWorld(
     actors: Array<{ id: string; type: string }> = Object.keys(answers).map((id) => ({ id, type: 'HumanAgent' })),
 ): WorldQuery {
     return {
-        running: true,
-        threadCount: 2,
-        actors,
+        state: () => ({ running: true, threadCount: 2, actors }),
         async ask(to: string, message: Message): Promise<Message> {
             if (!(to in answers)) {
                 throw new Error(`агент ${to} не ответил`);
@@ -72,9 +71,7 @@ describe('snapshot', () => {
     it('лёгкий запрос часов спрашивает только DayAgent', async () => {
         const asked: string[] = [];
         const world: WorldQuery = {
-            running: true,
-            threadCount: 2,
-            actors: [{ id: 'a', type: 'HumanAgent' }, { id: 'clock', type: 'DayAgent' }],
+            state: () => ({ running: true, threadCount: 2, actors: [{ id: 'a', type: 'HumanAgent' }, { id: 'clock', type: 'DayAgent' }] }),
             async ask(to: string, message: Message): Promise<Message> {
                 asked.push(to);
                 assert.equal(message.type, TIME_REQUEST);
@@ -90,9 +87,7 @@ describe('snapshot', () => {
 
     it('лёгкий запрос часов возвращает null при молчании DayAgent', async () => {
         const world: WorldQuery = {
-            running: true,
-            threadCount: 1,
-            actors: [{ id: 'clock', type: 'DayAgent' }],
+            state: () => ({ running: true, threadCount: 1, actors: [{ id: 'clock', type: 'DayAgent' }] }),
             async ask() {
                 throw new Error('таймаут');
             },
@@ -121,9 +116,7 @@ describe('snapshot', () => {
             moving: ['HumanAgent-1'],
         };
         const world: WorldQuery = {
-            running: true,
-            threadCount: 1,
-            actors: [{ id: 'physics', type: 'PhysicsAgent' }],
+            state: () => ({ running: true, threadCount: 1, actors: [{ id: 'physics', type: 'PhysicsAgent' }] }),
             async ask(to: string, message: Message) {
                 assert.equal(to, 'physics');
                 assert.equal(message.type, PHYSICS_LIST);
@@ -138,9 +131,7 @@ describe('snapshot', () => {
 
     it('падает, если агент физики ответил не тем сообщением', async () => {
         const world: WorldQuery = {
-            running: true,
-            threadCount: 1,
-            actors: [{ id: 'physics', type: 'PhysicsAgent' }],
+            state: () => ({ running: true, threadCount: 1, actors: [{ id: 'physics', type: 'PhysicsAgent' }] }),
             async ask() {
                 return { type: 'status-report', payload: {} };
             },

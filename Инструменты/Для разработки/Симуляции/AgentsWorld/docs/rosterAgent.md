@@ -81,3 +81,14 @@ protected handle(message: Message, context: ActorContext): void {
 типы», ответ спрашивающему, отказ без `replyTo`, подписка и её повтор, уведомление
 о новом агенте, отсутствие повторных уведомлений, битый снимок и запрос, состояние
 для дашборда, незнакомое сообщение.
+
+## Разложение на подмодули
+
+| Подмодуль | Что содержит |
+|---|---|
+| `lib/roster/entries.ts` | `RosterEntry`, `RosterReport`, `RosterUpdate`, `labelOf`, `matches` |
+| `lib/roster/readRequest.ts` | `readRequest` и `readEntries` — разбор и валидация payload |
+
+Класс держит `#status` (агенты и подписчики) и методы `state()`, `idsOfTypes`,
+`handle`, `describe`. Геттеров `size` и `subscriberCount` больше нет — их отдаёт
+`state()`.

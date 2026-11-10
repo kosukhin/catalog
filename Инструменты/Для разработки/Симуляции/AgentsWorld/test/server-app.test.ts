@@ -8,9 +8,7 @@ import { TIME_REPORT } from '../agents/dayAgent.ts';
 
 function createWorld(states: Record<string, Record<string, unknown>>, clock: unknown = null): WorldQuery {
     return {
-        running: true,
-        threadCount: 3,
-        actors: Object.keys(states).map((id) => ({ id, type: 'HumanAgent' })),
+        state: () => ({ running: true, threadCount: 3, actors: Object.keys(states).map((id) => ({ id, type: 'HumanAgent' })) }),
         async ask(to: string) {
             if (to === 'DayAgent-1') {
                 if (clock === null) {
@@ -148,9 +146,7 @@ describe('express app', () => {
             moving: ['HumanAgent-1'],
         };
         const world: WorldQuery = {
-            running: true,
-            threadCount: 1,
-            actors: [{ id: 'PhysicsAgent-1', type: 'PhysicsAgent' }],
+            state: () => ({ running: true, threadCount: 1, actors: [{ id: 'PhysicsAgent-1', type: 'PhysicsAgent' }] }),
             async ask() {
                 return { type: PHYSICS_STATE, payload: state };
             },

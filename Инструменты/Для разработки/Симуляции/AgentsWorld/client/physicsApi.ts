@@ -1,7 +1,9 @@
-import type { PhysicsState } from '../agents/physicsAgent.ts';
-import type { TimeReport } from '../agents/dayAgent.ts';
+import type { PhysicsState } from '../agents/physics/types.ts';
+import type { TimeReport } from '../agents/day/types.ts';
+import { defaultFetcher } from './physics/fetcher.ts';
 
-export type PhysicsFetcher = (url: string) => Promise<{ readonly json: () => Promise<unknown> }>;
+import type { PhysicsFetcher } from './physics/fetcher.ts';
+export type { PhysicsFetcher };
 
 export async function loadPhysicsState(url: string, fetcher: PhysicsFetcher = defaultFetcher): Promise<PhysicsState> {
     const response = await fetcher(url);
@@ -18,42 +20,9 @@ export function toClock(payload: unknown): TimeReport | null {
     if (clock === null || typeof clock !== 'object') {
         return null;
     }
-    const candidate = clock as { hours?: unknown; minutes?: unknown; phase?: unknown };
+    const candidate = clock as { hours?: unknown; minutes?: unknown };
     if (typeof candidate.hours !== 'number' || typeof candidate.minutes !== 'number') {
         return null;
     }
     return clock as TimeReport;
-}
-
-export interface AgentNames {
-    readonly [id: string]: string;
-}
-
-export async function loadAgentNames(url: string, fetcher: PhysicsFetcher = defaultFetcher): Promise<AgentNames> {
-    const response = await fetcher(url);
-    return toNames(await response.json());
-}
-
-export function toNames(payload: unknown): AgentNames {
-    const items = (payload as { items?: unknown } | undefined)?.items;
-    if (!Array.isArray(items)) {
-        return {};
-    }
-    const names: Record<string, string> = {};
-    for (const item of items) {
-        const entry = item as { id?: unknown; details?: { name?: unknown } } | undefined;
-        const name = entry?.details?.name;
-        if (typeof entry?.id === 'string' && typeof name === 'string' && name.trim() !== '') {
-            names[entry.id] = name;
-        }
-    }
-    return names;
-}
-
-async function defaultFetcher(url: string): Promise<{ readonly json: () => Promise<unknown> }> {
-    const response = await fetch(url);
-    if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-    }
-    return response;
 }

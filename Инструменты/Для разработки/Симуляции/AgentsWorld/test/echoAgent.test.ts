@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import * as echoAgent from '../agents/echoAgent.ts';
 import type { ActorContext } from '../lib/actor.ts';
-import { createMessage, type Message } from '../lib/protocol.ts';
+import { createMessage, type Message } from '../lib/protocol/message.ts';
 
 const { EchoAgent } = echoAgent;
 

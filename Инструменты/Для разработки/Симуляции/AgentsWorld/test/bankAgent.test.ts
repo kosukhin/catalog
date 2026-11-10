@@ -1,7 +1,8 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import * as bank from '../agents/bankAgent.ts';
-import { createMessage, STATUS_REQUEST, STATUS_REPORT } from '../lib/protocol.ts';
+import { createMessage } from '../lib/protocol/message.ts';
+import { STATUS_REQUEST, STATUS_REPORT } from '../lib/protocol/names.ts';
 import type { ActorContext } from '../lib/actor.ts';
 
 const { BankAgent, BANK_AGENT_ID, BANK_OPEN, BANK_ACCOUNT, BANK_CHARGE, BANK_PAYMENT } = bank;
@@ -45,7 +46,7 @@ describe('BankAgent', () => {
 
         agent.receive(createMessage(BANK_OPEN, { owner: 'HumanAgent-1', replyTo: 'HumanAgent-1' }), context);
 
-        assert.equal(agent.balanceOf('HumanAgent-1'), 1000);
+        assert.equal(agent.state().balanceOf('HumanAgent-1'), 1000);
         assert.equal(lastOf(sent, BANK_ACCOUNT)?.to, 'HumanAgent-1');
         assert.deepEqual(lastOf(sent, BANK_ACCOUNT)?.payload, { owner: 'HumanAgent-1', balance: 1000 });
     });
@@ -58,7 +59,7 @@ describe('BankAgent', () => {
 
         agent.receive(createMessage(BANK_OPEN, { owner: 'A', replyTo: 'A' }), context);
 
-        assert.equal(agent.balanceOf('A'), 600);
+        assert.equal(agent.state().balanceOf('A'), 600);
     });
 
     it('списывает деньги при достаточном балансе', () => {
@@ -68,7 +69,7 @@ describe('BankAgent', () => {
 
         agent.receive(createMessage(BANK_CHARGE, { owner: 'A', amount: 800, replyTo: 'HouseAgent-1' }), context);
 
-        assert.equal(agent.balanceOf('A'), 200);
+        assert.equal(agent.state().balanceOf('A'), 200);
         assert.equal(lastOf(sent, BANK_PAYMENT)?.to, 'HouseAgent-1');
         assert.deepEqual(lastOf(sent, BANK_PAYMENT)?.payload, { owner: 'A', amount: 800, accepted: true, balance: 200, reason: null });
     });
@@ -80,7 +81,7 @@ describe('BankAgent', () => {
 
         agent.receive(createMessage(BANK_CHARGE, { owner: 'A', amount: 5000, replyTo: 'A' }), context);
         assert.equal((lastOf(sent, BANK_PAYMENT)?.payload as { accepted: boolean }).accepted, false);
-        assert.equal(agent.balanceOf('A'), 1000);
+        assert.equal(agent.state().balanceOf('A'), 1000);
 
         agent.receive(createMessage(BANK_CHARGE, { owner: 'нет', amount: 1, replyTo: 'A' }), context);
         assert.match((lastOf(sent, BANK_PAYMENT)?.payload as { reason: string }).reason, /нет счёта/);

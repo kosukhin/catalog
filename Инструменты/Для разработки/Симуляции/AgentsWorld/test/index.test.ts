@@ -25,10 +25,10 @@ describe('index', () => {
         const world = new api.World(new Map([[echoAgent, 1]]), { print: () => {}, threadPoolSize: 1 });
 
         await world.run();
-        assert.equal(world.running, true);
+        assert.equal(world.state().running, true);
 
         await world.stop();
-        assert.equal(world.running, false);
+        assert.equal(world.state().running, false);
     });
 });
 

@@ -1,6 +1,7 @@
 import { AbstractActor, type ActorContext } from '../lib/actor.ts';
-import { createMessage, type Message } from '../lib/protocol.ts';
+import { createMessage, type Message } from '../lib/protocol/message.ts';
 import { ROSTER_AGENT_ID, ROSTER_QUERY, ROSTER_REPORT } from '../lib/rosterAgent.ts';
+import { dequeue, enqueue, pendingCount, type BulletinQueue } from './bulletin/queue.ts';
 
 const AGENT_TYPE = 'BulletinBoardAgent';
 
@@ -19,30 +20,28 @@ export interface BulletinResult {
     readonly ids: readonly string[];
 }
 
+export interface BulletinStatus {
+    readonly rosterId: string;
+    readonly queue: BulletinQueue;
+}
+
 export class BulletinBoardAgent extends AbstractActor {
-    readonly type = AGENT_TYPE;
-    readonly #rosterId: string;
-    readonly #queue = new Map<string, string[]>();
+    readonly #status: BulletinStatus;
 
     constructor(options: Readonly<Record<string, unknown>> = {}) {
-        super();
-        this.#rosterId = readText(options.rosterId, ROSTER_AGENT_ID, 'rosterId');
+        super(AGENT_TYPE);
+        this.#status = { rosterId: readText(options.rosterId, ROSTER_AGENT_ID, 'rosterId'), queue: { waiting: new Map<string, string[]>() } };
     }
 
-    get pendingCount(): number {
-        let total = 0;
-        for (const queue of this.#queue.values()) {
-            total += queue.length;
-        }
-        return total;
-    }
-
-    waitingFor(kind: string): number {
-        return this.#queue.get(kind)?.length ?? 0;
+    state(): { readonly pending: number; waitingFor(kind: string): number } {
+        return {
+            pending: pendingCount(this.#status.queue),
+            waitingFor: (kind: string): number => this.#status.queue.waiting.get(kind)?.length ?? 0,
+        };
     }
 
     start(context: ActorContext): void {
-        context.log(`доска объявлений спрашивает реестр ${this.#rosterId}`);
+        context.log(`доска объявлений спрашивает реестр ${this.#status.rosterId}`);
     }
 
     protected override handle(message: Message, context: ActorContext): void {
@@ -58,7 +57,7 @@ export class BulletinBoardAgent extends AbstractActor {
     }
 
     protected override describe(): Readonly<Record<string, unknown>> {
-        return { waiting: this.pendingCount };
+        return { waiting: pendingCount(this.#status.queue) };
     }
 
     #find(payload: unknown, context: ActorContext): void {
@@ -69,24 +68,15 @@ export class BulletinBoardAgent extends AbstractActor {
             context.log('искали без обратного адреса, ответить некому');
             return;
         }
-        const queue = this.#queue.get(kind);
-        if (queue === undefined) {
-            this.#queue.set(kind, [replyTo]);
-        } else {
-            queue.push(replyTo);
-        }
-        context.send(this.#rosterId, createMessage(ROSTER_QUERY, { types: [kind], replyTo: BULLETIN_BOARD_AGENT_ID }));
+        enqueue(this.#status.queue, kind, replyTo);
+        context.send(this.#status.rosterId, createMessage(ROSTER_QUERY, { types: [kind], replyTo: BULLETIN_BOARD_AGENT_ID }));
     }
 
     #answer(payload: unknown, context: ActorContext): void {
         const candidate = payload as { types?: unknown; ids?: unknown } | undefined;
         const types = Array.isArray(candidate?.types) ? candidate.types.filter((item): item is string => typeof item === 'string') : [];
         const kind = types[0] ?? '';
-        const queue = this.#queue.get(kind);
-        const replyTo = queue?.shift();
-        if (queue !== undefined && queue.length === 0) {
-            this.#queue.delete(kind);
-        }
+        const replyTo = dequeue(this.#status.queue, kind);
         if (replyTo === undefined) {
             context.log(`пришёл ответ по типу «${kind}», а запроса не было`);
             return;

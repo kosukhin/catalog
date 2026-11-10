@@ -47,3 +47,20 @@
 `test/humanCatalogAgent.test.ts` — контракт модуля, регистрация и `size`, поиск по
 каждому свойству и их сочетанию, пустые условия, ответ спрашивающему, отказ без
 `replyTo`, отказ на битую регистрацию, незнакомое сообщение.
+
+## Разложение на подмодули
+
+| Подмодуль | Что содержит |
+|---|---|
+| `agents/catalog/messages.ts` | адрес каталога и типы сообщений (`CATALOG_REGISTER`, `CATALOG_SEARCH`, `CATALOG_RESULT`) |
+| `agents/catalog/types.ts` | `Gender`, `HumanRecord`, `SearchCriteria`, `CatalogResult` |
+| `agents/catalog/request.ts` | `readRecord`, `readCriteria`, `readReplyTo`, `humanParts` |
+
+Класс держит `#humans` и методы `state()`, `search`, `handle`, `describe`. Геттер
+`size` убран: число записей отдаёт `state().known` (и `status-request`).
+
+## Тест
+
+`test/humanCatalogAgent.test.ts` — регистрация людей, поиск по имени, полу и
+профессии, ответ на `catalog-search`, поведение без обратного адреса, вал��дация
+записей.

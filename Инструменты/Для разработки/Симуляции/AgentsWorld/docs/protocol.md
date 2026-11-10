@@ -40,3 +40,17 @@
 
 `test/protocol.test.ts` — создание сообщения с нагрузкой и без, пустой тип,
 отсечение «не-сообщений» (`null`, строка, объект без `type`).
+
+## Разложение на подмодули
+
+Исходный `lib/protocol.ts` не проходил правило (4 константы + 2 функции), поэтому он
+разделён по назначению:
+
+| Модуль | Что содержит |
+|---|---|
+| `lib/protocol/message.ts` | `ActorId`, `Message`, `createMessage`, `isMessage` |
+| `lib/protocol/names.ts` | `WORLD_ID`, `STATUS_REQUEST`, `STATUS_REPORT`, `TICK`, `StatusReport` |
+| `lib/protocol/worker.ts` | `ActorAssignment`, `WorkerCommand`, `WorkerEvent` — служебный канал потоков |
+
+Импорты теперь точные: актору нужен `message.ts` (плюс `names.ts` для `TICK`), а
+команды потоков — только `world.ts`, `threadPool.ts` и `workerEntry.ts`.

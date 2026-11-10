@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { ThreadPool } from '../lib/threadPool.ts';
-import type { WorkerEvent } from '../lib/protocol.ts';
+import type { WorkerEvent } from '../lib/protocol/worker.ts';
 
 const agentModuleUrl = new URL('../agents/echoAgent.ts', import.meta.url).href;
 
@@ -20,12 +20,12 @@ describe('ThreadPool', () => {
         const events: WorkerEvent[] = [];
         const pool = new ThreadPool({ size: 8, maxWorkers: 2, onEvent: (event) => events.push(event) });
 
-        assert.equal(pool.size, 2);
-        assert.deepEqual(pool.threadIndexes, [0, 1]);
+        assert.equal(pool.report().size, 2);
+        assert.deepEqual(pool.report().indexes, [0, 1]);
         await pool.terminate();
 
         const minimum = new ThreadPool({ size: 0, onEvent: (event) => events.push(event) });
-        assert.equal(minimum.size, 1);
+        assert.equal(minimum.report().size, 1);
         await minimum.terminate();
     });
 

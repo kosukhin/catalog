@@ -1,6 +1,7 @@
 import * as agents from '../agents/index.ts';
 import type { Point } from '../agents/physicsAgent.ts';
-import type { AgentPlugin, PopulationEntry } from '../lib/index.ts';
+import type { AgentPlugin } from '../lib/agentPlugin.ts';
+import type { PopulationEntry } from '../lib/stats.ts';
 
 const DEFAULT_TOILET_POSITION: Point = { x: 98, y: 0, z: 98 };
 

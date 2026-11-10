@@ -1,7 +1,8 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import * as physics from '../agents/physicsAgent.ts';
-import { createMessage, TICK, STATUS_REQUEST, STATUS_REPORT } from '../lib/protocol.ts';
+import { createMessage } from '../lib/protocol/message.ts';
+import { TICK, STATUS_REQUEST, STATUS_REPORT } from '../lib/protocol/names.ts';
 import type { ActorContext } from '../lib/actor.ts';
 
 const {
@@ -64,8 +65,8 @@ describe('PhysicsAgent', () => {
 
         agent.receive(createMessage(PHYSICS_REGISTER, { id: 'HumanAgent-1', position: { x: 1, y: 2, z: 3 } }), context);
 
-        assert.equal(agent.bodyCount, 1);
-        assert.deepEqual(agent.positionOf('HumanAgent-1'), { x: 1, y: 2, z: 3 });
+        assert.equal(agent.state().bodies, 1);
+        assert.deepEqual(agent.state().positionOf('HumanAgent-1'), { x: 1, y: 2, z: 3 });
     });
 
     it('без точки сам находит свободное место', () => {
@@ -75,8 +76,8 @@ describe('PhysicsAgent', () => {
         agent.receive(createMessage(PHYSICS_REGISTER, { id: 'A' }), context);
         agent.receive(createMessage(PHYSICS_REGISTER, { id: 'B' }), context);
 
-        assert.deepEqual(agent.positionOf('A'), { x: 0, y: 0, z: 0 });
-        assert.deepEqual(agent.positionOf('B'), { x: 1, y: 0, z: 0 });
+        assert.deepEqual(agent.state().positionOf('A'), { x: 0, y: 0, z: 0 });
+        assert.deepEqual(agent.state().positionOf('B'), { x: 1, y: 0, z: 0 });
     });
 
     it('раскладывает тела по плоскости: высота не меняется, свободные места идут по z', () => {
@@ -88,7 +89,7 @@ describe('PhysicsAgent', () => {
             agent.receive(createMessage(PHYSICS_REGISTER, { id }), context);
         }
 
-        const positions = ids.map((id) => agent.positionOf(id));
+        const positions = ids.map((id) => agent.state().positionOf(id));
         assert.equal(positions.every((position) => position !== null), true);
         assert.equal(positions.every((position) => position?.y === 0), true);
         assert.deepEqual(
@@ -103,7 +104,7 @@ describe('PhysicsAgent', () => {
 
         agent.receive(createMessage(PHYSICS_REGISTER, { id: 'A', position: { x: 50, y: 0, z: 0 } }), context);
 
-        assert.equal(agent.bodyCount, 0);
+        assert.equal(agent.state().bodies, 0);
     });
 
     it('двигает тело по направлению и дистанции по тикам', () => {
@@ -115,11 +116,11 @@ describe('PhysicsAgent', () => {
 
         assert.equal((lastOf(sent, PHYSICS_REPORT)?.payload as { accepted?: unknown }).accepted, true);
         agent.receive(createMessage(TICK), context);
-        assert.deepEqual(agent.positionOf('A'), { x: 5, y: 0, z: 0 });
+        assert.deepEqual(agent.state().positionOf('A'), { x: 5, y: 0, z: 0 });
         agent.receive(createMessage(TICK), context);
 
-        assert.deepEqual(agent.positionOf('A'), { x: 10, y: 0, z: 0 });
-        assert.equal(agent.movingCount, 0);
+        assert.deepEqual(agent.state().positionOf('A'), { x: 10, y: 0, z: 0 });
+        assert.equal(agent.state().moving, 0);
         assert.equal(lastOf(sent, PHYSICS_ARRIVED)?.to, 'мир');
     });
 
@@ -133,7 +134,7 @@ describe('PhysicsAgent', () => {
         const report = lastOf(sent, PHYSICS_REPORT)?.payload as { accepted: boolean; reason: string };
         assert.equal(report.accepted, false);
         assert.match(report.reason, /вне границ/);
-        assert.equal(agent.movingCount, 0);
+        assert.equal(agent.state().moving, 0);
     });
 
     it('отказывает, если на пути другое тело', () => {
@@ -163,7 +164,7 @@ describe('PhysicsAgent', () => {
             agent.receive(createMessage(TICK), context);
         }
 
-        const position = agent.positionOf('A');
+        const position = agent.state().positionOf('A');
         assert.ok(position);
         assert.ok(position.x > 8, `дошёл до дома, а не встал перед телом B: ${JSON.stringify(position)}`);
         assert.equal(lastOf(sent, PHYSICS_ARRIVED)?.payload && (lastOf(sent, PHYSICS_ARRIVED)?.payload as { reason: string | null }).reason, null);
@@ -181,7 +182,7 @@ describe('PhysicsAgent', () => {
             agent.receive(createMessage(TICK), context);
         }
 
-        assert.equal(agent.positionOf('A')?.y, 0, 'высота при обходе не меняется');
+        assert.equal(agent.state().positionOf('A')?.y, 0, 'высота при обходе не меняется');
     });
 
     it('выходит из затора: несколько тел на пути по-прежнему доходят', () => {
@@ -200,11 +201,11 @@ describe('PhysicsAgent', () => {
         }
 
         for (let index = 1; index <= 5; index += 1) {
-            const position = agent.positionOf(`H${index}`);
+            const position = agent.state().positionOf(`H${index}`);
             assert.ok(position);
             assert.ok(position.x > 15, `H${index} должен был дойти до дома, а он в ${JSON.stringify(position)}`);
         }
-        assert.equal(agent.movingCount, 0, 'все движения завершены');
+        assert.equal(agent.state().moving, 0, 'все движения завершены');
     });
 
     it('сообщает, если обойти некуда', () => {
@@ -245,10 +246,10 @@ describe('PhysicsAgent', () => {
             agent.receive(createMessage(TICK), context);
         }
 
-        const position = agent.positionOf('A');
+        const position = agent.state().positionOf('A');
         assert.ok(position);
         assert.ok(Math.hypot(position.x - 10, position.y, position.z) <= 1);
-        assert.equal(agent.movingCount, 0);
+        assert.equal(agent.state().moving, 0);
     });
 
     it('отказывает на незарегистрированное тело и цель', () => {
@@ -347,10 +348,10 @@ describe('PhysicsAgent', () => {
             agent.receive(createMessage(TICK), context);
         }
 
-        const position = agent.positionOf('A');
+        const position = agent.state().positionOf('A');
         assert.ok(position);
         assert.ok(Math.hypot(position.x - 10, position.y, position.z) <= 1);
-        assert.equal(agent.movingCount, 0);
+        assert.equal(agent.state().moving, 0);
     });
 
     it('на запрос состояния без обратного адреса пишет в лог', () => {

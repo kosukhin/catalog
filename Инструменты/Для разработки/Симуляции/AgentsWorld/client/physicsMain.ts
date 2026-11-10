@@ -1,7 +1,9 @@
-import { loadAgentNames, loadPhysicsState, loadWorldClock } from './physicsApi.ts';
+import { loadPhysicsState, loadWorldClock } from './physicsApi.ts';
+import { loadAgentNames } from './physics/names.ts';
 import { createScene } from './physicsScene.ts';
 import { stateRows, statusLine } from './physicsView.ts';
-import type { TimeReport } from '../agents/dayAgent.ts';
+import type { TimeReport } from '../agents/day/types.ts';
+import { defaultFetcher } from './physics/fetcher.ts';
 
 const POLL_MS = 400;
 
@@ -25,7 +27,7 @@ export function startPhysicsView(): void {
 
     const names = async (): Promise<void> => {
         try {
-            view.setNames(await loadAgentNames('/api/agents?pageSize=200'));
+            view.setNames(await loadAgentNames('/api/agents?pageSize=200', defaultFetcher));
         } catch {
             return;
         }

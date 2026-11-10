@@ -40,7 +40,8 @@ export async function startServer(config: ServerConfig = createServerConfig()): 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
     void startServer()
         .then((running) => {
-            console.log(`AgentsWorld: ${running.world.actors.length} агентов на ${running.world.threadCount} потоках`);
+            const plan = running.world.state();
+            console.log(`AgentsWorld: ${plan.actors.length} агентов на ${plan.threadCount} потоках`);
             console.log(`дашборд: ${running.url}`);
         })
         .catch((error: unknown) => {

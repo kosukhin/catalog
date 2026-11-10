@@ -44,3 +44,14 @@ stop()   → mailbox.close() → дождаться цикла → actor.stop(co
 `test/actorRuntime.test.ts` — порядок обработки, вызовы `start`/`stop`, работа через
 `ports`, живучесть после ошибки, отказ `deliver` после остановки, дочитывание
 очереди при `stop`.
+
+## Разложение на подмодули
+
+| Подмодуль | Что содержит |
+|---|---|
+| `lib/runtime/createContext.ts` | `createContext` — контекст актора (`id`, `send`, `log`) |
+| `lib/runtime/pump.ts` | `pump` — цикл вычитки ящика с отловом ошибок обработчика |
+
+Класс держит `#actor`, `#ports`, `#context` и один объект `#status` (ящик, цикл,
+флаг остановки). Вместо геттеров `id`, `type`, `pending`, `context` — метод
+`state()`, который возвращает `{ id, type, pending, context }`.

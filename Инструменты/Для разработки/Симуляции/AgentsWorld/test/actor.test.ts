@@ -1,11 +1,15 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { AbstractActor, type ActorContext } from '../lib/actor.ts';
-import { createMessage, STATUS_REQUEST, STATUS_REPORT, type Message } from '../lib/protocol.ts';
+import { createMessage, type Message } from '../lib/protocol/message.ts';
+import { STATUS_REQUEST, STATUS_REPORT } from '../lib/protocol/names.ts';
 
 class Recorder extends AbstractActor {
-    readonly type = 'Recorder';
     readonly seen: string[] = [];
+
+    constructor() {
+        super('Recorder');
+    }
 
     protected override handle(message: Message, context: ActorContext): void {
         this.seen.push(`${context.id}:${message.type}`);

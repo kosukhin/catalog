@@ -1,13 +1,8 @@
 import { AbstractActor, type ActorContext } from '../lib/actor.ts';
-import { createMessage, TICK, type Message } from '../lib/protocol.ts';
-import {
-    ROSTER_AGENT_ID,
-    ROSTER_QUERY,
-    ROSTER_REPORT,
-    ROSTER_SUBSCRIBE,
-    ROSTER_UPDATE,
-    type RosterEntry,
-} from '../lib/rosterAgent.ts';
+import { createMessage, type Message } from '../lib/protocol/message.ts';
+import { TICK } from '../lib/protocol/names.ts';
+import { ROSTER_QUERY, ROSTER_REPORT, ROSTER_SUBSCRIBE, ROSTER_UPDATE } from '../lib/rosterAgent.ts';
+import { readAgents, readIds, readInterval, readRosterId, readTypes } from './tick/options.ts';
 
 const AGENT_TYPE = 'TickAgent';
 
@@ -17,67 +12,55 @@ export const moduleUrl = import.meta.url;
 
 export const TICK_AGENT_ID = 'TickAgent-1';
 
-const DEFAULT_INTERVAL_MS = 1000;
-
-export interface TickAgentOptions {
+interface TickStatus {
     readonly intervalMs: number;
     readonly types: readonly string[];
     readonly rosterId: string;
+    timer: ReturnType<typeof setInterval> | null;
+    recipients: string[];
 }
 
 export class TickAgent extends AbstractActor {
-    readonly type = AGENT_TYPE;
-    readonly #intervalMs: number;
-    readonly #types: readonly string[];
-    readonly #rosterId: string;
-    #timer: ReturnType<typeof setInterval> | null = null;
-    #recipients: string[] = [];
+    readonly #status: TickStatus;
 
     constructor(options: Readonly<Record<string, unknown>> = {}) {
-        super();
-        this.#intervalMs = readInterval(options.intervalMs);
-        this.#types = readTypes(options.types);
-        this.#rosterId = readRosterId(options.rosterId);
+        super(AGENT_TYPE);
+        this.#status = {
+            intervalMs: readInterval(options.intervalMs),
+            types: readTypes(options.types),
+            rosterId: readRosterId(options.rosterId),
+            timer: null,
+            recipients: [],
+        };
     }
 
-    get intervalMs(): number {
-        return this.#intervalMs;
-    }
-
-    get types(): readonly string[] {
-        return this.#types;
-    }
-
-    get recipientCount(): number {
-        return this.#recipients.length;
+    state(): { readonly intervalMs: number; readonly types: readonly string[]; readonly recipients: number } {
+        return { intervalMs: this.#status.intervalMs, types: this.#status.types, recipients: this.#status.recipients.length };
     }
 
     start(context: ActorContext): void {
-        context.log(`бужу «${this.#types.join(', ')}» каждые ${this.#intervalMs} мс через реестр ${this.#rosterId}`);
-        context.send(this.#rosterId, createMessage(ROSTER_QUERY, { types: [...this.#types], replyTo: context.id }));
-        context.send(this.#rosterId, createMessage(ROSTER_SUBSCRIBE, { types: [...this.#types], replyTo: context.id }));
-        this.#timer = setInterval(() => {
-            for (const recipient of this.#recipients) {
+        const status = this.#status;
+        context.log(`бужу «${status.types.join(', ')}» каждые ${status.intervalMs} мс через реестр ${status.rosterId}`);
+        context.send(status.rosterId, createMessage(ROSTER_QUERY, { types: [...status.types], replyTo: context.id }));
+        context.send(status.rosterId, createMessage(ROSTER_SUBSCRIBE, { types: [...status.types], replyTo: context.id }));
+        status.timer = setInterval(() => {
+            for (const recipient of status.recipients) {
                 context.send(recipient, createMessage(TICK));
             }
-        }, this.#intervalMs);
+        }, status.intervalMs);
     }
 
     stop(): void {
-        if (this.#timer !== null) {
-            clearInterval(this.#timer);
-            this.#timer = null;
+        if (this.#status.timer !== null) {
+            clearInterval(this.#status.timer);
+            this.#status.timer = null;
         }
-    }
-
-    describeForDashboard(): Readonly<Record<string, unknown>> {
-        return this.describe();
     }
 
     protected override handle(message: Message, context: ActorContext): void {
         if (message.type === ROSTER_REPORT) {
-            this.#recipients = readIds(message.payload);
-            context.log(`реестр дал ${this.#recipients.length} агентов для тиков`);
+            this.#status.recipients = readIds(message.payload);
+            context.log(`реестр дал ${this.#status.recipients.length} агентов для тиков`);
             return;
         }
         if (message.type === ROSTER_UPDATE) {
@@ -88,16 +71,16 @@ export class TickAgent extends AbstractActor {
     }
 
     protected override describe(): Readonly<Record<string, unknown>> {
-        return { intervalMs: this.#intervalMs, types: this.#types, recipients: this.#recipients.length };
+        return { intervalMs: this.#status.intervalMs, types: this.#status.types, recipients: this.#status.recipients.length };
     }
 
-    #merge(agents: readonly RosterEntry[], context: ActorContext): void {
+    #merge(agents: ReadonlyArray<{ readonly id: string; readonly type: string }>, context: ActorContext): void {
         const added: string[] = [];
         for (const agent of agents) {
-            if (!this.#types.includes(agent.type) || this.#recipients.includes(agent.id)) {
+            if (!this.#status.types.includes(agent.type) || this.#status.recipients.includes(agent.id)) {
                 continue;
             }
-            this.#recipients.push(agent.id);
+            this.#status.recipients.push(agent.id);
             added.push(agent.id);
         }
         if (added.length > 0) {
@@ -109,75 +92,3 @@ export class TickAgent extends AbstractActor {
 export function createAgent(_id: string, options: Readonly<Record<string, unknown>> = {}): TickAgent {
     return new TickAgent(options);
 }
-
-function readInterval(value: unknown): number {
-    if (value === undefined) {
-        return DEFAULT_INTERVAL_MS;
-    }
-    if (typeof value !== 'number' || !Number.isSafeInteger(value) || value <= 0) {
-        throw new Error('intervalMs должен быть целым положительным числом миллисекунд');
-    }
-    return value;
-}
-
-function readTypes(value: unknown): string[] {
-    if (!Array.isArray(value)) {
-        throw new Error('types должен быть массивом типов агентов');
-    }
-    const types: string[] = [];
-    for (const item of value) {
-        if (typeof item !== 'string' || item.trim() === '') {
-            throw new Error('каждый тип в types должен быть непустой строкой');
-        }
-        types.push(item);
-    }
-    if (types.length === 0) {
-        throw new Error('types должен содержать хотя бы один тип агента');
-    }
-    return types;
-}
-
-function readRosterId(value: unknown): string {
-    if (value === undefined) {
-        return ROSTER_AGENT_ID;
-    }
-    if (typeof value !== 'string' || value.trim() === '') {
-        throw new Error('rosterId должен быть непустой строкой');
-    }
-    return value;
-}
-
-function readIds(payload: unknown): string[] {
-    const candidate = payload as { ids?: unknown } | undefined;
-    if (!Array.isArray(candidate?.ids)) {
-        throw new Error('в ответе реестра нет массива ids');
-    }
-    const ids: string[] = [];
-    for (const item of candidate.ids) {
-        if (typeof item !== 'string' || item.trim() === '') {
-            throw new Error('каждый id в ответе реестра должен быть непустой строкой');
-        }
-        ids.push(item);
-    }
-    return ids;
-}
-
-function readAgents(payload: unknown): RosterEntry[] {
-    const candidate = payload as { agents?: unknown } | undefined;
-    if (!Array.isArray(candidate?.agents)) {
-        throw new Error('в уведомлении реестра нет массива agents');
-    }
-    const agents: RosterEntry[] = [];
-    for (const item of candidate.agents) {
-        const agent = item as { id?: unknown; type?: unknown } | undefined;
-        if (typeof agent?.id !== 'string' || agent.id.trim() === '') {
-            throw new Error('в уведомлении реестра у агента нет адреса (id)');
-        }
-        if (typeof agent.type !== 'string' || agent.type.trim() === '') {
-            throw new Error(`в уведомлении реестра у агента «${agent.id}» нет типа (type)`);
-        }
-        agents.push({ id: agent.id, type: agent.type });
-    }
-    return agents;
-}
-

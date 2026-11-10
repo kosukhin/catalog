@@ -1,4 +1,6 @@
-import { createMessage, STATUS_REQUEST, STATUS_REPORT, type ActorId, type Message, type StatusReport } from './protocol.ts';
+import { createMessage } from './protocol/message.ts';
+import { STATUS_REQUEST, STATUS_REPORT, type StatusReport } from './protocol/names.ts';
+import type { ActorId, Message } from './protocol/message.ts';
 
 export interface ActorContext {
     readonly id: ActorId;
@@ -16,7 +18,11 @@ export interface Actor {
 export type ActorFactory = (id: ActorId, options: Readonly<Record<string, unknown>>) => Actor;
 
 export abstract class AbstractActor implements Actor {
-    abstract readonly type: string;
+    readonly type: string;
+
+    constructor(type: string) {
+        this.type = type;
+    }
 
     receive(message: Message, context: ActorContext): void | Promise<void> {
         if (message.type === STATUS_REQUEST) {
@@ -41,3 +47,4 @@ function readReplyTo(payload: unknown): string | null {
     const replyTo = (payload as { replyTo?: unknown } | undefined)?.replyTo;
     return typeof replyTo === 'string' && replyTo.trim() !== '' ? replyTo : null;
 }
+

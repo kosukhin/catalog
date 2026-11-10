@@ -1,7 +1,8 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import * as tickAgent from '../agents/tickAgent.ts';
-import { createMessage, TICK } from '../lib/protocol.ts';
+import { createMessage } from '../lib/protocol/message.ts';
+import { STATUS_REQUEST, TICK } from '../lib/protocol/names.ts';
 import { ROSTER_AGENT_ID, ROSTER_QUERY, ROSTER_REPORT, ROSTER_SUBSCRIBE, ROSTER_UPDATE } from '../lib/rosterAgent.ts';
 import type { ActorContext } from '../lib/actor.ts';
 
@@ -52,9 +53,9 @@ describe('TickAgent', () => {
     it('по умолчанию будит раз в секунду и не знает получателей заранее', () => {
         const agent = new TickAgent({ types: ['HumanAgent'] });
 
-        assert.equal(agent.intervalMs, 1000);
-        assert.deepEqual(agent.types, ['HumanAgent']);
-        assert.equal(agent.recipientCount, 0);
+        assert.equal(agent.state().intervalMs, 1000);
+        assert.deepEqual(agent.state().types, ['HumanAgent']);
+        assert.equal(agent.state().recipients, 0);
     });
 
     it('при старте спрашивает реестр по типам и подписывается на новых агентов', () => {
@@ -81,7 +82,7 @@ describe('TickAgent', () => {
         await waitFor(() => ticksTo(sent, 'HumanAgent-1') >= 2 && ticksTo(sent, 'HumanAgent-2') >= 2);
         agent.stop();
 
-        assert.equal(agent.recipientCount, 2);
+        assert.equal(agent.state().recipients, 2);
         assert.ok(sent.every((item) => item.type !== TICK || item.to.startsWith('HumanAgent-')));
     });
 
@@ -103,7 +104,7 @@ describe('TickAgent', () => {
         await waitFor(() => ticksTo(sent, 'HumanAgent-2') >= 1);
         agent.stop();
 
-        assert.equal(agent.recipientCount, 2);
+        assert.equal(agent.state().recipients, 2);
         assert.equal(ticksTo(sent, 'DayAgent-1'), 0);
     });
 
@@ -114,7 +115,7 @@ describe('TickAgent', () => {
         agent.receive(createMessage(ROSTER_REPORT, { types: ['HumanAgent'], ids: ['HumanAgent-1'] }), context);
         agent.receive(createMessage(ROSTER_UPDATE, { agents: [{ id: 'HumanAgent-1', type: 'HumanAgent' }] }), context);
 
-        assert.equal(agent.recipientCount, 1);
+        assert.equal(agent.state().recipients, 1);
     });
 
     it('после остановки импульсов не отправляет', async () => {
@@ -133,8 +134,15 @@ describe('TickAgent', () => {
 
     it('сообщает в дашборд частоту, типы и число получателей', () => {
         const agent = new TickAgent({ intervalMs: 250, types: ['HumanAgent', 'DayAgent'] });
+        const { context, sent } = createContext();
 
-        assert.deepEqual(agent.describeForDashboard(), { intervalMs: 250, types: ['HumanAgent', 'DayAgent'], recipients: 0 });
+        agent.receive(createMessage(STATUS_REQUEST, { replyTo: 'мир' }), context);
+
+        assert.deepEqual((sent.at(-1)?.payload as { details?: unknown } | undefined)?.details, {
+            intervalMs: 250,
+            types: ['HumanAgent', 'DayAgent'],
+            recipients: 0,
+        });
     });
 
     it('на незнакомое сообщение отвечает в лог', () => {
