@@ -6,6 +6,7 @@
   "main": "lib/index.ts",
   "scripts": {
     "start": "node server/index.ts",
+    "dev": "node --watch scripts/dev.ts",
     "demo": "node scripts/demo.ts",
     "test": "node --test",
     "typecheck": "tsc --noEmit",

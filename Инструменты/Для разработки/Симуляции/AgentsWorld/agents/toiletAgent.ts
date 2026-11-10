@@ -25,7 +25,7 @@ export const TOILET_RELEASED = 'toilet-released';
 
 const DEFAULT_MINUTES = 20;
 
-const DEFAULT_POSITION: Point = { x: 0, y: 50, z: 0 };
+const DEFAULT_POSITION: Point = { x: 0, y: 0, z: 0 };
 
 export class ToiletAgent extends AbstractActor {
     readonly type = AGENT_TYPE;

@@ -83,6 +83,59 @@ describe('BulletinBoardAgent', () => {
         assert.match(log.at(-1) ?? '', /а запроса не было/);
     });
 
+    it('ответ получает каждый спросивший, в порядке запросов', () => {
+        const agent = new BulletinBoardAgent();
+        const { context, sent } = createContext();
+        agent.receive(createMessage(BULLETIN_FIND, { type: 'BankAgent', replyTo: 'HumanAgent-1' }), context);
+        agent.receive(createMessage(BULLETIN_FIND, { type: 'BankAgent', replyTo: 'HumanAgent-2' }), context);
+        agent.receive(createMessage(BULLETIN_FIND, { type: 'BankAgent', replyTo: 'HumanAgent-3' }), context);
+
+        assert.equal(agent.waitingFor('BankAgent'), 3);
+        assert.equal(sent.filter((item) => item.type === ROSTER_QUERY).length, 3);
+
+        agent.receive(createMessage(ROSTER_REPORT, { types: ['BankAgent'], ids: ['BankAgent-1'] }), context);
+        agent.receive(createMessage(ROSTER_REPORT, { types: ['BankAgent'], ids: ['BankAgent-1'] }), context);
+        agent.receive(createMessage(ROSTER_REPORT, { types: ['BankAgent'], ids: ['BankAgent-1'] }), context);
+
+        assert.equal(agent.waitingFor('BankAgent'), 0);
+        assert.equal(agent.pendingCount, 0);
+        assert.deepEqual(
+            sent.filter((item) => item.type === BULLETIN_RESULT).map((item) => item.to),
+            ['HumanAgent-1', 'HumanAgent-2', 'HumanAgent-3'],
+        );
+    });
+
+    it('держит отдельную очередь на каждый тип', () => {
+        const agent = new BulletinBoardAgent();
+        const { context, sent } = createContext();
+        agent.receive(createMessage(BULLETIN_FIND, { type: 'BankAgent', replyTo: 'HumanAgent-1' }), context);
+        agent.receive(createMessage(BULLETIN_FIND, { type: 'HouseAgent', replyTo: 'HumanAgent-2' }), context);
+        agent.receive(createMessage(BULLETIN_FIND, { type: 'BankAgent', replyTo: 'HumanAgent-3' }), context);
+
+        assert.equal(agent.pendingCount, 3);
+        assert.equal(agent.waitingFor('BankAgent'), 2);
+        assert.equal(agent.waitingFor('HouseAgent'), 1);
+
+        agent.receive(createMessage(ROSTER_REPORT, { types: ['HouseAgent'], ids: ['HouseAgent-1'] }), context);
+
+        assert.equal(agent.waitingFor('BankAgent'), 2);
+        assert.equal(agent.waitingFor('HouseAgent'), 0);
+        assert.equal(lastOf(sent, BULLETIN_RESULT)?.to, 'HumanAgent-2');
+    });
+
+    it('лишний ответ реестра не сдвигает очередь другого типа', () => {
+        const agent = new BulletinBoardAgent();
+        const { context, log, sent } = createContext();
+        agent.receive(createMessage(BULLETIN_FIND, { type: 'BankAgent', replyTo: 'HumanAgent-1' }), context);
+
+        agent.receive(createMessage(ROSTER_REPORT, { types: ['BankAgent'], ids: ['BankAgent-1'] }), context);
+        agent.receive(createMessage(ROSTER_REPORT, { types: ['BankAgent'], ids: ['BankAgent-1'] }), context);
+
+        assert.equal(agent.pendingCount, 0);
+        assert.equal(sent.filter((item) => item.type === BULLETIN_RESULT).length, 1);
+        assert.match(log.at(-1) ?? '', /а запроса не было/);
+    });
+
     it('на запрос состояния отдаёт число ожиданий', () => {
         const agent = new BulletinBoardAgent();
         const { context, sent } = createContext();

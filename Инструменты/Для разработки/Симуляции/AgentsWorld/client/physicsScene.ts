@@ -1,10 +1,11 @@
 import * as THREE from 'three';
 import { createMotionTracker } from './physicsMotion.ts';
-import { bodyColor, boxOf } from './physicsView.ts';
+import { bodyColor, boxOf, labelOf } from './physicsView.ts';
 import type { PhysicsState } from '../agents/physicsAgent.ts';
 
 export interface SceneView {
     apply(state: PhysicsState): void;
+    setNames(names: Readonly<Record<string, string>>): void;
     dispose(): void;
 }
 
@@ -108,7 +109,8 @@ function createOrbit(canvas: HTMLCanvasElement, context: Context): Orbit {
 
 interface BodyEntry {
     readonly mesh: THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>;
-    readonly label: THREE.Sprite;
+    label: THREE.Sprite;
+    labelText: string;
 }
 
 interface Layer {
@@ -126,6 +128,28 @@ export function createScene(canvas: HTMLCanvasElement): SceneView {
     context.scene.add(bodies.group);
     context.scene.add(objects.group);
     let boundsBox: THREE.LineSegments | null = null;
+    let names: Readonly<Record<string, string>> = {};
+
+    const renameEntry = (layer: Layer, id: string, entry: BodyEntry): void => {
+        const text = labelOf(id, names);
+        if (text === entry.labelText) {
+            return;
+        }
+        layer.group.remove(entry.label);
+        entry.label.material.map?.dispose();
+        entry.label.material.dispose();
+        entry.label = makeLabel(text);
+        entry.labelText = text;
+        layer.group.add(entry.label);
+    };
+
+    const renameAll = (): void => {
+        for (const layer of [bodies, objects]) {
+            for (const [id, entry] of layer.entries) {
+                renameEntry(layer, id, entry);
+            }
+        }
+    };
 
     const upsert = (
         layer: Layer,
@@ -138,11 +162,14 @@ export function createScene(canvas: HTMLCanvasElement): SceneView {
         if (entry === undefined) {
             const mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: bodyColor(id) }));
             mesh.position.set(position.x, position.y, position.z);
-            const label = makeLabel(id);
+            const text = labelOf(id, names);
+            const label = makeLabel(text);
             layer.group.add(mesh);
             layer.group.add(label);
-            entry = { mesh, label };
+            entry = { mesh, label, labelText: text };
             layer.entries.set(id, entry);
+        } else {
+            renameEntry(layer, id, entry);
         }
         motion.setTarget(id, position, seconds());
         entry.mesh.scale.setScalar(moving ? 1.6 : 1);
@@ -216,6 +243,10 @@ export function createScene(canvas: HTMLCanvasElement): SceneView {
 
     return {
         apply,
+        setNames: (next: Readonly<Record<string, string>>): void => {
+            names = next;
+            renameAll();
+        },
         dispose: (): void => {
             disposed = true;
             context.renderer.dispose();

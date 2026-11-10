@@ -64,4 +64,29 @@ describe('server index', () => {
             await running.stop();
         }
     });
+
+    it('туалет стоит отдельно от домов и людей', async () => {
+        const running = await startServer(createServerConfig({ PORT: '0', HUMANS: '4', TICK_MS: '100' }));
+
+        try {
+            await new Promise((resolve) => setTimeout(resolve, 700));
+            const physics = await (await fetch(`${running.url}/api/physics`)).json();
+            const key = (point: { x: number; y: number; z: number }): string => `${point.x}|${point.y}|${point.z}`;
+            const toilet = physics.bodies.find((body: { id: string }) => body.id === 'ToiletAgent-1');
+
+            assert.deepEqual(toilet.position, { x: 98, y: 0, z: 98 }, 'туалет стоит в позиции из конфигурации');
+            const occupied = [...physics.bodies, ...physics.objects]
+                .filter((body: { id: string }) => body.id !== 'ToiletAgent-1')
+                .map((body: { position: { x: number; y: number; z: number } }) => key(body.position));
+
+            assert.equal(occupied.includes(key(toilet.position)), false, 'на точке туалета не должно быть домов и людей');
+        } finally {
+            await running.stop();
+        }
+    });
+
+    it('отказывает на некорректную позицию туалета', () => {
+        assert.throws(() => createServerConfig({ TOILET_POSITION: '10' }), /TOILET_POSITION/);
+        assert.throws(() => createServerConfig({ TOILET_POSITION: 'a,b' }), /TOILET_POSITION/);
+    });
 });

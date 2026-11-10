@@ -82,6 +82,15 @@ describe('ToiletAgent', () => {
         assert.deepEqual(lastOf(sent, PHYSICS_REGISTER)?.payload, { id: TOILET_AGENT_ID, position: { x: 50, y: 0, z: 0 } });
     });
 
+    it('без настройки встаёт в начало плоскости, а не на высоту', () => {
+        const agent = new ToiletAgent();
+        const { context, sent } = createContext();
+
+        agent.start(context);
+
+        assert.deepEqual(lastOf(sent, PHYSICS_REGISTER)?.payload, { id: TOILET_AGENT_ID, position: { x: 0, y: 0, z: 0 } });
+    });
+
     it('пускает желающего, когда узнаёт его позицию', () => {
         const agent = new ToiletAgent({ position: { x: 0, y: 50, z: 0 } });
         const fixture = createContext();

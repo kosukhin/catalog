@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { bodyColor, boxOf, formatPoint, isMoving, stateRows } from '../client/physicsView.ts';
+import { bodyColor, boxOf, formatPoint, isMoving, labelOf, stateRows } from '../client/physicsView.ts';
 
 const bounds = { min: { x: 0, y: 0, z: 0 }, max: { x: 10, y: 20, z: 30 } };
 
@@ -33,6 +33,14 @@ describe('physicsView', () => {
 
     it('печатает точку', () => {
         assert.equal(formatPoint({ x: 1.234, y: 0, z: -5 }), '1.23; 0; -5');
+    });
+
+    it('подписывает тело именем, а без имени — адресом', () => {
+        const names = { 'HumanAgent-1': 'Иван' };
+
+        assert.equal(labelOf('HumanAgent-1', names), 'Иван');
+        assert.equal(labelOf('HumanAgent-2', names), 'HumanAgent-2');
+        assert.equal(labelOf('House-HumanAgent-1', {}), 'House-HumanAgent-1');
     });
 
     it('собирает строки для панели', () => {

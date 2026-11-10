@@ -1,8 +1,10 @@
-import { loadPhysicsState } from './physicsApi.ts';
+import { loadAgentNames, loadPhysicsState } from './physicsApi.ts';
 import { createScene } from './physicsScene.ts';
 import { stateRows } from './physicsView.ts';
 
 const POLL_MS = 400;
+
+const NAMES_POLL_MS = 2000;
 
 export function startPhysicsView(): void {
     const canvas = document.getElementById('scene');
@@ -12,6 +14,14 @@ export function startPhysicsView(): void {
         return;
     }
     const view = createScene(canvas);
+
+    const names = async (): Promise<void> => {
+        try {
+            view.setNames(await loadAgentNames('/api/agents?pageSize=200'));
+        } catch {
+            return;
+        }
+    };
 
     const tick = async (): Promise<void> => {
         try {
@@ -26,6 +36,8 @@ export function startPhysicsView(): void {
         }
     };
 
+    void names();
+    setInterval(() => void names(), NAMES_POLL_MS);
     void tick();
     setInterval(() => void tick(), POLL_MS);
 }

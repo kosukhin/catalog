@@ -28,10 +28,15 @@
 ```bash
 npm install        # express и типы (нужны один раз)
 npm start          # сервер + дашборд: http://localhost:3000
+npm run dev        # то же, но с перезагрузкой при изменении кода
 npm run demo       # демонстрация мира в консоли
 npm test           # модульные тесты (node --test)
 npm run typecheck  # проверка типов
 ```
+
+`npm run dev` перезапускает сервер при правке `server/`, `lib/`, `agents/`,
+`scripts/` и пересобирает бандл клиента при правке `client/` — см.
+[docs/dev.md](docs/dev.md).
 
 ```js
 import * as echoAgent from '../agents/echoAgent.ts';
@@ -71,7 +76,7 @@ agents/               агенты — подключаются снаружи
 ├── dayAgent.ts       время в мире: число, день недели, день/ночь (единственный)
 ├── humanCatalogAgent.ts  каталог людей с поиском по свойствам (единственный)
 ├── humanAgent.ts     человек: ищет банк, покупает дом, ходит в туалет
-├── physicsAgent.ts   физика мира: точки и высоты тел, перемещение по запросу
+├── physicsAgent.ts   физика мира: точки тел на плоскости, перемещение по запросу
 ├── bankAgent.ts      банк: счёт с депозитом 1000 и списания
 ├── houseAgent.ts     дома: продаёт дом за 800 в точке человека
 ├── bulletinBoardAgent.ts  доска объявлений: ищет агентов по типу через реестр
@@ -80,6 +85,7 @@ agents/               агенты — подключаются снаружи
 ├── index.ts          все агенты мира одним списком
 └── echoAgent.ts      простейший печатающий агент (для проверки рантайма)
 scripts/demo.ts       демонстрация запуска (точка сборки мира)
+scripts/dev.ts        режим разработки: перезапуск при правках и сборка клиента
 client/               браузерный рендер сцены three.js
 ├── physicsMain.ts    точка входа страницы: опрос /api/physics, панель, статус
 ├── physicsScene.ts   сцена three.js: камера, свет, тела, подписи, обзор мышью
@@ -112,7 +118,8 @@ test/                 модульные тесты: один файл на мо
 
 Настройки через окружение: `PORT` (по умолчанию 3000), `HUMANS` (42),
 `PAGE_SIZE` (20), `TIME_SCALE` (50 — во сколько раз время мира быстрее реального),
-`TICK_MS` (1000 — как часто тикер будит людей).
+`TICK_MS` (1000 — как часто тикер будит людей), `TOILET_POSITION` (`98,98` — где
+стоит туалет, `x,z` или `x,y,z` внутри границ мира).
 
 ```bash
 PORT=8080 HUMANS=50 TIME_SCALE=60 TICK_MS=500 npm start
@@ -128,7 +135,7 @@ PORT=8080 HUMANS=50 TIME_SCALE=60 TICK_MS=500 npm start
 | `DayAgent` | единственный источник времени; идёт в 10× быстрее реального (`timeScale`) | [dayAgent.md](docs/dayAgent.md) |
 | `HumanCatalogAgent` | единственный каталог: поиск людей по имени, полу, профессии | [humanCatalogAgent.md](docs/humanCatalogAgent.md) |
 | `HumanAgent` | человек: днём находит банк, открывает счёт, покупает дом, ходит в туалет | [humanAgent.md](docs/humanAgent.md) |
-| `PhysicsAgent` | физика мира: хранит точки и высоты тел, перемещает тела по запросу | [physicsAgent.md](docs/physicsAgent.md) |
+| `PhysicsAgent` | физика мира: хранит точки тел на плоскости, перемещает тела по запросу | [physicsAgent.md](docs/physicsAgent.md) |
 | `BankAgent` | банк: счёт с депозитом 1000, списание за дом | [bankAgent.md](docs/bankAgent.md) |
 | `HouseAgent` | дома: продаёт дом за 800 и ставит его в точке человека | [houseAgent.md](docs/houseAgent.md) |
 | `BulletinBoardAgent` | доска объявлений: находит агентов нужного типа через реестр | [bulletinBoardAgent.md](docs/bulletinBoardAgent.md) |

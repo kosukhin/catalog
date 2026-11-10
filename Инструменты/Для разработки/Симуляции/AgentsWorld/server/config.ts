@@ -1,5 +1,8 @@
 import * as agents from '../agents/index.ts';
+import type { Point } from '../agents/physicsAgent.ts';
 import type { AgentPlugin, PopulationEntry } from '../lib/index.ts';
+
+const DEFAULT_TOILET_POSITION: Point = { x: 98, y: 0, z: 98 };
 
 export interface ServerConfig {
     readonly port: number;
@@ -9,6 +12,7 @@ export interface ServerConfig {
     readonly tickMs: number;
     readonly clockId: string;
     readonly physicsId: string;
+    readonly toiletPosition: Point;
     readonly population: Map<AgentPlugin, number | PopulationEntry>;
 }
 
@@ -18,6 +22,7 @@ export function createServerConfig(env: Readonly<Record<string, string | undefin
     const pageSize = readInteger(env.PAGE_SIZE, 20, 1, 200, 'PAGE_SIZE');
     const timeScale = readTimeScale(env.TIME_SCALE, 50);
     const tickMs = readInteger(env.TICK_MS, 1000, 10, 600_000, 'TICK_MS');
+    const toiletPosition = readToiletPosition(env.TOILET_POSITION);
     return {
         port,
         humans,
@@ -26,6 +31,7 @@ export function createServerConfig(env: Readonly<Record<string, string | undefin
         tickMs,
         clockId: agents.dayAgent.DAY_AGENT_ID,
         physicsId: agents.physicsAgent.PHYSICS_AGENT_ID,
+        toiletPosition,
         population: new Map<AgentPlugin, number | PopulationEntry>([
             [agents.dayAgent, { count: 1, options: { timeScale } }],
             [agents.humanCatalogAgent, 1],
@@ -33,11 +39,30 @@ export function createServerConfig(env: Readonly<Record<string, string | undefin
             [agents.bankAgent, 1],
             [agents.houseAgent, 1],
             [agents.bulletinBoardAgent, 1],
-            [agents.toiletAgent, 1],
+            [agents.toiletAgent, { count: 1, options: { position: toiletPosition } }],
             [agents.humanAgent, humans],
             [agents.tickAgent, { count: 1, options: { intervalMs: tickMs, types: [agents.humanAgent.type, agents.physicsAgent.type, agents.toiletAgent.type] } }],
         ]),
     };
+}
+
+function readToiletPosition(value: string | undefined): Point {
+    if (value === undefined || value.trim() === '') {
+        return DEFAULT_TOILET_POSITION;
+    }
+    const parts = value.split(',');
+    if (parts.length !== 2 && parts.length !== 3) {
+        throw new Error(`TOILET_POSITION должен быть в виде «x,z» или «x,y,z», получено «${value}»`);
+    }
+    const numbers = parts.map((part) => Number(part.trim()));
+    if (numbers.some((number) => !Number.isFinite(number))) {
+        throw new Error(`TOILET_POSITION должен состоять из конечных чисел, получено «${value}»`);
+    }
+    const [first, second, third] = numbers;
+    if (third === undefined) {
+        return { x: first ?? 0, y: DEFAULT_TOILET_POSITION.y, z: second ?? 0 };
+    }
+    return { x: first ?? 0, y: second ?? 0, z: third };
 }
 
 function readTimeScale(value: string | undefined, fallback: number): number {

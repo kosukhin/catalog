@@ -3,6 +3,25 @@ async function loadPhysicsState(url, fetcher = defaultFetcher) {
   const response = await fetcher(url);
   return await response.json();
 }
+async function loadAgentNames(url, fetcher = defaultFetcher) {
+  const response = await fetcher(url);
+  return toNames(await response.json());
+}
+function toNames(payload) {
+  const items = payload?.items;
+  if (!Array.isArray(items)) {
+    return {};
+  }
+  const names = {};
+  for (const item of items) {
+    const entry = item;
+    const name = entry?.details?.name;
+    if (typeof entry?.id === "string" && typeof name === "string" && name.trim() !== "") {
+      names[entry.id] = name;
+    }
+  }
+  return names;
+}
 async function defaultFetcher(url) {
   const response = await fetch(url);
   if (!response.ok) {
@@ -11,7 +30,7 @@ async function defaultFetcher(url) {
   return response;
 }
 
-// node_modules/three/build/three.core.js
+// ../../../../node_modules/three/build/three.core.js
 var REVISION = "187";
 var CullFaceNone = 0;
 var CullFaceBack = 1;
@@ -16988,7 +17007,7 @@ if (typeof window !== "undefined") {
   }
 }
 
-// node_modules/three/build/three.module.js
+// ../../../../node_modules/three/build/three.module.js
 function WebGLAnimation() {
   let context = null;
   let isAnimating = false;
@@ -28440,6 +28459,9 @@ var COLORS = [
   { prefix: "DayAgent", color: 16172101 },
   { prefix: "BankAgent", color: 2278750 }
 ];
+function labelOf(id, names) {
+  return names[id] ?? id;
+}
 function bodyColor(id) {
   return COLORS.find((item) => id.startsWith(item.prefix))?.color ?? DEFAULT_COLOR;
 }
@@ -28568,16 +28590,39 @@ function createScene(canvas) {
   context.scene.add(bodies.group);
   context.scene.add(objects.group);
   let boundsBox = null;
+  let names = {};
+  const renameEntry = (layer, id, entry) => {
+    const text = labelOf(id, names);
+    if (text === entry.labelText) {
+      return;
+    }
+    layer.group.remove(entry.label);
+    entry.label.material.map?.dispose();
+    entry.label.material.dispose();
+    entry.label = makeLabel(text);
+    entry.labelText = text;
+    layer.group.add(entry.label);
+  };
+  const renameAll = () => {
+    for (const layer of [bodies, objects]) {
+      for (const [id, entry] of layer.entries) {
+        renameEntry(layer, id, entry);
+      }
+    }
+  };
   const upsert = (layer, id, position, moving, geometry) => {
     let entry = layer.entries.get(id);
     if (entry === void 0) {
       const mesh = new Mesh(geometry, new MeshStandardMaterial({ color: bodyColor(id) }));
       mesh.position.set(position.x, position.y, position.z);
-      const label = makeLabel(id);
+      const text = labelOf(id, names);
+      const label = makeLabel(text);
       layer.group.add(mesh);
       layer.group.add(label);
-      entry = { mesh, label };
+      entry = { mesh, label, labelText: text };
       layer.entries.set(id, entry);
+    } else {
+      renameEntry(layer, id, entry);
     }
     motion.setTarget(id, position, seconds());
     entry.mesh.scale.setScalar(moving ? 1.6 : 1);
@@ -28645,6 +28690,10 @@ function createScene(canvas) {
   requestAnimationFrame(animate);
   return {
     apply,
+    setNames: (next) => {
+      names = next;
+      renameAll();
+    },
     dispose: () => {
       disposed = true;
       context.renderer.dispose();
@@ -28672,6 +28721,7 @@ function makeLabel(text) {
 
 // client/physicsMain.ts
 var POLL_MS = 400;
+var NAMES_POLL_MS = 2e3;
 function startPhysicsView() {
   const canvas = document.getElementById("scene");
   const hud = document.getElementById("hud");
@@ -28680,6 +28730,13 @@ function startPhysicsView() {
     return;
   }
   const view = createScene(canvas);
+  const names = async () => {
+    try {
+      view.setNames(await loadAgentNames("/api/agents?pageSize=200"));
+    } catch {
+      return;
+    }
+  };
   const tick = async () => {
     try {
       const state = await loadPhysicsState("/api/physics");
@@ -28690,6 +28747,8 @@ function startPhysicsView() {
       status.textContent = `\u043E\u0448\u0438\u0431\u043A\u0430: ${error2 instanceof Error ? error2.message : String(error2)}`;
     }
   };
+  void names();
+  setInterval(() => void names(), NAMES_POLL_MS);
   void tick();
   setInterval(() => void tick(), POLL_MS);
 }

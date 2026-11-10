@@ -9,6 +9,7 @@ WebGL.
 | Экспорт | Назначение |
 |---|---|
 | `bodyColor(id)` | цвет тела по типу (`HumanAgent`, `ToiletAgent`, `House`, …) |
+| `labelOf(id, names)` | текст подписи: имя агента, а без имени — его адрес |
 | `isMoving(id, state)` | движется ли тело сейчас |
 | `boxOf(bounds)` | `{ size, center }` коробки границ |
 | `formatPoint(point)` | строка `x; y; z` |

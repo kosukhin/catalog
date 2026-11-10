@@ -84,12 +84,18 @@ const DEFAULT_ARRIVE_DISTANCE = 1;
 const DEFAULT_BOUNDS: Bounds = { min: { x: 0, y: 0, z: 0 }, max: { x: 100, y: 100, z: 100 } };
 const ZERO: Point = { x: 0, y: 0, z: 0 };
 const EPSILON = 1e-9;
+const STALL_STEP = 0.05;
+const STALL_LIMIT = 8;
+const AROUND_ANGLES: readonly number[] = [Math.PI / 6, -Math.PI / 6, Math.PI / 3, -Math.PI / 3, Math.PI / 2, -Math.PI / 2, (2 * Math.PI) / 3, (-2 * Math.PI) / 3];
 
 interface Move {
     readonly kind: 'segment' | 'pursue';
     readonly goal: Point | null;
     readonly targetId: string | null;
     readonly requester: string | null;
+    detour: Point | null;
+    best: number;
+    stalled: number;
 }
 
 export class PhysicsAgent extends AbstractActor {
@@ -220,7 +226,7 @@ export class PhysicsAgent extends AbstractActor {
             this.#reply(request.replyTo, request.id, false, blocked, from, context);
             return;
         }
-        this.#moves.set(request.id, { kind: 'segment', goal, targetId: null, requester: request.replyTo });
+        this.#moves.set(request.id, { kind: 'segment', goal, targetId: null, requester: request.replyTo, detour: null, best: Number.POSITIVE_INFINITY, stalled: 0 });
         this.#reply(request.replyTo, request.id, true, null, from, context);
     }
 
@@ -236,12 +242,7 @@ export class PhysicsAgent extends AbstractActor {
             this.#reply(request.replyTo, request.id, false, `тело-цель «${request.targetId}» не зарегистрировано`, from, context);
             return;
         }
-        const blocked = this.#blocked(from, target, [request.id, request.targetId]);
-        if (blocked !== null) {
-            this.#reply(request.replyTo, request.id, false, blocked, from, context);
-            return;
-        }
-        this.#moves.set(request.id, { kind: 'pursue', goal: null, targetId: request.targetId, requester: request.replyTo });
+        this.#moves.set(request.id, { kind: 'pursue', goal: null, targetId: request.targetId, requester: request.replyTo, detour: null, best: Number.POSITIVE_INFINITY, stalled: 0 });
         this.#reply(request.replyTo, request.id, true, null, from, context);
     }
 
@@ -295,18 +296,74 @@ export class PhysicsAgent extends AbstractActor {
             return;
         }
         const travel = Math.min(this.#speed * this.#stepSeconds, distance - threshold);
+        const ignore = move.targetId === null ? [id] : [id, move.targetId];
         const direction = scale(subtract(goal, from), 1 / distance);
         const next = add(from, scale(direction, travel));
-        const ignore = move.targetId === null ? [id] : [id, move.targetId];
-        const blocked = this.#blocked(from, next, ignore);
-        if (blocked !== null) {
-            this.#finish(id, move, from, blocked, context);
+        if (this.#blocked(from, next, ignore) === null) {
+            this.#bodies.set(id, next);
+            this.#checkArrival(id, move, goal, threshold, next, context);
             return;
         }
-        this.#bodies.set(id, next);
-        if (distanceBetween(next, goal) <= threshold + EPSILON) {
-            this.#finish(id, move, move.kind === 'segment' ? goal : next, null, context);
+        const around = this.#around(from, goal, travel, ignore, move.detour);
+        if (around === null) {
+            this.#finish(id, move, from, 'путь занят: обойти некуда', context);
+            return;
         }
+        move.detour = around;
+        this.#bodies.set(id, around);
+        this.#checkArrival(id, move, goal, threshold, around, context);
+    }
+
+    #checkArrival(id: string, move: Move, goal: Point, threshold: number, position: Point, context: ActorContext): void {
+        const left = distanceBetween(position, goal);
+        if (left <= threshold + EPSILON) {
+            this.#finish(id, move, position, null, context);
+            return;
+        }
+        const now = this.#bodies.get(id);
+        const ignore = move.targetId === null ? [id] : [id, move.targetId];
+        if (now !== undefined && this.#blocked(now, goal, ignore) === null) {
+            move.detour = null;
+        }
+        if (left < move.best - STALL_STEP) {
+            move.best = left;
+            move.stalled = 0;
+            return;
+        }
+        move.stalled += 1;
+        if (move.stalled > STALL_LIMIT) {
+            const reason = threshold > 0 ? 'место у цели занято' : 'путь занят: обойти некуда';
+            this.#finish(id, move, now ?? position, reason, context);
+        }
+    }
+
+    #around(from: Point, goal: Point, travel: number, ignore: readonly string[], previous: Point | null): Point | null {
+        const candidates: Array<{ point: Point; cost: number }> = [];
+        const heading = this.#planeHeading(from, goal);
+        for (const angle of AROUND_ANGLES) {
+            const direction = rotateOnPlane(heading, angle);
+            const point = add(from, scale(direction, travel));
+            if (!this.#insideBounds(point) || this.#nearest(point, ignore) !== null) {
+                continue;
+            }
+            const turning = previous === null ? 0 : distanceBetween(previous, point);
+            candidates.push({ point, cost: distanceBetween(point, goal) + turning });
+        }
+        if (candidates.length === 0) {
+            return null;
+        }
+        candidates.sort((left, right) => left.cost - right.cost);
+        return candidates[0]?.point ?? null;
+    }
+
+    #planeHeading(from: Point, to: Point): Point {
+        const dx = to.x - from.x;
+        const dz = to.z - from.z;
+        const length = Math.hypot(dx, dz);
+        if (length < EPSILON) {
+            return { x: 1, y: 0, z: 0 };
+        }
+        return { x: dx / length, y: 0, z: dz / length };
     }
 
     #finish(id: string, move: Move, position: Point, reason: string | null, context: ActorContext): void {
@@ -363,18 +420,13 @@ export class PhysicsAgent extends AbstractActor {
 
     #freeSpot(): Point | null {
         const { min, max } = this.#bounds;
-        const counts = {
-            x: Math.floor((max.x - min.x) / this.#spawnDistance),
-            y: Math.floor((max.y - min.y) / this.#spawnDistance),
-            z: Math.floor((max.z - min.z) / this.#spawnDistance),
-        };
-        for (let iz = 0; iz <= counts.z; iz += 1) {
-            for (let iy = 0; iy <= counts.y; iy += 1) {
-                for (let ix = 0; ix <= counts.x; ix += 1) {
-                    const point = { x: min.x + ix * this.#spawnDistance, y: min.y + iy * this.#spawnDistance, z: min.z + iz * this.#spawnDistance };
-                    if (this.#nearest(point, []) === null) {
-                        return point;
-                    }
+        const columns = Math.floor((max.x - min.x) / this.#spawnDistance);
+        const rows = Math.floor((max.z - min.z) / this.#spawnDistance);
+        for (let iz = 0; iz <= rows; iz += 1) {
+            for (let ix = 0; ix <= columns; ix += 1) {
+                const point = { x: min.x + ix * this.#spawnDistance, y: min.y, z: min.z + iz * this.#spawnDistance };
+                if (this.#nearest(point, []) === null) {
+                    return point;
                 }
             }
         }
@@ -488,6 +540,12 @@ function add(a: Point, b: Point): Point {
 
 function scale(point: Point, factor: number): Point {
     return { x: point.x * factor, y: point.y * factor, z: point.z * factor };
+}
+
+function rotateOnPlane(point: Point, angle: number): Point {
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+    return { x: point.x * cos - point.z * sin, y: point.y, z: point.x * sin + point.z * cos };
 }
 
 function distanceBetween(a: Point, b: Point): number {

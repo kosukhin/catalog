@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { loadPhysicsState } from '../client/physicsApi.ts';
+import { loadAgentNames, loadPhysicsState, toNames } from '../client/physicsApi.ts';
 
 describe('physicsApi', () => {
     it('загружает состояние физики по адресу', async () => {
@@ -24,5 +24,44 @@ describe('physicsApi', () => {
                 }),
             /сеть недоступна/,
         );
+    });
+
+    it('собирает имена агентов по их адресам', () => {
+        const names = toNames({
+            items: [
+                { id: 'HumanAgent-1', type: 'HumanAgent', details: { name: 'Иван', state: 'активен' } },
+                { id: 'HumanAgent-2', type: 'HumanAgent', details: { name: 'Анна' } },
+            ],
+        });
+
+        assert.deepEqual(names, { 'HumanAgent-1': 'Иван', 'HumanAgent-2': 'Анна' });
+    });
+
+    it('пропускает агентов без имени и не падает на чужом ответе', () => {
+        assert.deepEqual(
+            toNames({
+                items: [
+                    { id: 'PhysicsAgent-1', details: { speed: 5 } },
+                    { id: 'HumanAgent-3', details: { name: '  ' } },
+                    { id: 'HumanAgent-4' },
+                    { details: { name: 'Безымянный' } },
+                ],
+            }),
+            {},
+        );
+        assert.deepEqual(toNames({ error: 'нет данных' }), {});
+        assert.deepEqual(toNames(null), {});
+    });
+
+    it('загружает имена с отдельного адреса', async () => {
+        const calls: string[] = [];
+
+        const names = await loadAgentNames('/api/agents?pageSize=200', async (url) => {
+            calls.push(url);
+            return { json: async () => ({ items: [{ id: 'HumanAgent-7', details: { name: 'Ольга' } }] }) };
+        });
+
+        assert.deepEqual(calls, ['/api/agents?pageSize=200']);
+        assert.deepEqual(names, { 'HumanAgent-7': 'Ольга' });
     });
 });

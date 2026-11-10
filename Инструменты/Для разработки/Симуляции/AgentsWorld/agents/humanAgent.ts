@@ -18,7 +18,7 @@ export type HumanState = 'спит' | 'активен' | 'принимает п�
 
 type ToiletStatus = 'нет' | 'запросил' | 'идёт' | 'внутри';
 
-const TOILET_LIMIT = 0.1;
+const TOILET_LIMIT = 0.001;
 
 const EATING_LIMIT = 0.3;
 
@@ -411,4 +411,3 @@ function readRandom(value: unknown): () => number {
     }
     return value as () => number;
 }
-

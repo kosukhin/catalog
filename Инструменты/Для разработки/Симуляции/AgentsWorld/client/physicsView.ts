@@ -10,6 +10,10 @@ const COLORS: ReadonlyArray<{ readonly prefix: string; readonly color: number }>
     { prefix: 'BankAgent', color: 0x22c55e },
 ];
 
+export function labelOf(id: string, names: Readonly<Record<string, string>>): string {
+    return names[id] ?? id;
+}
+
 export function bodyColor(id: string): number {
     return COLORS.find((item) => id.startsWith(item.prefix))?.color ?? DEFAULT_COLOR;
 }
