@@ -32,7 +32,7 @@ export async function takeSnapshot(world: WorldQuery, clockId: string, timeoutMs
         threadCount: world.threadCount,
         total: agents.length,
         byType: countByType(agents),
-        clock: await readClock(world, clockId, timeoutMs),
+        clock: await takeClock(world, clockId, timeoutMs),
         agents,
     };
 }
@@ -51,7 +51,7 @@ async function readAgent(
     }
 }
 
-async function readClock(world: WorldQuery, clockId: string, timeoutMs: number): Promise<TimeReport | null> {
+export async function takeClock(world: WorldQuery, clockId: string, timeoutMs = 500): Promise<TimeReport | null> {
     try {
         const reply = await world.ask(clockId, createMessage(TIME_REQUEST, { replyTo: WORLD_ID }), timeoutMs);
         return (reply.payload as TimeReport | undefined) ?? null;

@@ -4,13 +4,20 @@ import { createApp } from '../server/app.ts';
 import { createServerConfig } from '../server/config.ts';
 import type { WorldQuery } from '../server/snapshot.ts';
 import { PHYSICS_STATE } from '../agents/physicsAgent.ts';
+import { TIME_REPORT } from '../agents/dayAgent.ts';
 
-function createWorld(states: Record<string, Record<string, unknown>>): WorldQuery {
+function createWorld(states: Record<string, Record<string, unknown>>, clock: unknown = null): WorldQuery {
     return {
         running: true,
         threadCount: 3,
         actors: Object.keys(states).map((id) => ({ id, type: 'HumanAgent' })),
         async ask(to: string) {
+            if (to === 'DayAgent-1') {
+                if (clock === null) {
+                    throw new Error('агент DayAgent-1 не ответил');
+                }
+                return { type: TIME_REPORT, payload: clock };
+            }
             if (!(to in states)) {
                 throw new Error(`агент ${to} не ответил`);
             }
@@ -108,6 +115,25 @@ describe('express app', () => {
             assert.equal(response.status, 200);
             assert.match(html, /AgentsWorld — дашборд/);
             assert.match(html, /\/api\/agents/);
+        });
+    });
+
+    it('отдаёт время мира отдельным лёгким запросом', async () => {
+        const clock = { hours: 7, minutes: 15, phase: 'день' };
+        const world = createWorld({ 'HumanAgent-1': { name: 'Иван' } }, clock);
+
+        await withApp(world, async (url) => {
+            const json = await (await fetch(`${url}/api/clock`)).json();
+
+            assert.deepEqual(json, { clock });
+        });
+    });
+
+    it('отдаёт пустые часы, если DayAgent не ответил', async () => {
+        await withApp(createWorld({ 'HumanAgent-1': { name: 'Иван' } }), async (url) => {
+            const json = await (await fetch(`${url}/api/clock`)).json();
+
+            assert.deepEqual(json, { clock: null });
         });
     });
 

@@ -1,10 +1,13 @@
-import { loadAgentNames, loadPhysicsState } from './physicsApi.ts';
+import { loadAgentNames, loadPhysicsState, loadWorldClock } from './physicsApi.ts';
 import { createScene } from './physicsScene.ts';
-import { stateRows } from './physicsView.ts';
+import { stateRows, statusLine } from './physicsView.ts';
+import type { TimeReport } from '../agents/dayAgent.ts';
 
 const POLL_MS = 400;
 
 const NAMES_POLL_MS = 2000;
+
+const CLOCK_POLL_MS = 1000;
 
 export function startPhysicsView(): void {
     const canvas = document.getElementById('scene');
@@ -14,6 +17,11 @@ export function startPhysicsView(): void {
         return;
     }
     const view = createScene(canvas);
+    const latest = { bodyCount: 0, movingCount: 0, clock: null as TimeReport | null };
+
+    const renderStatus = (): void => {
+        status.textContent = statusLine(latest.bodyCount, latest.movingCount, latest.clock);
+    };
 
     const names = async (): Promise<void> => {
         try {
@@ -23,6 +31,15 @@ export function startPhysicsView(): void {
         }
     };
 
+    const clock = async (): Promise<void> => {
+        try {
+            latest.clock = await loadWorldClock('/api/clock');
+        } catch {
+            latest.clock = null;
+        }
+        renderStatus();
+    };
+
     const tick = async (): Promise<void> => {
         try {
             const state = await loadPhysicsState('/api/physics');
@@ -30,7 +47,9 @@ export function startPhysicsView(): void {
             hud.innerHTML = stateRows(state)
                 .map((row) => `<div class="row"><span>${row.label}</span><b>${row.value}</b></div>`)
                 .join('');
-            status.textContent = `тел: ${state.bodies.length} · движется: ${state.moving.length} · обновлено ${time()}`;
+            latest.bodyCount = state.bodies.length;
+            latest.movingCount = state.moving.length;
+            renderStatus();
         } catch (error) {
             status.textContent = `ошибка: ${error instanceof Error ? error.message : String(error)}`;
         }
@@ -38,12 +57,10 @@ export function startPhysicsView(): void {
 
     void names();
     setInterval(() => void names(), NAMES_POLL_MS);
+    void clock();
+    setInterval(() => void clock(), CLOCK_POLL_MS);
     void tick();
     setInterval(() => void tick(), POLL_MS);
-}
-
-function time(): string {
-    return new Date().toLocaleTimeString('ru-RU');
 }
 
 if (typeof document !== 'undefined') {

@@ -1,4 +1,5 @@
 import type { Bounds, PhysicsState, Point } from '../agents/physicsAgent.ts';
+import type { TimeReport } from '../agents/dayAgent.ts';
 
 const DEFAULT_COLOR = 0x8b93a1;
 
@@ -41,6 +42,17 @@ export function formatPoint(point: Point): string {
     return `${round(point.x)}; ${round(point.y)}; ${round(point.z)}`;
 }
 
+export function clockLabel(clock: TimeReport | null): string {
+    if (clock === null) {
+        return 'время мира: —';
+    }
+    return `${pad(clock.hours)}:${pad(clock.minutes)} · ${clock.phase}`;
+}
+
+export function statusLine(bodyCount: number, movingCount: number, clock: TimeReport | null): string {
+    return `тел: ${bodyCount} · движется: ${movingCount} · ${clockLabel(clock)}`;
+}
+
 export function stateRows(state: PhysicsState): ReadonlyArray<{ readonly label: string; readonly value: string }> {
     return [
         { label: 'скорость', value: `${state.speed} ед./с` },
@@ -58,4 +70,8 @@ export function stateRows(state: PhysicsState): ReadonlyArray<{ readonly label: 
 
 function round(value: number): number {
     return Math.round(value * 100) / 100;
+}
+
+function pad(value: number): string {
+    return String(value).padStart(2, '0');
 }

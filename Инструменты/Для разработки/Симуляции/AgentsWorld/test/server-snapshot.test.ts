@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { takePhysics, takeSnapshot, type WorldQuery } from '../server/snapshot.ts';
+import { takeClock, takePhysics, takeSnapshot, type WorldQuery } from '../server/snapshot.ts';
 import { STATUS_REPORT, type Message } from '../lib/protocol.ts';
 import { TIME_REQUEST, TIME_REPORT } from '../agents/dayAgent.ts';
 import { PHYSICS_LIST, PHYSICS_STATE } from '../agents/physicsAgent.ts';
@@ -67,6 +67,38 @@ describe('snapshot', () => {
 
         assert.deepEqual((await takeSnapshot(withClock, 'clock')).clock, { hours: 14, phase: 'день' });
         assert.equal((await takeSnapshot(withoutClock, 'clock')).clock, null);
+    });
+
+    it('лёгкий запрос часов спрашивает только DayAgent', async () => {
+        const asked: string[] = [];
+        const world: WorldQuery = {
+            running: true,
+            threadCount: 2,
+            actors: [{ id: 'a', type: 'HumanAgent' }, { id: 'clock', type: 'DayAgent' }],
+            async ask(to: string, message: Message): Promise<Message> {
+                asked.push(to);
+                assert.equal(message.type, TIME_REQUEST);
+                return { type: TIME_REPORT, payload: { hours: 7, minutes: 15, phase: 'день' } };
+            },
+        };
+
+        const clock = await takeClock(world, 'clock');
+
+        assert.deepEqual(asked, ['clock']);
+        assert.deepEqual(clock, { hours: 7, minutes: 15, phase: 'день' });
+    });
+
+    it('лёгкий запрос часов возвращает null при молчании DayAgent', async () => {
+        const world: WorldQuery = {
+            running: true,
+            threadCount: 1,
+            actors: [{ id: 'clock', type: 'DayAgent' }],
+            async ask() {
+                throw new Error('таймаут');
+            },
+        };
+
+        assert.equal(await takeClock(world, 'clock'), null);
     });
 
     it('минимальный срок ожидания ответа не мешает живым агентам', async () => {

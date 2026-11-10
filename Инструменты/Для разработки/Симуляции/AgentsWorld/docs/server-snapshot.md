@@ -29,6 +29,7 @@ takeSnapshot → каждому актору status-request  (replyTo = 'мир'
 | `AgentSnapshot` | `{ id, type, alive, details }` |
 | `WorldSnapshot` | `{ running, threadCount, total, byType, clock, agents }` |
 | `takeSnapshot(world, clockId, timeoutMs)` | собирает снимок агентов |
+| `takeClock(world, clockId, timeoutMs)` | только виртуальное время мира (`TimeReport | null`) |
 | `takePhysics(world, physicsId, timeoutMs)` | снимок физики: тела, позиции, движущиеся |
 
 `WorldQuery` — узкий интерфейс, а не сам `World`: снимок можно тестировать на
@@ -39,6 +40,11 @@ takeSnapshot → каждому актору status-request  (replyTo = 'мир'
 Отдельным запросом `time-request` у агента `clockId` берётся `TimeReport` — с
 уже ускоренным временем (`DayAgent` по умолчанию идёт в 10× быстрее реального).
 Если часы не ответили, `clock` равен `null`, остальной снимок остаётся рабочим.
+
+Тот же запрос вынесен в `takeClock(world, clockId, timeoutMs)`: он спрашивает
+**только** часы, без `status-request` остальным агентам. На нём стоит лёгкий маршрут
+`GET /api/clock`, который страница физики опрашивает раз в секунду — полный
+`takeSnapshot` для этого слишком дорог (`N + 1` сообщений на каждый запрос).
 
 ## Физика
 
@@ -59,4 +65,5 @@ takeSnapshot → каждому актору status-request  (replyTo = 'мир'
 
 `test/server-snapshot.test.ts` — подсчёт агентов и типов, перенос подробностей,
 `alive: false` для молчащего агента, часы мира и их отсутствие, работа с коротким
-таймаутом, состояние физики и ошибка при чужом ответе.
+таймаутом, состояние физики и ошибка при чужом ответе, лёгкий запрос часов
+(`takeClock` спрашивает только `clockId`, молчание даёт `null`).

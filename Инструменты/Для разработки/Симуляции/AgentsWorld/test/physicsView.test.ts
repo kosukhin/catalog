@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { bodyColor, boxOf, formatPoint, isMoving, labelOf, stateRows } from '../client/physicsView.ts';
+import { bodyColor, boxOf, clockLabel, formatPoint, isMoving, labelOf, stateRows, statusLine } from '../client/physicsView.ts';
 
 const bounds = { min: { x: 0, y: 0, z: 0 }, max: { x: 10, y: 20, z: 30 } };
 
@@ -53,5 +53,23 @@ describe('physicsView', () => {
         assert.equal(byLabel['мин. дистанция'], '2');
         assert.equal(byLabel['границы x'], '0…10');
         assert.equal(byLabel['границы z'], '0…30');
+    });
+
+    it('печатает время мира часами и минутами с фазой', () => {
+        const clock = { iso: '', year: 2026, month: 11, monthName: 'ноября', dayOfMonth: 8, weekday: 'воскресенье', hours: 7, minutes: 5, phase: 'день' as const };
+
+        assert.equal(clockLabel(clock), '07:05 · день');
+        assert.equal(clockLabel({ ...clock, hours: 23, minutes: 45, phase: 'ночь' }), '23:45 · ночь');
+    });
+
+    it('без часов мира показывает прочерк', () => {
+        assert.equal(clockLabel(null), 'время мира: —');
+    });
+
+    it('собирает строку статуса со временем мира вместо реального', () => {
+        const clock = { iso: '', year: 2026, month: 11, monthName: 'ноября', dayOfMonth: 8, weekday: 'воскресенье', hours: 7, minutes: 15, phase: 'день' as const };
+
+        assert.equal(statusLine(3, 1, clock), 'тел: 3 · движется: 1 · 07:15 · день');
+        assert.equal(statusLine(0, 0, null), 'тел: 0 · движется: 0 · время мира: —');
     });
 });

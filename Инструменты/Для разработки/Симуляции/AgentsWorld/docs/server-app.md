@@ -11,6 +11,7 @@ HTTP-слой: API для дашборда и раздача статики.
 | `GET /api/world` | `{ running, threadCount, total, byType, clock }` |
 | `GET /api/agents?page=&pageSize=&search=` | `{ page, pageSize, pages, total, items }` |
 | `GET /api/physics` | состояние `PhysicsAgent`: `{ speed, stepSeconds, minDistance, arriveDistance, bounds, bodies, moving }` |
+| `GET /api/clock` | виртуальное время мира: `{ clock }`, где `clock` — `TimeReport` или `null` |
 
 `items[]` — `{ id, type, alive, details }`; `details` — то, что агент рассказал о
 себе (`name`, `gender`, `profession`, `state`, `phase` у человека; `timeScale`,
@@ -40,6 +41,12 @@ HTTP-слой: API для дашборда и раздача статики.
 панель с `speed`, числом тел, движущихся, `minDistance`, `arriveDistance` и
 границами. Обзор мышью (поворот/приближение). Ссылка — с главного дашборда.
 
+В статусной строке страница показывает **время мира**, а не время машины: раз в
+секунду она запрашивает `/api/clock` и печатает `тел: 8 · движется: 3 · 07:15 · день`.
+Это отдельный лёгкий маршрут — он спрашивает только `DayAgent`, без опроса всех
+агентов, в отличие от `/api/world`. Если часы молчат, `clock` равен `null` и в строке
+стоит прочерк; страница продолжает работать.
+
 Клиент написан на TypeScript (`client/`) и собирается в `server/public/physics.js`
 через esbuild (`npm run build:client`; `npm start` собирает автоматически). three.js
 подключён в бандл, поэтому отдельных зависимостей в браузере не требуется.
@@ -54,4 +61,4 @@ HTTP-слое.
 
 `test/server-app.test.ts` — сводка мира, пагинация (страницы, размер, границы),
 поиск по состоянию, пустой результат, раздача дашборда по `/`, состояние физики по
-`/api/physics`.
+`/api/physics`, время мира по `/api/clock` (и `clock: null`, когда `DayAgent` молчит).

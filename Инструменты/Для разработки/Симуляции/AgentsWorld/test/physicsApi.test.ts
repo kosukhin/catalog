@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { loadAgentNames, loadPhysicsState, toNames } from '../client/physicsApi.ts';
+import { loadAgentNames, loadPhysicsState, loadWorldClock, toClock, toNames } from '../client/physicsApi.ts';
 
 describe('physicsApi', () => {
     it('загружает состояние физики по адресу', async () => {
@@ -63,5 +63,31 @@ describe('physicsApi', () => {
 
         assert.deepEqual(calls, ['/api/agents?pageSize=200']);
         assert.deepEqual(names, { 'HumanAgent-7': 'Ольга' });
+    });
+
+    it('загружает время мира с отдельного адреса', async () => {
+        const calls: string[] = [];
+        const report = { hours: 7, minutes: 5, phase: 'день' };
+
+        const clock = await loadWorldClock('/api/clock', async (url) => {
+            calls.push(url);
+            return { json: async () => ({ clock: report }) };
+        });
+
+        assert.deepEqual(calls, ['/api/clock']);
+        assert.deepEqual(clock, report);
+    });
+
+    it('возвращает null, если часы мира не ответили', async () => {
+        assert.equal(await loadWorldClock('/api/clock', async () => ({ json: async () => ({ clock: null }) })), null);
+    });
+
+    it('не падает на чужом ответе часов', () => {
+        assert.equal(toClock({ clock: null }), null);
+        assert.equal(toClock({ clock: 'полдень' }), null);
+        assert.equal(toClock({ clock: { minutes: 5 } }), null);
+        assert.equal(toClock({ clock: { hours: 7 } }), null);
+        assert.equal(toClock({ error: 'нет данных' }), null);
+        assert.equal(toClock(null), null);
     });
 });

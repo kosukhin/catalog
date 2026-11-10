@@ -3,6 +3,21 @@ async function loadPhysicsState(url, fetcher = defaultFetcher) {
   const response = await fetcher(url);
   return await response.json();
 }
+async function loadWorldClock(url, fetcher = defaultFetcher) {
+  const response = await fetcher(url);
+  return toClock(await response.json());
+}
+function toClock(payload) {
+  const clock = payload?.clock;
+  if (clock === null || typeof clock !== "object") {
+    return null;
+  }
+  const candidate = clock;
+  if (typeof candidate.hours !== "number" || typeof candidate.minutes !== "number") {
+    return null;
+  }
+  return clock;
+}
 async function loadAgentNames(url, fetcher = defaultFetcher) {
   const response = await fetcher(url);
   return toNames(await response.json());
@@ -15004,9 +15019,9 @@ var KeyframeTrack = class {
     let writeIndex = 1;
     for (let i = 1; i < lastIndex; ++i) {
       let keep = false;
-      const time2 = times[i];
+      const time = times[i];
       const timeNext = times[i + 1];
-      if (time2 !== timeNext && (i !== 1 || time2 !== times[0])) {
+      if (time !== timeNext && (i !== 1 || time !== times[0])) {
         if (!smoothInterpolation) {
           const offset = i * stride, offsetP = offset - stride, offsetN = offset + stride;
           for (let j = 0; j !== stride; ++j) {
@@ -17013,9 +17028,9 @@ function WebGLAnimation() {
   let isAnimating = false;
   let animationLoop = null;
   let requestId = null;
-  function onAnimationFrame(time2, frame) {
+  function onAnimationFrame(time, frame) {
     requestId = context.requestAnimationFrame(onAnimationFrame);
-    animationLoop(time2, frame);
+    animationLoop(time, frame);
   }
   return {
     start: function() {
@@ -25529,7 +25544,7 @@ var WebXRManager = class extends EventDispatcher {
       return cameraAccessTextures[xrCamera];
     };
     let onAnimationFrameCallback = null;
-    function onAnimationFrame(time2, frame) {
+    function onAnimationFrame(time, frame) {
       pose = frame.getViewerPose(customReferenceSpace || referenceSpace);
       xrFrame = frame;
       if (pose !== null) {
@@ -25614,7 +25629,7 @@ var WebXRManager = class extends EventDispatcher {
           controller.update(inputSource, frame, customReferenceSpace || referenceSpace);
         }
       }
-      if (onAnimationFrameCallback) onAnimationFrameCallback(time2, frame);
+      if (onAnimationFrameCallback) onAnimationFrameCallback(time, frame);
       if (frame.detectedPlanes) {
         scope.dispatchEvent({ type: "planesdetected", data: frame });
       }
@@ -27331,8 +27346,8 @@ var WebGLRenderer = class {
       });
     };
     let onAnimationFrameCallback = null;
-    function onAnimationFrame(time2) {
-      if (onAnimationFrameCallback) onAnimationFrameCallback(time2);
+    function onAnimationFrame(time) {
+      if (onAnimationFrameCallback) onAnimationFrameCallback(time);
     }
     function onXRSessionStart() {
       animation.stop();
@@ -28479,6 +28494,15 @@ function boxOf(bounds) {
     }
   };
 }
+function clockLabel(clock) {
+  if (clock === null) {
+    return "\u0432\u0440\u0435\u043C\u044F \u043C\u0438\u0440\u0430: \u2014";
+  }
+  return `${pad(clock.hours)}:${pad(clock.minutes)} \xB7 ${clock.phase}`;
+}
+function statusLine(bodyCount, movingCount, clock) {
+  return `\u0442\u0435\u043B: ${bodyCount} \xB7 \u0434\u0432\u0438\u0436\u0435\u0442\u0441\u044F: ${movingCount} \xB7 ${clockLabel(clock)}`;
+}
 function stateRows(state) {
   return [
     { label: "\u0441\u043A\u043E\u0440\u043E\u0441\u0442\u044C", value: `${state.speed} \u0435\u0434./\u0441` },
@@ -28495,6 +28519,9 @@ function stateRows(state) {
 }
 function round(value) {
   return Math.round(value * 100) / 100;
+}
+function pad(value) {
+  return String(value).padStart(2, "0");
 }
 
 // client/physicsScene.ts
@@ -28722,6 +28749,7 @@ function makeLabel(text) {
 // client/physicsMain.ts
 var POLL_MS = 400;
 var NAMES_POLL_MS = 2e3;
+var CLOCK_POLL_MS = 1e3;
 function startPhysicsView() {
   const canvas = document.getElementById("scene");
   const hud = document.getElementById("hud");
@@ -28730,6 +28758,10 @@ function startPhysicsView() {
     return;
   }
   const view = createScene(canvas);
+  const latest = { bodyCount: 0, movingCount: 0, clock: null };
+  const renderStatus = () => {
+    status.textContent = statusLine(latest.bodyCount, latest.movingCount, latest.clock);
+  };
   const names = async () => {
     try {
       view.setNames(await loadAgentNames("/api/agents?pageSize=200"));
@@ -28737,23 +28769,32 @@ function startPhysicsView() {
       return;
     }
   };
+  const clock = async () => {
+    try {
+      latest.clock = await loadWorldClock("/api/clock");
+    } catch {
+      latest.clock = null;
+    }
+    renderStatus();
+  };
   const tick = async () => {
     try {
       const state = await loadPhysicsState("/api/physics");
       view.apply(state);
       hud.innerHTML = stateRows(state).map((row) => `<div class="row"><span>${row.label}</span><b>${row.value}</b></div>`).join("");
-      status.textContent = `\u0442\u0435\u043B: ${state.bodies.length} \xB7 \u0434\u0432\u0438\u0436\u0435\u0442\u0441\u044F: ${state.moving.length} \xB7 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u043E ${time()}`;
+      latest.bodyCount = state.bodies.length;
+      latest.movingCount = state.moving.length;
+      renderStatus();
     } catch (error2) {
       status.textContent = `\u043E\u0448\u0438\u0431\u043A\u0430: ${error2 instanceof Error ? error2.message : String(error2)}`;
     }
   };
   void names();
   setInterval(() => void names(), NAMES_POLL_MS);
+  void clock();
+  setInterval(() => void clock(), CLOCK_POLL_MS);
   void tick();
   setInterval(() => void tick(), POLL_MS);
-}
-function time() {
-  return (/* @__PURE__ */ new Date()).toLocaleTimeString("ru-RU");
 }
 if (typeof document !== "undefined") {
   if (document.readyState === "loading") {
